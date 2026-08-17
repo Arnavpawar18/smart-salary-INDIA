@@ -1,0 +1,19 @@
+<!-- What-If Simulator Partial -->
+<div class="mt-4 bg-slate-800/80 p-4 rounded-xl border border-indigo-500/30 space-y-3 animate-fade-in font-sans">
+    <div class="flex justify-between items-center text-xs">
+        <span class="font-bold text-indigo-300 uppercase tracking-wider">Raise Simulation Results</span>
+        <span class="text-slate-400">Base Salary: {{ format_inr(sim_data.base_gross) }}</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
+        {% for sim in sim_data.simulations %}
+        <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-700 space-y-1">
+            <div class="text-indigo-400 font-bold text-sm">{{ sim.percentage_increase }} Raise</div>
+            <div class="text-slate-300">New Gross: {{ format_inr(sim.simulated_gross) }} (+{{ format_inr(sim.gross_delta) }})</div>
+            <div class="text-emerald-400 font-bold">New Take-Home: {{ format_inr(sim.simulated_take_home) }}</div>
+            <div class="text-indigo-200 text-[11px] font-sans pt-1">
+                {{ sim.retention_explanation }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

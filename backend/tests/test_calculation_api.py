@@ -46,8 +46,10 @@ def test_htmx_calculator_post_renders_partial():
         "regime": "NEW",
         "state_code": "KA",
         "annual_gross_salary": "1200000",
+        "is_quick_mode": "true",
     }
     response = client.post("/calculator/calculate", data=form_data)
     assert response.status_code == 200
-    assert "Estimated Take-Home & Tax Liability" in response.text
-    assert "Standard Deduction u/s 16(ia)" in response.text
+    assert "Your Calculation Result" in response.text
+    assert "Estimated Annual Take-Home" in response.text
+    assert "HOW WAS THIS CALCULATED?" in response.text

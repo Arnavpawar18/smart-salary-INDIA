@@ -1,10 +1,12 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import calculations, health, metadata, rules
+from app.api.v1.endpoints import calculations, context, health, metadata, rules, scenarios
 
 api_router = APIRouter()
 
 api_router.include_router(health.router, prefix="/health", tags=["System Health"])
 api_router.include_router(metadata.router, prefix="/metadata", tags=["Domain Schema Metadata"])
+api_router.include_router(context.router, prefix="/ui", tags=["UI Context"])
 api_router.include_router(calculations.router, prefix="/calculations", tags=["Financial Calculations"])
 api_router.include_router(rules.router, prefix="/rules", tags=["Statutory Rules"])
+api_router.include_router(scenarios.router, prefix="/scenarios", tags=["Scenario Intelligence"])

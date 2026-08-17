@@ -1,0 +1,174 @@
+<!-- Level 2 Explanation & Mathematical Trace Waterfall -->
+<div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-fade-in space-y-6 p-6">
+    <!-- Header -->
+    <div class="border-b border-slate-200 pb-4 flex justify-between items-center">
+        <div>
+            <h3 class="text-lg font-black text-slate-900 tracking-tight flex items-center">
+                <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Complete Financial Trace & Statutory Breakdown
+            </h3>
+            <p class="text-xs text-slate-500">Every authoritative number is computed deterministically from verified statutory rule versions.</p>
+        </div>
+        <a href="/calculator/export/{{ calculation_id }}" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 transition-colors flex items-center space-x-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            <span>Print Summary</span>
+        </a>
+    </div>
+
+    <!-- 1. Interactive Step-by-Step Mathematical Waterfall -->
+    <div class="space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">1. Step-by-Step Mathematical Waterfall</h4>
+        <div class="space-y-3">
+            {% for step in result.trace_steps %}
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs font-mono">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-indigo-900 text-sm">Step {{ step.step_number }}: {{ step.title }}</span>
+                    {% if step.legal_reference %}
+                    <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-sans">{{ step.legal_reference }}</span>
+                    {% endif %}
+                </div>
+                <p class="text-slate-600 font-sans text-xs mb-2">{{ step.description }}</p>
+                {% if step.formula %}
+                <div class="bg-white p-2 rounded border border-slate-200 text-emerald-700 text-xs mb-2 font-semibold">
+                    Formula: {{ step.formula }}
+                </div>
+                {% endif %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                    <div>
+                        <span class="text-slate-400 uppercase font-semibold block mb-0.5">Inputs Applied:</span>
+                        {% for k, v in step.inputs.items() %}
+                        <div class="text-slate-700">&bull; {{ k }}: {{ v }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <span class="text-slate-400 uppercase font-semibold block mb-0.5">Step Output:</span>
+                        {% for k, v in step.outputs.items() %}
+                        <div class="text-indigo-900 font-bold">&bull; {{ k }}: {{ v }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 2. Statutory Deductions & Employer Contribution Separation -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Employee Deductions (Reduces Take-Home) -->
+        <div class="bg-rose-50/50 p-4 rounded-xl border border-rose-200 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-rose-900 flex items-center">
+                <svg class="w-4 h-4 mr-1 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                Employee Deductions (Subtracted from Take-Home)
+            </div>
+            <div class="divide-y divide-rose-100 text-xs">
+                <div class="py-1.5 flex justify-between">
+                    <span class="text-slate-600">Income Tax Liability:</span>
+                    <span class="font-mono font-bold text-rose-700">{{ format_inr(result.total_annual_tax_liability) }}</span>
+                </div>
+                <div class="py-1.5 flex justify-between">
+                    <span class="text-slate-600">Employee EPF (12%):</span>
+                    <span class="font-mono font-bold text-rose-700">{{ format_inr(result.annual_employee_pf) }}</span>
+                </div>
+                <div class="py-1.5 flex justify-between">
+                    <span class="text-slate-600">Professional Tax ({{ result.state_code }}):</span>
+                    <span class="font-mono font-bold text-rose-700">{{ format_inr(result.annual_professional_tax) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employer Statutory Contributions (DOES NOT Reduce Take-Home) -->
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-200 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center">
+                <svg class="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Employer Statutory Benefits (Not Deducted from You)
+            </div>
+            <div class="divide-y divide-blue-100 text-xs">
+                <div class="py-1.5 flex justify-between">
+                    <span class="text-slate-600">Employer EPF (3.67%):</span>
+                    <span class="font-mono font-bold text-blue-700">{{ format_inr(result.annual_employer_contribution) }}</span>
+                </div>
+                <div class="py-1.5 flex justify-between">
+                    <span class="text-slate-600">Employer EPS (8.33% Capped):</span>
+                    <span class="font-mono font-bold text-blue-700">{{ format_inr(14994) }}</span>
+                </div>
+                <div class="py-1.5 flex justify-between">
+                    <span class="text-slate-600">Employer EDLI (0.50% Capped):</span>
+                    <span class="font-mono font-bold text-blue-700">{{ format_inr(900) }}</span>
+                </div>
+            </div>
+            <p class="text-[10px] text-blue-800/80 pt-1 font-sans">
+                Notice: Employer statutory contributions represent company benefits added to your overall employment value; they are never deducted from your monthly take-home paycheck.
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. Projected 12-Month Paycheck View -->
+    <div class="space-y-2">
+        <div class="flex justify-between items-center">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">2. Projected 12-Month Paycheck Schedule (Apr – Mar)</h4>
+            <span class="text-[10px] text-slate-400 font-sans">Policy: PaycheckProjectionPolicy v1.0</span>
+        </div>
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100/75 text-slate-700 font-semibold uppercase tracking-wider text-[10px]">
+                    <tr>
+                        <th class="px-3 py-2">Month</th>
+                        <th class="px-3 py-2 text-right">Gross</th>
+                        <th class="px-3 py-2 text-right">Tax (Projected)*</th>
+                        <th class="px-3 py-2 text-right">EPF</th>
+                        <th class="px-3 py-2 text-right">PT</th>
+                        <th class="px-3 py-2 text-right text-emerald-700">Take-Home</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 font-mono">
+                    {% for row in monthly_schedule %}
+                    <tr class="hover:bg-slate-50/80">
+                        <td class="px-3 py-2 font-semibold text-slate-800">{{ row.month_name }} {{ row.calendar_year }}</td>
+                        <td class="px-3 py-2 text-right">{{ format_inr(row.gross_salary) }}</td>
+                        <td class="px-3 py-2 text-right text-rose-600">-{{ format_inr(row.estimated_tax_allocation) }}</td>
+                        <td class="px-3 py-2 text-right text-amber-600">-{{ format_inr(row.employee_epf) }}</td>
+                        <td class="px-3 py-2 text-right text-slate-600">-{{ format_inr(row.professional_tax) }}</td>
+                        <td class="px-3 py-2 text-right font-bold text-emerald-600">{{ format_inr(row.net_take_home) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-[11px] text-slate-500 italic pt-1">
+            * Estimated Monthly Tax Allocation is computed as Annual Tax ÷ 12. Actual employer payroll TDS may differ according to declaration verification timing.
+        </p>
+    </div>
+
+    <!-- 4. What-If Simulator Panel Trigger -->
+    <div class="p-5 bg-gradient-to-r from-indigo-900 to-slate-900 rounded-xl text-white space-y-3">
+        <div class="flex justify-between items-center">
+            <div>
+                <h4 class="text-sm font-bold tracking-tight">What-If Salary Simulator</h4>
+                <p class="text-xs text-indigo-200">See exactly how much take-home you retain if your salary increases.</p>
+            </div>
+            <button hx-post="/calculator/what-if"
+                    hx-vals='{"salary": "{{ result.annual_gross_salary }}", "financial_year": "{{ result.financial_year }}", "state_code": "{{ result.state_code }}", "regime": "{{ result.regime }}"}'
+                    hx-target="#what-if-container"
+                    class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 font-bold text-xs rounded-lg shadow transition-all">
+                Simulate Raises (+5%, +10%, +20%)
+            </button>
+        </div>
+        <div id="what-if-container"></div>
+    </div>
+
+    <!-- 5. Trust Center & Cryptographic Provenance -->
+    <div class="bg-slate-950 p-5 rounded-xl text-xs font-mono text-slate-300 space-y-3 border border-slate-800">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800 font-sans">
+            <span class="font-bold text-indigo-300 uppercase tracking-wider text-xs">SmartSalary Trust Center & Provenance</span>
+            <span class="px-2 py-0.5 bg-slate-800 text-indigo-200 rounded text-[10px]">Deterministic Pipeline Verified</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+            <div><span class="text-slate-500">Engine Version:</span> {{ result.engine_version }}</div>
+            <div><span class="text-slate-500">Rounding Version:</span> {{ result.rounding_policy_version }}</div>
+            <div><span class="text-slate-500">Tax Rule Version:</span> {{ result.tax_rule_version_code }}</div>
+            <div><span class="text-slate-500">PF Rule Version:</span> {{ result.pf_rule_version_code }}</div>
+            <div><span class="text-slate-500">PT Rule Version:</span> {{ result.pt_rule_version_code }}</div>
+            <div><span class="text-slate-500">SHA-256 Hash:</span> <span class="text-indigo-400">{{ result.result_hash[:16] }}...</span></div>
+        </div>
+    </div>
+</div>

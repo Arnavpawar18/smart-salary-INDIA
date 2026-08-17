@@ -222,3 +222,21 @@ class CalculationService:
             recommended_regime=rec,
             recommendation_note=note,
         )
+
+    def get_calculation_by_id(self, calculation_id: int):
+        calc_data = self.calc_repo.get_calculation_by_id(calculation_id)
+        if not calc_data:
+            return None
+        snap = calc_data["result_snapshot"]
+        inp = SalaryInput(
+            financial_year=snap["financial_year"],
+            annual_gross=Decimal(snap["annual_gross_salary"]),
+        )
+        regime = TaxRegime(snap["regime"])
+        res = self.calculate_salary(
+            salary_input=inp,
+            regime=regime,
+            state_code=snap["state_code"],
+            persist=False,
+        )
+        return {"result": res}

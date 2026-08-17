@@ -97,3 +97,15 @@ class CalculationRepository:
         self.db.commit()
         self.db.refresh(run)
         return run
+
+    def get_calculation_by_id(self, calculation_id: int) -> dict | None:
+        run = self.db.scalar(select(CalculationRun).where(CalculationRun.id == calculation_id))
+        if not run:
+            return None
+        snapshot = self.db.scalar(select(CalculationSnapshot).where(CalculationSnapshot.calculation_run_id == run.id))
+        if not snapshot:
+            return None
+        return {
+            "run": run,
+            "result_snapshot": snapshot.result_snapshot,
+        }
