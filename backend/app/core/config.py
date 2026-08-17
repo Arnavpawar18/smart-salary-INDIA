@@ -7,17 +7,17 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
 
-    # PostgreSQL connection
+    # PostgreSQL connection (Local instance port 5433)
     POSTGRES_SERVER: str = "localhost"
-    POSTGRES_PORT: int = 5432
+    POSTGRES_PORT: int = 5433
     POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = "smartsalary"
-    DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/smartsalary"
+    DATABASE_URL: str = "postgresql+psycopg://postgres:@localhost:5433/smartsalary"
 
     # Test Database connection
     POSTGRES_TEST_DB: str = "smartsalary_test"
-    DATABASE_URL_TEST: str = "postgresql+psycopg://postgres:postgres@localhost:5432/smartsalary_test"
+    DATABASE_URL_TEST: str = "postgresql+psycopg://postgres:@localhost:5433/smartsalary_test"
 
     model_config = SettingsConfigDict(
         env_file=".env",

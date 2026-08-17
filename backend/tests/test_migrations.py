@@ -1,7 +1,15 @@
+import sys
+from pathlib import Path
+
 from alembic.config import Config
 from sqlalchemy import inspect
 
 from alembic import command
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 from app.core.config import settings
 from app.core.database import engine
 
@@ -13,7 +21,9 @@ def test_alembic_migration_lifecycle():
     2. Downgrade base -> 0 domain tables exist
     3. Upgrade head -> 40 domain tables restored cleanly
     """
-    alembic_cfg = Config("alembic.ini")
+    ini_path = str(BACKEND_DIR / "alembic.ini")
+    alembic_cfg = Config(ini_path)
+    alembic_cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
     alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
     # 1. Upgrade to head

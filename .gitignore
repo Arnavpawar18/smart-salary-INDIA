@@ -4,6 +4,8 @@ env/
 venv/
 ENV/
 node_modules/
+pg16/
+pgdata/
 
 # Secrets & Environment Variables
 .env
