@@ -38,13 +38,17 @@ def test_alembic_migration_lifecycle():
     inspector = inspect(engine)
     tables_restored = set(inspector.get_table_names())
     domain_tables_restored = {t for t in tables_restored if t != "alembic_version"}
-    assert len(domain_tables_restored) == 41, f"Expected 41 domain tables after upgrade, found {len(domain_tables_restored)}"
+    assert len(domain_tables_restored) == 49, f"Expected 49 domain tables after upgrade, found {len(domain_tables_restored)}"
     assert "user_sessions" in domain_tables_restored
+    assert "organizations" in domain_tables_restored
+    assert "payroll_runs" in domain_tables_restored
+    assert "tax_declarations" in domain_tables_restored
 
     # Re-seed reference rules for subsequent integration tests in test session
     from app.core.database import SessionLocal
     from app.seeds.seed_reference_data import seed_reference_data
     with SessionLocal() as db:
         seed_reference_data(db)
+        db.commit()
 
     engine.dispose()

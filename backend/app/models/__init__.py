@@ -21,11 +21,18 @@ from app.models.calculation import (
 # 10. Chat Foundation (2 tables)
 from app.models.chat import ChatMessage, ChatSession
 
-# 2. Employee & Organizational (5 tables)
+# Enterprise Tax Declarations & Statutory Compliance (3 tables)
+from app.models.compliance import StatutoryComplianceEvent, TaxDeclaration, TaxDeclarationItem
+
+# 2. Employee & Organizational (7 tables)
 from app.models.employee import Department, Employee, JobRole, State, TaxpayerProfile
 
 # 9. Knowledge & RAG Repository (3 tables)
 from app.models.knowledge import KnowledgeChunk, KnowledgeDocument, KnowledgeSource
+from app.models.organization import Organization, OrganizationMembership
+
+# Enterprise Payroll Core (3 tables)
+from app.models.payroll import PayrollPeriod, PayrollRun, PayrollRunItem
 
 # 8. Payslip Domain (3 tables)
 from app.models.payslip import PayslipDocument, PayslipExtraction, PayslipValidation
@@ -63,6 +70,17 @@ __all__ = [
     "user_roles",
     "role_permissions",
     "UserSession",
+    # Enterprise & Organization
+    "Organization",
+    "OrganizationMembership",
+    # Payroll Core
+    "PayrollPeriod",
+    "PayrollRun",
+    "PayrollRunItem",
+    # Compliance & Declarations
+    "TaxDeclaration",
+    "TaxDeclarationItem",
+    "StatutoryComplianceEvent",
     # Employee
     "Department",
     "JobRole",

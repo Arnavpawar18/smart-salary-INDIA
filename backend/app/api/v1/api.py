@@ -4,6 +4,7 @@ from app.api.v1.endpoints import (
     auth,
     calculations,
     context,
+    enterprise,
     health,
     metadata,
     rules,
@@ -19,3 +20,4 @@ api_router.include_router(context.router, prefix="/ui", tags=["UI Context"])
 api_router.include_router(calculations.router, prefix="/calculations", tags=["Financial Calculations"])
 api_router.include_router(rules.router, prefix="/rules", tags=["Statutory Rules"])
 api_router.include_router(scenarios.router, prefix="/scenarios", tags=["Scenario Intelligence"])
+api_router.include_router(enterprise.router, tags=["Enterprise Admin & Payroll"])

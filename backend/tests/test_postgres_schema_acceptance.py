@@ -10,16 +10,20 @@ from app.models.tax import TaxPeriod, TaxRuleVersion
 from app.seeds.seed_reference_data import seed_reference_data
 
 
-def test_real_postgres_exact_41_domain_tables():
-    """Verify that PostgreSQL 16 contains exactly 41 domain tables + 1 alembic_version = 42 total (including Table 41 user_sessions)."""
+def test_real_postgres_exact_49_domain_tables():
+    """Verify that PostgreSQL 16 contains exactly 49 domain tables + 1 alembic_version = 50 total (including organizations, payroll core, and compliance)."""
     pg_engine = create_engine(settings.DATABASE_URL)
     inspector = inspect(pg_engine)
     all_tables = inspector.get_table_names()
     domain_tables = [t for t in all_tables if t != "alembic_version"]
 
-    assert len(all_tables) == 42, f"Expected 42 total tables in PostgreSQL, got {len(all_tables)}"
-    assert len(domain_tables) == 41, f"Expected 41 domain tables in PostgreSQL, got {len(domain_tables)}"
+    assert len(all_tables) == 50, f"Expected 50 total tables in PostgreSQL, got {len(all_tables)}"
+    assert len(domain_tables) == 49, f"Expected 49 domain tables in PostgreSQL, got {len(domain_tables)}"
     assert "user_sessions" in domain_tables
+    assert "organizations" in domain_tables
+    assert "payroll_runs" in domain_tables
+    assert "tax_declarations" in domain_tables
+    assert "statutory_compliance_events" in domain_tables
     pg_engine.dispose()
 
 
@@ -108,10 +112,12 @@ def test_real_postgres_seed_idempotency():
         pf_1 = session.scalar(select(func.count(PFRuleVersion.id)))
         pt_1 = session.scalar(select(func.count(ProfessionalTaxRuleVersion.id)))
 
+        # In multi-tenant DB, global reference depts are seeded idempotently
+        global_depts_1 = session.scalar(select(func.count(Department.id)).where(Department.organization_id.is_(None)))
         assert states_1 == 36
         assert roles_1 == 5
         assert perms_1 == 11
-        assert depts_1 == 6
+        assert global_depts_1 == 6
         assert jobs_1 == 6
         assert tps_1 == 3
         assert trv_1 == 6

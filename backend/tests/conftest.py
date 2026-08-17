@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import sqlalchemy as sa
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -26,7 +27,13 @@ def engine():
     test_engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True)
     Base.metadata.create_all(bind=test_engine)
     yield test_engine
-    Base.metadata.drop_all(bind=test_engine)
+    # Drop all with cascade or ignore in test db
+    try:
+        with test_engine.connect() as conn:
+            conn.execute(sa.text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+            conn.commit()
+    except Exception:
+        Base.metadata.drop_all(bind=test_engine)
     test_engine.dispose()
 
 
