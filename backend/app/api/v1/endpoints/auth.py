@@ -13,10 +13,13 @@ from app.core.auth_middleware import (
     set_auth_cookies,
 )
 from app.core.database import get_db
+from app.core.rate_limiter import InMemoryRateLimiter
 from app.core.security import JWTProvider, PasswordHasher
 from app.models.auth import Role, User, user_roles
 from app.models.employee import Employee
+from app.models.session import UserSession
 from app.repositories.session_repository import SessionRepository
+from app.services.audit_service import AuditEvent, AuditService
 
 router = APIRouter()
 
@@ -26,11 +29,18 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=8)
     full_name: str
     phone: str | None = None
+    guest_session_token: str | None = None
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+    confirm_password: str
 
 
 @router.get("/csrf-token")
@@ -45,9 +55,13 @@ def get_csrf_token(response: Response):
 def register_user(
     req: RegisterRequest,
     response: Response,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Registers a new employee user account and establishes a persistent refresh session."""
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    InMemoryRateLimiter.check_rate_limit(f"register:{client_ip}", max_requests=10, window_seconds=60)
+
     existing = db.scalar(select(User).where(User.email == req.email))
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -90,15 +104,28 @@ def register_user(
     raw_refresh, jti, expire = JWTProvider.create_refresh_token(user_id=user.id)
 
     session_repo = SessionRepository(db)
+    user_agent = request.headers.get("user-agent")
     session_repo.create_session(
         user_id=user.id,
         raw_refresh_token=raw_refresh,
         jti=jti,
         expires_at=expire,
+        ip_address=client_ip,
+        user_agent=user_agent,
     )
 
     csrf_token = CSRFProtection.generate_csrf_token()
     set_auth_cookies(response, access_token=access_token, raw_refresh_token=raw_refresh, csrf_token=csrf_token)
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.LOGIN_SUCCESS,
+        entity_name="USER",
+        user_id=user.id,
+        entity_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
 
     return {
         "message": "Account created successfully",
@@ -115,8 +142,20 @@ def login_user(
     db: Session = Depends(get_db),
 ):
     """Authenticates user with Argon2id and establishes a persistent refresh session."""
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    user_agent = request.headers.get("user-agent")
+    InMemoryRateLimiter.check_rate_limit(f"login:{client_ip}", max_requests=15, window_seconds=60)
+
     user = db.scalar(select(User).where(User.email == req.email))
     if not user or not PasswordHasher.verify_password(req.password, user.hashed_password):
+        AuditService.log_event(
+            db=db,
+            action=AuditEvent.LOGIN_FAILURE,
+            entity_name="USER",
+            user_id=user.id if user else None,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        )
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     if not user.is_active:
@@ -133,8 +172,6 @@ def login_user(
     raw_refresh, jti, expire = JWTProvider.create_refresh_token(user_id=user.id)
 
     session_repo = SessionRepository(db)
-    client_ip = request.client.host if request.client else None
-    user_agent = request.headers.get("user-agent")
     session_repo.create_session(
         user_id=user.id,
         raw_refresh_token=raw_refresh,
@@ -146,6 +183,16 @@ def login_user(
 
     csrf_token = CSRFProtection.generate_csrf_token()
     set_auth_cookies(response, access_token=access_token, raw_refresh_token=raw_refresh, csrf_token=csrf_token)
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.LOGIN_SUCCESS,
+        entity_name="USER",
+        user_id=user.id,
+        entity_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
 
     return {
         "message": "Login successful",
@@ -162,6 +209,10 @@ def refresh_session(
     db: Session = Depends(get_db),
 ):
     """Rotates refresh token and returns fresh access token with reuse detection."""
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    user_agent = request.headers.get("user-agent")
+    InMemoryRateLimiter.check_rate_limit(f"refresh:{client_ip}", max_requests=30, window_seconds=60)
+
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Missing refresh token")
 
@@ -178,8 +229,6 @@ def refresh_session(
     new_raw_refresh, new_jti, new_expire = JWTProvider.create_refresh_token(user_id=user_id)
 
     try:
-        client_ip = request.client.host if request.client else None
-        user_agent = request.headers.get("user-agent")
         session_repo.rotate_session(
             old_jti=old_jti,
             new_raw_refresh_token=new_raw_refresh,
@@ -190,6 +239,14 @@ def refresh_session(
         )
     except ValueError as e:
         clear_auth_cookies(response)
+        AuditService.log_event(
+            db=db,
+            action=AuditEvent.REFRESH_REUSE_DETECTED,
+            entity_name="USER",
+            user_id=user_id,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        )
         raise HTTPException(status_code=401, detail=str(e)) from e
 
     # Fetch user role & employee
@@ -202,6 +259,137 @@ def refresh_session(
     set_auth_cookies(response, access_token=access_token, raw_refresh_token=new_raw_refresh)
 
     return {"message": "Session refreshed successfully"}
+
+
+@router.post("/change-password")
+def change_password(
+    req: ChangePasswordRequest,
+    response: Response,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Changes password and revokes all active refresh sessions for security.
+    """
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    user_agent = request.headers.get("user-agent")
+    InMemoryRateLimiter.check_rate_limit(f"pwd_change:{client_ip}", max_requests=5, window_seconds=60)
+
+    if req.new_password != req.confirm_password:
+        raise HTTPException(status_code=400, detail="New password and confirmation do not match")
+
+    if not PasswordHasher.verify_password(req.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+
+    # Update password
+    current_user.hashed_password = PasswordHasher.hash_password(req.new_password)
+    db.commit()
+
+    # Revoke all existing sessions
+    session_repo = SessionRepository(db)
+    session_repo.revoke_all_user_sessions(current_user.id)
+
+    # Issue a fresh single session
+    raw_refresh, jti, expire = JWTProvider.create_refresh_token(user_id=current_user.id)
+    session_repo.create_session(
+        user_id=current_user.id,
+        raw_refresh_token=raw_refresh,
+        jti=jti,
+        expires_at=expire,
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
+
+    role_stmt = select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == current_user.id)
+    role_name = db.scalar(role_stmt) or "EMPLOYEE"
+    emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
+    employee_id = emp.id if emp else None
+
+    access_token = JWTProvider.create_access_token(user_id=current_user.id, role=role_name, employee_id=employee_id)
+    set_auth_cookies(response, access_token=access_token, raw_refresh_token=raw_refresh)
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.PASSWORD_CHANGED,
+        entity_name="USER",
+        user_id=current_user.id,
+        entity_id=current_user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
+
+    return {"message": "Password changed successfully. All previous sessions revoked."}
+
+
+@router.get("/sessions")
+def get_user_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Lists active sessions for the authenticated user."""
+    session_repo = SessionRepository(db)
+    sessions = session_repo.get_user_active_sessions(current_user.id)
+    return [
+        {
+            "id": s.id,
+            "jti": str(s.jti),
+            "issued_at": s.issued_at.isoformat(),
+            "last_used_at": s.last_used_at.isoformat(),
+            "expires_at": s.expires_at.isoformat(),
+            "ip_address": s.ip_address or "127.0.0.1",
+            "user_agent": s.user_agent or "Browser Session",
+        }
+        for s in sessions
+    ]
+
+
+@router.delete("/sessions/{session_id}")
+def revoke_individual_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Revokes a specific session belonging strictly to the authenticated user."""
+    session = db.scalar(select(UserSession).where(UserSession.id == session_id))
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if session.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Forbidden: cannot revoke another user's session")
+
+    session_repo = SessionRepository(db)
+    session_repo.revoke_session(str(session.jti))
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.SESSION_REVOKED,
+        entity_name="USER",
+        user_id=current_user.id,
+        entity_id=session.id,
+    )
+    return {"message": "Session revoked successfully"}
+
+
+@router.post("/logout-all")
+def logout_all_sessions(
+    response: Response,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Revokes ALL active sessions for the user and clears cookies."""
+    session_repo = SessionRepository(db)
+    count = session_repo.revoke_all_user_sessions(current_user.id)
+    clear_auth_cookies(response)
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.LOGOUT_ALL,
+        entity_type="USER",
+        user_id=current_user.id,
+        entity_id=current_user.id,
+    )
+    return {"message": f"All {count} active sessions revoked successfully"}
 
 
 @router.post("/logout")
@@ -238,6 +426,7 @@ def get_authenticated_user_profile(
     return {
         "id": current_user.id,
         "email": current_user.email,
+        "full_name": current_user.full_name,
         "role": role_name,
         "employee_id": emp.id if emp else None,
         "employee_details": {

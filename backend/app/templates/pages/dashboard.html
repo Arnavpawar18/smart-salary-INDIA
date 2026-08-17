@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Financial Dashboard — SmartSalary India{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold text-slate-900">Good day, {{ employee.first_name }}</h1>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">Active Employee</span>
+            </div>
+            <p class="text-slate-500 text-sm mt-1">
+                Employee Code: <span class="font-mono font-medium text-slate-700">{{ employee.employee_code }}</span> • Primary State: <span class="font-semibold text-slate-700">{{ employee.state.name if employee.state else 'Karnataka' }}</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/calculator" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                + New Calculation
+            </a>
+            <a href="/profile/security" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold border border-slate-300 rounded-lg shadow-sm transition">
+                Security Center
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    {% if summary.current_run %}
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Gross CTC</p>
+            <p class="text-lg font-bold text-slate-900 mt-2">{{ summary.fy_trend[0].annual_gross_formatted if summary.fy_trend else '₹0' }}</p>
+            <p class="text-xs text-slate-500 mt-1">FY {{ summary.current_run.financial_year }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Estimated Tax</p>
+            <p class="text-lg font-bold text-rose-600 mt-2">{{ summary.current_run.total_tax_liability|inr }}</p>
+            <p class="text-xs text-slate-500 mt-1">{{ summary.current_run.regime }} Regime</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Employee PF</p>
+            <p class="text-lg font-bold text-slate-900 mt-2">{{ summary.fy_trend[0].employee_pf_formatted if summary.fy_trend else '₹0' }}</p>
+            <p class="text-xs text-slate-500 mt-1">12% Deducted</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Prof. Tax</p>
+            <p class="text-lg font-bold text-slate-900 mt-2">{{ summary.fy_trend[0].pt_formatted if summary.fy_trend else '₹0' }}</p>
+            <p class="text-xs text-slate-500 mt-1">State PT</p>
+        </div>
+        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm">
+            <p class="text-xs font-semibold uppercase text-emerald-800 tracking-wider">Net Take-Home</p>
+            <p class="text-lg font-bold text-emerald-900 mt-2">{{ summary.current_run.net_take_home_annual|inr }}</p>
+            <p class="text-xs text-emerald-700 mt-1">Annual Take-Home</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Effective Tax Rate</p>
+            <p class="text-lg font-bold text-indigo-600 mt-2">{{ summary.fy_trend[0].effective_tax_rate if summary.fy_trend else 0 }}%</p>
+            <p class="text-xs text-slate-500 mt-1">Of Gross Income</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FY Trend & What Changed -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- FY Multi-Year Trend Table -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                Multi-Year Financial Trend
+            </h2>
+            {% if summary.fy_trend %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase font-semibold">
+                            <th class="pb-3">Financial Year</th>
+                            <th class="pb-3">Regime</th>
+                            <th class="pb-3 text-right">Gross CTC</th>
+                            <th class="pb-3 text-right">Taxable</th>
+                            <th class="pb-3 text-right">Income Tax</th>
+                            <th class="pb-3 text-right">Take-Home</th>
+                            <th class="pb-3 text-right">Eff. Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for row in summary.fy_trend %}
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="py-3 font-semibold text-slate-900">{{ row.financial_year }}</td>
+                            <td class="py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-indigo-100 text-indigo-800' if row.regime == 'NEW' else 'bg-amber-100 text-amber-800' }}">{{ row.regime }}</span></td>
+                            <td class="py-3 text-right font-mono">{{ row.annual_gross_formatted }}</td>
+                            <td class="py-3 text-right font-mono">{{ row.taxable_income_formatted }}</td>
+                            <td class="py-3 text-right font-mono text-rose-600 font-semibold">{{ row.tax_formatted }}</td>
+                            <td class="py-3 text-right font-mono text-emerald-600 font-bold">{{ row.take_home_formatted }}</td>
+                            <td class="py-3 text-right font-mono">{{ row.effective_tax_rate }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-slate-500 text-sm py-4">No historical financial snapshots available yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- What Changed Panel -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                What Changed (Year-over-Year)
+            </h2>
+            {% if summary.what_changed %}
+            <div class="space-y-3">
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                    <span class="text-slate-600">Gross Delta</span>
+                    <span class="font-mono font-semibold {{ 'text-emerald-600' if summary.what_changed.gross_delta > 0 else 'text-slate-700' }}">{{ summary.what_changed.gross_delta|inr }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                    <span class="text-slate-600">Tax Delta</span>
+                    <span class="font-mono font-semibold {{ 'text-rose-600' if summary.what_changed.tax_delta > 0 else 'text-emerald-600' }}">{{ summary.what_changed.tax_delta|inr }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                    <span class="text-slate-600">Take-Home Delta</span>
+                    <span class="font-mono font-bold text-emerald-600">{{ summary.what_changed.take_home_delta|inr }}</span>
+                </div>
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl mt-4">
+                    <p class="text-xs text-indigo-800 font-medium">Marginal Retention</p>
+                    <p class="text-base font-bold text-indigo-900 mt-1">{{ summary.what_changed.marginal_retention_rate }}%</p>
+                    <p class="text-xs text-indigo-700 mt-0.5">{{ summary.what_changed.explanation }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-slate-500 text-sm py-4">Save calculations across at least two financial years to unlock automated year-over-year delta analysis.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Calculations Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-slate-900">Recent Calculation Records</h2>
+            <span class="text-xs text-slate-500">Authoritative Immutable Snapshots</span>
+        </div>
+        {% if summary.recent_calculations %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase font-semibold">
+                        <th class="pb-3">Calculation ID</th>
+                        <th class="pb-3">Date</th>
+                        <th class="pb-3">FY</th>
+                        <th class="pb-3">Regime</th>
+                        <th class="pb-3 text-right">Taxable Income</th>
+                        <th class="pb-3 text-right">Total Tax</th>
+                        <th class="pb-3 text-right">Net Take-Home</th>
+                        <th class="pb-3 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for run in summary.recent_calculations %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 font-mono font-medium text-slate-700">#{{ run.id }}</td>
+                        <td class="py-3 text-slate-500 text-xs">{{ run.created_at.strftime('%d %b %Y, %H:%M') if run.created_at else '—' }}</td>
+                        <td class="py-3 font-semibold text-slate-900">{{ run.financial_year }}</td>
+                        <td class="py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-indigo-100 text-indigo-800' if run.regime == 'NEW' else 'bg-amber-100 text-amber-800' }}">{{ run.regime }}</span></td>
+                        <td class="py-3 text-right font-mono">{{ run.total_taxable_income|inr }}</td>
+                        <td class="py-3 text-right font-mono text-rose-600 font-semibold">{{ run.total_tax_liability|inr }}</td>
+                        <td class="py-3 text-right font-mono text-emerald-600 font-bold">{{ run.net_take_home_annual|inr }}</td>
+                        <td class="py-3 text-center">
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-emerald-100 text-emerald-800 border border-emerald-300' if run.status == 'CURRENT' else 'bg-slate-100 text-slate-600 border border-slate-300' }}">
+                                {{ run.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <p class="text-slate-500 text-sm">You haven't saved any calculations yet.</p>
+            <a href="/calculator" class="inline-block mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                Start Calculation
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

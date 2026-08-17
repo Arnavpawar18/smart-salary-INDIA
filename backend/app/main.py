@@ -6,16 +6,22 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.v1.api import api_router
+from app.core.auth_middleware import get_current_user
 from app.core.config import settings
 from app.core.database import check_db_connection, get_db
 from app.engine.common.enums import TaxRegime
 from app.engine.dto.salary_dto import SalaryInput
+from app.models.auth import User
+from app.models.employee import Employee
 from app.presentation.money import format_inr
 from app.presentation.quality import QualityClassifier
+from app.repositories.session_repository import SessionRepository
 from app.services.calculation_service import CalculationService
+from app.services.dashboard_service import DashboardService
 from app.services.metadata_service import get_schema_summary
 from app.services.salary_service import SalaryService
 from app.services.scenario_service import ScenarioService
@@ -210,6 +216,52 @@ def page_calculator_export(
         request=request,
         name="pages/print_summary.html",
         context={"result": calc_data["result"].to_dict()},
+    )
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def page_dashboard(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Authenticated Employee Financial Dashboard."""
+    emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee profile not found")
+
+    dashboard_svc = DashboardService(db)
+    summary = dashboard_svc.get_employee_dashboard_summary(emp.id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/dashboard.html",
+        context={
+            "active_page": "dashboard",
+            "employee": emp,
+            "summary": summary,
+        },
+    )
+
+
+@app.get("/profile/security", response_class=HTMLResponse)
+def page_security_center(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Authenticated Security Center & Active Session Manager."""
+    session_repo = SessionRepository(db)
+    sessions = session_repo.get_user_active_sessions(current_user.id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/security_center.html",
+        context={
+            "active_page": "security",
+            "current_user": current_user,
+            "sessions": sessions,
+        },
     )
 
 
