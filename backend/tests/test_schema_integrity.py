@@ -2,20 +2,20 @@ from app.models.base import Base
 from app.services.metadata_service import DOMAIN_GROUPS
 
 
-def test_exact_40_domain_tables_registered():
-    """Verify that exactly 40 domain tables are declared in Base.metadata."""
+def test_exact_41_domain_tables_registered():
+    """Verify that exactly 41 domain tables are declared in Base.metadata."""
     declared_tables = Base.metadata.tables
-    assert len(declared_tables) == 40, f"Expected exactly 40 tables, found {len(declared_tables)}"
+    assert len(declared_tables) == 41, f"Expected exactly 41 tables, found {len(declared_tables)}"
 
 
-def test_domain_groups_sum_to_40():
-    """Verify that domain group mapping contains all 40 unique tables without duplication."""
+def test_domain_groups_sum_to_41():
+    """Verify that domain group mapping contains all 41 unique tables without duplication."""
     all_grouped_tables = []
     for domain, tables in DOMAIN_GROUPS.items():
         all_grouped_tables.extend(tables)
 
-    assert len(all_grouped_tables) == 40, f"Expected 40 grouped tables, found {len(all_grouped_tables)}"
-    assert len(set(all_grouped_tables)) == 40, "Duplicate table names detected across domain groups"
+    assert len(all_grouped_tables) == 41, f"Expected 41 grouped tables, found {len(all_grouped_tables)}"
+    assert len(set(all_grouped_tables)) == 41, "Duplicate table names detected across domain groups"
 
     # Assert 100% equivalence with Base.metadata
     assert set(all_grouped_tables) == set(Base.metadata.tables.keys())

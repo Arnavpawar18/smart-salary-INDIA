@@ -6,7 +6,7 @@ Total Domain Tables: Exactly 40.
 # 11. Audit (1 table)
 from app.models.audit import AuditLog
 
-# 1. Auth & RBAC (5 tables)
+# 1. Auth & RBAC (6 tables)
 from app.models.auth import Permission, Role, User, role_permissions, user_roles
 from app.models.base import Base, TimestampMixin
 
@@ -38,6 +38,7 @@ from app.models.pt import ProfessionalTaxRuleVersion, ProfessionalTaxSlab
 
 # 3. Salary & Income (3 tables)
 from app.models.salary import IncomeSource, SalaryComponent, SalaryRecord
+from app.models.session import UserSession
 
 # 5. Tax Engine Domain (9 tables)
 from app.models.tax import (
@@ -61,6 +62,7 @@ __all__ = [
     "Permission",
     "user_roles",
     "role_permissions",
+    "UserSession",
     # Employee
     "Department",
     "JobRole",

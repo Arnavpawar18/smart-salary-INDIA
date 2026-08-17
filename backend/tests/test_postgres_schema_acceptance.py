@@ -10,15 +10,16 @@ from app.models.tax import TaxPeriod, TaxRuleVersion
 from app.seeds.seed_reference_data import seed_reference_data
 
 
-def test_real_postgres_exact_40_domain_tables():
-    """Verify that PostgreSQL 16 contains exactly 40 domain tables + 1 alembic_version = 41 total."""
+def test_real_postgres_exact_41_domain_tables():
+    """Verify that PostgreSQL 16 contains exactly 41 domain tables + 1 alembic_version = 42 total (including Table 41 user_sessions)."""
     pg_engine = create_engine(settings.DATABASE_URL)
     inspector = inspect(pg_engine)
     all_tables = inspector.get_table_names()
     domain_tables = [t for t in all_tables if t != "alembic_version"]
 
-    assert len(all_tables) == 41, f"Expected 41 total tables in PostgreSQL, got {len(all_tables)}"
-    assert len(domain_tables) == 40, f"Expected 40 domain tables in PostgreSQL, got {len(domain_tables)}"
+    assert len(all_tables) == 42, f"Expected 42 total tables in PostgreSQL, got {len(all_tables)}"
+    assert len(domain_tables) == 41, f"Expected 41 domain tables in PostgreSQL, got {len(domain_tables)}"
+    assert "user_sessions" in domain_tables
     pg_engine.dispose()
 
 
