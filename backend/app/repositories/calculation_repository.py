@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -30,14 +31,11 @@ class CalculationRepository:
             employee_id=employee_id,
             financial_year=result.financial_year,
             regime=result.regime.value,
-            gross_salary=result.annual_gross_salary,
-            taxable_income=result.taxable_income,
-            total_tax=result.total_annual_tax_liability,
-            total_pf_employee=result.annual_employee_pf,
-            total_pf_employer=result.annual_employer_contribution,
-            total_professional_tax=result.annual_professional_tax,
-            net_take_home=result.estimated_annual_take_home,
             status=result.status.value,
+            total_taxable_income=result.taxable_income,
+            total_tax_liability=result.total_annual_tax_liability,
+            net_take_home_annual=result.estimated_annual_take_home,
+            net_take_home_monthly=result.estimated_monthly_take_home,
         )
         self.db.add(run)
         self.db.flush()
@@ -74,12 +72,11 @@ class CalculationRepository:
         for li in result.line_items:
             obj = CalculationLineItem(
                 calculation_run_id=run.id,
-                sequence_order=li.sequence,
-                component_type=li.category.value,
-                name=li.item_type.value,
-                amount=li.amount,
-                rate=li.rate,
+                order_index=li.sequence,
+                category=li.category.value,
+                code=li.item_type.value,
                 description=li.description,
+                amount=li.amount,
             )
             self.db.add(obj)
             line_item_objs.append(obj)
@@ -89,13 +86,11 @@ class CalculationRepository:
         for idx, step in enumerate(result.trace_steps, 1):
             trace = CalculationTrace(
                 calculation_run_id=run.id,
-                step_order=step.step_number,
                 step_name=step.title,
-                formula=step.formula,
-                input_values=step.inputs,
-                output_values=step.outputs,
+                formula_expression=step.formula,
+                inputs_applied=step.inputs,
+                output_value=Decimal("0.00"),
                 explanation=step.description,
-                legal_reference=step.legal_reference,
             )
             self.db.add(trace)
 

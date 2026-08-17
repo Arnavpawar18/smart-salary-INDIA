@@ -1,14 +1,20 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
 from app.api.v1.api import api_router
 from app.core.config import settings
-from app.core.database import check_db_connection
+from app.core.database import check_db_connection, get_db
+from app.engine.common.enums import TaxRegime
+from app.engine.dto.salary_dto import SalaryInput
+from app.services.calculation_service import CalculationService
 from app.services.metadata_service import get_schema_summary
 
 app = FastAPI(
@@ -57,11 +63,43 @@ def page_home(request: Request):
 
 @app.get("/calculator", response_class=HTMLResponse)
 def page_calculator(request: Request):
-    """Salary Calculator Shell Page."""
+    """Salary Calculator Page."""
     return templates.TemplateResponse(
         request=request,
         name="pages/calculator.html",
         context={"active_page": "calculator"},
+    )
+
+
+@app.post("/calculator/calculate", response_class=HTMLResponse)
+async def partial_calculator_calculate(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """HTMX Endpoint returning calculation_result.html fragment."""
+    form_data = await request.form()
+    fy = form_data.get("financial_year", "2025-26")
+    regime_str = form_data.get("regime", "NEW")
+    state_code = form_data.get("state_code", "KA")
+    gross_salary_raw = form_data.get("annual_gross_salary", "1200000")
+
+    service = CalculationService(db)
+    salary_inp = SalaryInput(
+        financial_year=fy,
+        annual_gross=Decimal(gross_salary_raw),
+    )
+
+    result = service.calculate_salary(
+        salary_input=salary_inp,
+        regime=TaxRegime(regime_str),
+        state_code=state_code,
+        persist=True,
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="partials/calculation_result.html",
+        context={"result": result.to_dict()},
     )
 
 

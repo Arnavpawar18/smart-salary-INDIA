@@ -15,7 +15,7 @@ class CalculationRun(Base, TimestampMixin):
     __tablename__ = "calculation_runs"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
+    employee_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="CASCADE"), nullable=True)
     financial_year: Mapped[str] = mapped_column(String(20), nullable=False)  # '2024-25', etc.
     regime: Mapped[str] = mapped_column(String(10), nullable=False)  # OLD, NEW
     status: Mapped[str] = mapped_column(String(50), default="COMPLETED", nullable=False)
