@@ -1,6 +1,7 @@
-from typing import Any, Dict
+from typing import Any
+
 from app.engine.common.errors import SnapshotIntegrityError
-from app.engine.common.hashing import canonical_json_dumps, compute_sha256_hash
+from app.engine.common.hashing import compute_sha256_hash
 
 
 class SnapshotService:
@@ -8,10 +9,10 @@ class SnapshotService:
 
     @staticmethod
     def build_snapshots(
-        input_data: Dict[str, Any],
-        result_data: Dict[str, Any],
-        rule_set_data: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        input_data: dict[str, Any],
+        result_data: dict[str, Any],
+        rule_set_data: dict[str, Any],
+    ) -> dict[str, Any]:
         input_hash = compute_sha256_hash(input_data)
         result_hash = compute_sha256_hash(result_data)
         rule_set_hash = compute_sha256_hash(rule_set_data)
@@ -26,8 +27,8 @@ class SnapshotService:
 
     @staticmethod
     def verify_snapshot_integrity(
-        input_snapshot: Dict[str, Any],
-        result_snapshot: Dict[str, Any],
+        input_snapshot: dict[str, Any],
+        result_snapshot: dict[str, Any],
         expected_input_hash: str,
         expected_result_hash: str,
     ) -> bool:

@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List
+
 from app.engine.common.money import quantize_currency
 from app.engine.dto.tax_dto import TaxSurchargeRuleDTO
 
@@ -11,7 +11,7 @@ class SurchargeCalculator:
     def calculate_surcharge(
         taxable_income: Decimal,
         tax_after_rebate: Decimal,
-        surcharge_rules: List[TaxSurchargeRuleDTO],
+        surcharge_rules: list[TaxSurchargeRuleDTO],
     ) -> Decimal:
         if tax_after_rebate <= Decimal("0.00") or not surcharge_rules:
             return Decimal("0.00")

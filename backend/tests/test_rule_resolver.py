@@ -1,4 +1,5 @@
 import pytest
+
 from app.core.database import SessionLocal
 from app.engine.common.enums import TaxRegime
 from app.engine.common.errors import ProfessionalTaxRuleNotConfiguredError, RuleNotFoundError

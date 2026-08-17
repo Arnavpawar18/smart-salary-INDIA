@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List
+
 from app.engine.common.money import quantize_currency
 from app.engine.dto.tax_dto import TaxRebateRuleDTO, TaxSurchargeRuleDTO
 
@@ -11,7 +11,7 @@ class MarginalReliefCalculator:
     def calculate_rebate_marginal_relief(
         taxable_income: Decimal,
         slab_tax: Decimal,
-        rebate_rules: List[TaxRebateRuleDTO],
+        rebate_rules: list[TaxRebateRuleDTO],
     ) -> Decimal:
         """
         Under the New Regime (Section 115BAC), if taxable income slightly exceeds the rebate limit
@@ -42,7 +42,7 @@ class MarginalReliefCalculator:
         taxable_income: Decimal,
         tax_on_income: Decimal,
         surcharge_amount: Decimal,
-        surcharge_rules: List[TaxSurchargeRuleDTO],
+        surcharge_rules: list[TaxSurchargeRuleDTO],
     ) -> Decimal:
         """Calculates marginal relief on surcharge thresholds (e.g. ₹50L, ₹1Cr)."""
         if surcharge_amount <= Decimal("0.00") or not surcharge_rules:

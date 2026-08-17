@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Dict, Optional, Tuple
 
 from app.engine.common.money import quantize_currency
 from app.engine.common.rounding import DEFAULT_ROUNDING_POLICY
@@ -25,7 +24,7 @@ class TaxCalculator:
         cls,
         inp: TaxCalculationInput,
         rules: TaxRuleSet,
-    ) -> Dict[str, Decimal]:
+    ) -> dict[str, Decimal]:
         gross_salary = quantize_currency(inp.annual_gross_salary)
 
         # 1. Deductions

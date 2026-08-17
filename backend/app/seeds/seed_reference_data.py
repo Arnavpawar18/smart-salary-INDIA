@@ -1,9 +1,10 @@
 from datetime import date
 from decimal import Decimal
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.auth import Permission, Role, role_permissions
+from app.models.auth import Permission, Role
 from app.models.employee import Department, JobRole, State
 from app.models.pf import PFRule, PFRuleVersion
 from app.models.pt import ProfessionalTaxRuleVersion, ProfessionalTaxSlab
@@ -159,24 +160,24 @@ def seed_reference_data(db: Session) -> None:
     # -------------------------------------------------------------
     # 5. Tax Periods (FY 2024-25, FY 2025-26, FY 2026-27)
     # -------------------------------------------------------------
-    tax_periods_data = [
-        ("2024-25", "2025-26", date(2024, 4, 1), date(2025, 3, 31), False),
-        ("2025-26", "2026-27", date(2025, 4, 1), date(2026, 3, 31), True),
-        ("2026-27", "2027-28", date(2026, 4, 1), date(2027, 3, 31), False),
-    ]
-    for fy, ay, s_date, e_date, is_curr in tax_periods_data:
-        existing = db.scalar(select(TaxPeriod).where(TaxPeriod.financial_year == fy))
-        if not existing:
-            db.add(
-                TaxPeriod(
-                    financial_year=fy,
-                    assessment_year=ay,
-                    start_date=s_date,
-                    end_date=e_date,
-                    is_current=is_curr,
-                )
+    tax_periods_map = {}
+    for fy, s_dt, e_dt, ay, is_curr in [
+        ("2024-25", date(2024, 4, 1), date(2025, 3, 31), "2025-26", False),
+        ("2025-26", date(2025, 4, 1), date(2026, 3, 31), "2026-27", True),
+        ("2026-27", date(2026, 4, 1), date(2027, 3, 31), "2027-28", False),
+    ]:
+        tp = db.scalar(select(TaxPeriod).where(TaxPeriod.financial_year == fy))
+        if not tp:
+            tp = TaxPeriod(
+                financial_year=fy,
+                start_date=s_dt,
+                end_date=e_dt,
+                legacy_assessment_year=ay,
+                is_active=is_curr,
             )
-    db.flush()
+            db.add(tp)
+            db.flush()
+        tax_periods_map[fy] = tp.id
 
     # -------------------------------------------------------------
     # 6. Verified Tax Rule Versions, Slabs, Rebates, Deductions, Cess

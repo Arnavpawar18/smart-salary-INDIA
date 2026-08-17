@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from app.engine.common.enums import Gender
 from app.engine.common.money import quantize_currency
 from app.engine.dto.pt_dto import PtCalculationInput, PtCalculationResult, PtRuleSet

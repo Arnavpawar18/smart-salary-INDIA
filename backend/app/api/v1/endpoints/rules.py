@@ -3,10 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.employee import State
 from app.models.pf import PFRuleVersion
 from app.models.pt import ProfessionalTaxRuleVersion
-from app.models.tax import TaxPeriod, TaxRuleVersion
+from app.models.tax import TaxRuleVersion
 
 router = APIRouter()
 

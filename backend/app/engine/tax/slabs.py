@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Tuple
+
 from app.engine.common.money import quantize_currency
 from app.engine.dto.tax_dto import TaxSlabRuleDTO
 
@@ -8,7 +8,7 @@ class SlabCalculator:
     """Calculates progressive income tax bracket-by-bracket based on statutory slabs."""
 
     @staticmethod
-    def calculate_slab_tax(taxable_income: Decimal, slabs: List[TaxSlabRuleDTO]) -> Tuple[Decimal, List[dict]]:
+    def calculate_slab_tax(taxable_income: Decimal, slabs: list[TaxSlabRuleDTO]) -> tuple[Decimal, list[dict]]:
         total_tax = Decimal("0.00")
         slab_breakdowns = []
 

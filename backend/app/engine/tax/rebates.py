@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Optional
+
 from app.engine.common.money import quantize_currency
 from app.engine.dto.tax_dto import TaxRebateRuleDTO
 
@@ -11,14 +11,14 @@ class RebateCalculator:
     def calculate_rebate(
         taxable_income: Decimal,
         slab_tax: Decimal,
-        rebate_rules: List[TaxRebateRuleDTO],
+        rebate_rules: list[TaxRebateRuleDTO],
         is_resident: bool = True,
     ) -> Decimal:
         if not is_resident or slab_tax <= Decimal("0.00") or not rebate_rules:
             return Decimal("0.00")
 
         # Pick matching rule
-        matching_rule: Optional[TaxRebateRuleDTO] = None
+        matching_rule: TaxRebateRuleDTO | None = None
         for r in rebate_rules:
             if taxable_income <= r.taxable_income_threshold:
                 matching_rule = r

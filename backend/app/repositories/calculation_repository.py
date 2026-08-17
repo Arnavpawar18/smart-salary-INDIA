@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,7 +24,7 @@ class CalculationRepository:
     def save_verified_calculation(
         self,
         result: VerifiedCalculationResult,
-        employee_id: Optional[int] = None,
+        employee_id: int | None = None,
     ) -> CalculationRun:
         # 1. Create CalculationRun
         run = CalculationRun(

@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.engine.common.enums import CalculationStatus, TaxRegime
@@ -18,7 +18,6 @@ from app.engine.dto.tax_dto import TaxCalculationInput
 from app.engine.normalizer.salary_normalizer import SalaryNormalizer
 from app.engine.pf.pf_calculator import PfCalculator
 from app.engine.professional_tax.pt_calculator import PtCalculator
-from app.engine.tax.regime_comparator import RegimeComparator
 from app.engine.tax.tax_calculator import TaxCalculator
 from app.engine.trace.trace_builder import TraceBuilder
 from app.engine.validation.invariants import FinancialInvariantsValidator
@@ -46,7 +45,7 @@ class CalculationService:
         regime: TaxRegime,
         state_code: str,
         age: int = 25,
-        employee_id: Optional[int] = None,
+        employee_id: int | None = None,
         persist: bool = True,
     ) -> VerifiedCalculationResult:
         # 1. Normalize Salary Input

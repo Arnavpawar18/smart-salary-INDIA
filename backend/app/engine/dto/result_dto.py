@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Dict, List, Optional
+
 from app.engine.common.enums import CalculationStatus, LineItemCategory, LineItemType, TaxRegime
 
 
@@ -15,7 +15,7 @@ class CalculationAssumptions:
     pf_opt_in_higher_wage: bool = False
     tds_provided: bool = False
     other_income_provided: bool = False
-    notes: List[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -41,8 +41,8 @@ class CalculationLineItemDTO:
     rate: Decimal
     amount: Decimal
     unit: str = "INR"
-    rule_reference: Optional[str] = None
-    source_reference: Optional[str] = None
+    rule_reference: str | None = None
+    source_reference: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -64,10 +64,10 @@ class CalculationTraceStepDTO:
     step_number: int
     title: str
     description: str
-    inputs: Dict[str, str]
-    outputs: Dict[str, str]
-    formula: Optional[str] = None
-    legal_reference: Optional[str] = None
+    inputs: dict[str, str]
+    outputs: dict[str, str]
+    formula: str | None = None
+    legal_reference: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -90,12 +90,12 @@ class VerifiedCalculationResult:
     financial_year: str
     regime: TaxRegime
     state_code: str
-    
+
     # Financial Summaries
     annual_gross_salary: Decimal
     standard_deduction: Decimal
     taxable_income: Decimal
-    
+
     # Tax Liability Breakdown
     slab_tax: Decimal
     section_87a_rebate: Decimal
@@ -106,7 +106,7 @@ class VerifiedCalculationResult:
     health_education_cess: Decimal
     total_annual_tax_liability: Decimal
     estimated_monthly_tax: Decimal
-    
+
     # PF & PT Breakdown
     annual_employee_pf: Decimal
     monthly_employee_pf: Decimal
@@ -114,23 +114,23 @@ class VerifiedCalculationResult:
     monthly_employer_contribution: Decimal
     annual_professional_tax: Decimal
     monthly_professional_tax: Decimal
-    
+
     # Other Employee Deductions
     other_employee_deductions: Decimal
-    
+
     # Net Take-home
     estimated_annual_take_home: Decimal
     estimated_monthly_take_home: Decimal
-    
+
     # Assumptions, Ledger, Traces, Provenance Hashes
     assumptions: CalculationAssumptions
-    line_items: List[CalculationLineItemDTO]
-    trace_steps: List[CalculationTraceStepDTO]
-    
+    line_items: list[CalculationLineItemDTO]
+    trace_steps: list[CalculationTraceStepDTO]
+
     tax_rule_version_code: str
     pf_rule_version_code: str
     pt_rule_version_code: str
-    
+
     input_hash: str
     result_hash: str
     rule_set_hash: str

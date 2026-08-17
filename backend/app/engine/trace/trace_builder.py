@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Dict, List, Tuple
 
 from app.engine.common.enums import LineItemCategory, LineItemType
 from app.engine.dto.pf_dto import PfCalculationResult, PfRuleSet
@@ -19,15 +18,15 @@ class TraceBuilder:
     def build_ledger_and_trace(
         cls,
         salary: NormalizedSalary,
-        tax_res: Dict[str, Decimal],
+        tax_res: dict[str, Decimal],
         pf_res: PfCalculationResult,
         pt_res: PtCalculationResult,
         tax_rules: TaxRuleSet,
         pf_rules: PfRuleSet,
         pt_rules: PtRuleSet,
-    ) -> Tuple[List[CalculationLineItemDTO], List[CalculationTraceStepDTO]]:
-        line_items: List[CalculationLineItemDTO] = []
-        trace_steps: List[CalculationTraceStepDTO] = []
+    ) -> tuple[list[CalculationLineItemDTO], list[CalculationTraceStepDTO]]:
+        line_items: list[CalculationLineItemDTO] = []
+        trace_steps: list[CalculationTraceStepDTO] = []
         seq = 1
 
         # 1. Income Items
@@ -167,7 +166,7 @@ class TraceBuilder:
                     base_amount=taxable_inc,
                     rate=Decimal("1.0000"),
                     amount=rebate,
-                    legal_reference="Section 87A",
+                    rule_reference="Section 87A",
                 )
             )
             seq += 1

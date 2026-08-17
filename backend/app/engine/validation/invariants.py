@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from app.engine.common.errors import CalculationInvariantViolationError
 from app.engine.dto.salary_dto import NormalizedSalary
 

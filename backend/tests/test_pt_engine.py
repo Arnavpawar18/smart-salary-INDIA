@@ -1,7 +1,6 @@
 from decimal import Decimal
-import pytest
+
 from app.core.database import SessionLocal
-from app.engine.common.enums import Gender
 from app.engine.dto.pt_dto import PtCalculationInput
 from app.engine.professional_tax.pt_calculator import PtCalculator
 from app.repositories.pt_rule_repository import PtRuleRepository

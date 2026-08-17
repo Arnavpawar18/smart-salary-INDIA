@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal
-from typing import List, Optional
+
 from app.engine.common.enums import ResidentialStatus, TaxRegime
 
 
@@ -12,19 +12,19 @@ class TaxCalculationInput:
     annual_gross_salary: Decimal
     age: int = 25
     residential_status: ResidentialStatus = ResidentialStatus.RESIDENT
-    standard_deduction_override: Optional[Decimal] = None
+    standard_deduction_override: Decimal | None = None
     section_80c: Decimal = Decimal("0.00")
     section_80d: Decimal = Decimal("0.00")
     other_exemptions: Decimal = Decimal("0.00")
     other_deductions: Decimal = Decimal("0.00")
-    tds_already_deducted: Optional[Decimal] = None
+    tds_already_deducted: Decimal | None = None
 
 
 @dataclass(frozen=True)
 class TaxSlabRuleDTO:
     slab_order: int
     from_amount: Decimal
-    to_amount: Optional[Decimal]
+    to_amount: Decimal | None
     tax_rate: Decimal
 
 
@@ -40,7 +40,7 @@ class TaxRebateRuleDTO:
 class TaxDeductionRuleDTO:
     deduction_code: str
     deduction_name: str
-    max_limit: Optional[Decimal]
+    max_limit: Decimal | None
     regime_applicable: str
     is_standard_deduction: bool = False
 
@@ -48,7 +48,7 @@ class TaxDeductionRuleDTO:
 @dataclass(frozen=True)
 class TaxSurchargeRuleDTO:
     from_income: Decimal
-    to_income: Optional[Decimal]
+    to_income: Decimal | None
     surcharge_rate: Decimal
     marginal_relief_applicable: bool = True
 
@@ -65,11 +65,11 @@ class TaxRuleSet:
     rule_version_code: str
     financial_year: str
     regime: TaxRegime
-    slabs: List[TaxSlabRuleDTO]
-    rebates: List[TaxRebateRuleDTO]
-    deductions: List[TaxDeductionRuleDTO]
-    surcharges: List[TaxSurchargeRuleDTO]
-    cess_rules: List[TaxCessRuleDTO]
+    slabs: list[TaxSlabRuleDTO]
+    rebates: list[TaxRebateRuleDTO]
+    deductions: list[TaxDeductionRuleDTO]
+    surcharges: list[TaxSurchargeRuleDTO]
+    cess_rules: list[TaxCessRuleDTO]
     source_citation: str
     source_document_hash: str
     rule_set_hash: str

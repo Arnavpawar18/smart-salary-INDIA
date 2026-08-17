@@ -1,4 +1,4 @@
-from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -32,7 +32,7 @@ class TaxRuleRepository:
                 TaxRuleVersion.status == "ACTIVE",
             )
         )
-        trv: Optional[TaxRuleVersion] = self.db.scalar(stmt)
+        trv: TaxRuleVersion | None = self.db.scalar(stmt)
         if not trv:
             raise RuleNotFoundError(
                 f"No active statutory tax rule version found for Financial Year '{financial_year}' and regime '{regime.value}'."

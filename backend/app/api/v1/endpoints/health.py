@@ -8,7 +8,7 @@ from app.schemas.health import HealthResponse
 router = APIRouter()
 
 
-@router.get("/health", response_model=HealthResponse)
+@router.get("", response_model=HealthResponse)
 def get_health() -> HealthResponse:
     """
     Dynamic service liveness & PostgreSQL readiness check.

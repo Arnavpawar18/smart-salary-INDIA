@@ -1,4 +1,4 @@
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Union
 
 # Standard Precision
@@ -6,7 +6,7 @@ CURRENCY_PRECISION = Decimal("0.01")
 RATE_PRECISION = Decimal("0.0001")
 
 
-def to_decimal(val: Union[int, float, str, Decimal, None], default: str = "0.00") -> Decimal:
+def to_decimal(val: int | float | str | Decimal | None, default: str = "0.00") -> Decimal:
     """Safely convert any numeric input or string representation to Decimal."""
     if val is None:
         return Decimal(default)
@@ -20,13 +20,13 @@ def to_decimal(val: Union[int, float, str, Decimal, None], default: str = "0.00"
     return Decimal(default)
 
 
-def quantize_currency(amount: Union[Decimal, int, float, str]) -> Decimal:
+def quantize_currency(amount: Decimal | int | float | str) -> Decimal:
     """Quantize monetary amount to exactly 2 decimal places using ROUND_HALF_UP."""
     dec = to_decimal(amount)
     return dec.quantize(CURRENCY_PRECISION, rounding=ROUND_HALF_UP)
 
 
-def quantize_rate(rate: Union[Decimal, int, float, str]) -> Decimal:
+def quantize_rate(rate: Decimal | int | float | str) -> Decimal:
     """Quantize rate or percentage to exactly 4 decimal places using ROUND_HALF_UP."""
     dec = to_decimal(rate)
     return dec.quantize(RATE_PRECISION, rounding=ROUND_HALF_UP)
@@ -98,14 +98,14 @@ class Money:
             return Money(other._amount - self._amount)
         return Money(quantize_currency(other) - self._amount)
 
-    def __mul__(self, other: Union[Decimal, int, float, str]) -> "Money":
+    def __mul__(self, other: Decimal | int | float | str) -> "Money":
         rate = to_decimal(other)
         return Money(self._amount * rate)
 
-    def __rmul__(self, other: Union[Decimal, int, float, str]) -> "Money":
+    def __rmul__(self, other: Decimal | int | float | str) -> "Money":
         return self.__mul__(other)
 
-    def __truediv__(self, other: Union[Decimal, int, float, str]) -> "Money":
+    def __truediv__(self, other: Decimal | int | float | str) -> "Money":
         divisor = to_decimal(other)
         if divisor == Decimal("0"):
             raise ZeroDivisionError("Division by zero in Money")

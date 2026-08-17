@@ -209,7 +209,7 @@ def upgrade() -> None:
     op.create_table(
         "calculation_runs",
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
-        sa.Column("employee_id", sa.BigInteger(), nullable=False),
+        sa.Column("employee_id", sa.BigInteger(), nullable=True),
         sa.Column("financial_year", sa.String(length=20), nullable=False),
         sa.Column("regime", sa.String(length=10), nullable=False),
         sa.Column("status", sa.String(length=50), nullable=False, server_default="COMPLETED"),

@@ -1,5 +1,7 @@
 from decimal import Decimal
+
 import pytest
+
 from app.engine.common.errors import InvalidSalaryInputError
 from app.engine.dto.salary_dto import SalaryInput
 from app.engine.normalizer.salary_normalizer import SalaryNormalizer

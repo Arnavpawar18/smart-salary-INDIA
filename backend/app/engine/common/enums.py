@@ -1,12 +1,12 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class TaxRegime(str, Enum):
+class TaxRegime(StrEnum):
     OLD = "OLD"
     NEW = "NEW"
 
 
-class RuleStatus(str, Enum):
+class RuleStatus(StrEnum):
     DRAFT = "DRAFT"
     VERIFIED = "VERIFIED"
     ACTIVE = "ACTIVE"
@@ -14,7 +14,7 @@ class RuleStatus(str, Enum):
     RETIRED = "RETIRED"
 
 
-class CalculationStatus(str, Enum):
+class CalculationStatus(StrEnum):
     DRAFT = "DRAFT"
     CALCULATED = "CALCULATED"
     VERIFIED = "VERIFIED"
@@ -23,7 +23,7 @@ class CalculationStatus(str, Enum):
     ARCHIVED = "ARCHIVED"
 
 
-class LineItemCategory(str, Enum):
+class LineItemCategory(StrEnum):
     INCOME = "INCOME"
     EXEMPTION = "EXEMPTION"
     DEDUCTION = "DEDUCTION"
@@ -41,7 +41,7 @@ class LineItemCategory(str, Enum):
     TAKE_HOME = "TAKE_HOME"
 
 
-class LineItemType(str, Enum):
+class LineItemType(StrEnum):
     BASIC = "BASIC"
     DA = "DA"
     HRA = "HRA"
@@ -68,13 +68,13 @@ class LineItemType(str, Enum):
     ESTIMATED_TAKE_HOME = "ESTIMATED_TAKE_HOME"
 
 
-class Gender(str, Enum):
+class Gender(StrEnum):
     ALL = "ALL"
     MALE = "MALE"
     FEMALE = "FEMALE"
 
 
-class ResidentialStatus(str, Enum):
+class ResidentialStatus(StrEnum):
     RESIDENT = "RESIDENT"
     NON_RESIDENT = "NON_RESIDENT"
     NOT_ORDINARILY_RESIDENT = "NOT_ORDINARILY_RESIDENT"

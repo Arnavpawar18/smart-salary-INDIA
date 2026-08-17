@@ -1,4 +1,4 @@
-from typing import Tuple
+
 from sqlalchemy.orm import Session
 
 from app.engine.common.enums import TaxRegime
@@ -26,7 +26,7 @@ class RuleApplicabilityResolver:
         financial_year: str,
         regime: TaxRegime,
         state_code: str,
-    ) -> Tuple[TaxRuleSet, PfRuleSet, PtRuleSet]:
+    ) -> tuple[TaxRuleSet, PfRuleSet, PtRuleSet]:
         """Resolves immutable rule sets with fail-closed domain error checking."""
         tax_rules = self.tax_repo.get_tax_rule_set(financial_year, regime)
         pf_rules = self.pf_repo.get_pf_rule_set(financial_year)

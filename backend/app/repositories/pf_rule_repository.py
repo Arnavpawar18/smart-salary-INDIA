@@ -1,4 +1,4 @@
-from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,7 @@ class PfRuleRepository:
             PFRuleVersion.version_code.like(f"PFRV-{financial_year}%"),
             PFRuleVersion.status == "ACTIVE",
         )
-        pfrv: Optional[PFRuleVersion] = self.db.scalar(stmt)
+        pfrv: PFRuleVersion | None = self.db.scalar(stmt)
         if not pfrv or not pfrv.rules:
             # Fallback to current active rule if specific FY shell not distinct
             pfrv = self.db.scalar(select(PFRuleVersion).where(PFRuleVersion.status == "ACTIVE"))

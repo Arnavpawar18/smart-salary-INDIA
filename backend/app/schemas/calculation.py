@@ -1,27 +1,28 @@
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class SalaryComponentsRequest(BaseModel):
-    basic: Optional[Decimal] = Field(default=None, ge=0)
-    da: Optional[Decimal] = Field(default=None, ge=0)
-    hra: Optional[Decimal] = Field(default=None, ge=0)
-    special_allowance: Optional[Decimal] = Field(default=None, ge=0)
-    bonus: Optional[Decimal] = Field(default=None, ge=0)
-    other_allowances: Optional[Decimal] = Field(default=None, ge=0)
-    other_deductions: Optional[Decimal] = Field(default=None, ge=0)
+    basic: Decimal | None = Field(default=None, ge=0)
+    da: Decimal | None = Field(default=None, ge=0)
+    hra: Decimal | None = Field(default=None, ge=0)
+    special_allowance: Decimal | None = Field(default=None, ge=0)
+    bonus: Decimal | None = Field(default=None, ge=0)
+    other_allowances: Decimal | None = Field(default=None, ge=0)
+    other_deductions: Decimal | None = Field(default=None, ge=0)
 
 
 class CalculationRequest(BaseModel):
     financial_year: str = Field(default="2025-26")
     regime: str = Field(default="NEW")
     state_code: str = Field(default="KA")
-    annual_gross_salary: Optional[Decimal] = Field(default=None, ge=0)
-    monthly_gross_salary: Optional[Decimal] = Field(default=None, ge=0)
-    annual_ctc: Optional[Decimal] = Field(default=None, ge=0)
+    annual_gross_salary: Decimal | None = Field(default=None, ge=0)
+    monthly_gross_salary: Decimal | None = Field(default=None, ge=0)
+    annual_ctc: Decimal | None = Field(default=None, ge=0)
     age: int = Field(default=25, ge=18, le=100)
-    components: Optional[SalaryComponentsRequest] = None
+    components: SalaryComponentsRequest | None = None
     pf_opt_in_higher_wage: bool = Field(default=False)
     section_80c: Decimal = Field(default=Decimal("0.00"), ge=0)
     section_80d: Decimal = Field(default=Decimal("0.00"), ge=0)
@@ -36,17 +37,17 @@ class LineItemResponse(BaseModel):
     rate: str
     amount: str
     unit: str
-    rule_reference: Optional[str] = None
+    rule_reference: str | None = None
 
 
 class TraceStepResponse(BaseModel):
     step_number: int
     title: str
     description: str
-    inputs: Dict[str, str]
-    outputs: Dict[str, str]
-    formula: Optional[str] = None
-    legal_reference: Optional[str] = None
+    inputs: dict[str, str]
+    outputs: dict[str, str]
+    formula: str | None = None
+    legal_reference: str | None = None
 
 
 class CalculationResponse(BaseModel):
@@ -78,9 +79,9 @@ class CalculationResponse(BaseModel):
     estimated_annual_take_home: str
     estimated_monthly_take_home: str
 
-    assumptions: Dict[str, Any]
-    line_items: List[LineItemResponse]
-    trace_steps: List[TraceStepResponse]
+    assumptions: dict[str, Any]
+    line_items: list[LineItemResponse]
+    trace_steps: list[TraceStepResponse]
 
     tax_rule_version_code: str
     pf_rule_version_code: str

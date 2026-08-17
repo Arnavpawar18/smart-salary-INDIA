@@ -14,11 +14,11 @@ def test_home_page_renders():
 
 
 def test_calculator_page_renders():
-    """Verify GET /calculator returns 200 and calculator shell."""
+    """Verify GET /calculator returns 200 and calculator UI."""
     response = client.get("/calculator")
     assert response.status_code == 200
-    assert "Salary &amp; Tax Calculator" in response.text or "Salary & Tax Calculator" in response.text
-    assert "Annual CTC" in response.text
+    assert "Salary, Tax &amp; Take-Home Calculator" in response.text or "Salary, Tax & Take-Home Calculator" in response.text
+    assert "Annual Gross Salary" in response.text
 
 
 def test_system_status_page_renders():

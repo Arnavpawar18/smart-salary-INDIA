@@ -115,7 +115,7 @@ def test_real_postgres_seed_idempotency():
         assert tps_1 == 3
         assert trv_1 == 6
         assert pf_1 == 3
-        assert pt_1 == 1
+        assert pt_1 == 3
 
         # Run seed 2 (Idempotency assertion)
         seed_reference_data(session)

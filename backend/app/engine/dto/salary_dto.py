@@ -1,25 +1,23 @@
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Dict, Optional
-from app.engine.common.money import to_decimal
 
 
 @dataclass(frozen=True)
 class SalaryInput:
     """Raw user input for salary calculation."""
     financial_year: str
-    annual_ctc: Optional[Decimal] = None
-    annual_gross: Optional[Decimal] = None
-    monthly_gross: Optional[Decimal] = None
-    basic_salary: Optional[Decimal] = None
-    da: Optional[Decimal] = None
-    hra: Optional[Decimal] = None
-    special_allowance: Optional[Decimal] = None
-    bonus: Optional[Decimal] = None
-    other_allowances: Optional[Decimal] = None
-    other_employee_deductions: Optional[Decimal] = None
+    annual_ctc: Decimal | None = None
+    annual_gross: Decimal | None = None
+    monthly_gross: Decimal | None = None
+    basic_salary: Decimal | None = None
+    da: Decimal | None = None
+    hra: Decimal | None = None
+    special_allowance: Decimal | None = None
+    bonus: Decimal | None = None
+    other_allowances: Decimal | None = None
+    other_employee_deductions: Decimal | None = None
     pf_opt_in_higher_wage: bool = False
-    custom_components: Dict[str, Decimal] = field(default_factory=dict)
+    custom_components: dict[str, Decimal] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -35,7 +33,7 @@ class NormalizedSalary:
     other_employee_deductions: Decimal
     monthly_gross: Decimal
     pf_wage_base_monthly: Decimal
-    annual_ctc: Optional[Decimal] = None
+    annual_ctc: Decimal | None = None
 
     def to_dict(self) -> dict:
         return {

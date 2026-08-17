@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import List, Optional
+
 from app.engine.common.enums import Gender
 
 
@@ -15,9 +15,9 @@ class PtCalculationInput:
 class PtSlabRuleDTO:
     slab_order: int
     from_monthly_salary: Decimal
-    to_monthly_salary: Optional[Decimal]
+    to_monthly_salary: Decimal | None
     monthly_tax_amount: Decimal
-    february_tax_amount: Optional[Decimal]
+    february_tax_amount: Decimal | None
     gender_applicable: Gender
 
 
@@ -26,7 +26,7 @@ class PtRuleSet:
     state_code: str
     state_name: str
     rule_version_code: str
-    slabs: List[PtSlabRuleDTO]
+    slabs: list[PtSlabRuleDTO]
     source_citation: str
     source_document_hash: str
     rule_set_hash: str

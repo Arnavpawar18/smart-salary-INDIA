@@ -38,7 +38,7 @@ def test_seed_reference_data_idempotent(db_session: Session):
     assert tax_periods_count_1 == 3
     assert tax_rules_count_1 == 6  # 2 regimes * 3 FYs
     assert pf_rules_count_1 == 3
-    assert pt_rules_count_1 == 1
+    assert pt_rules_count_1 == 3  # KA, MH, TS verified states
 
     # Second seed run (Idempotency assertion)
     seed_reference_data(db_session)

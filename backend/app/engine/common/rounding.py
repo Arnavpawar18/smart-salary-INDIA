@@ -1,9 +1,8 @@
-from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR, ROUND_CEILING
-from enum import Enum
-from typing import Union
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
+from enum import StrEnum
 
 
-class RoundingMode(str, Enum):
+class RoundingMode(StrEnum):
     HALF_UP = "HALF_UP"
     FLOOR = "FLOOR"
     CEILING = "CEILING"
@@ -30,7 +29,7 @@ class RoundingPolicy:
 
     def round_currency(
         self,
-        value: Union[Decimal, int, float, str],
+        value: Decimal | int | float | str,
         mode: RoundingMode = RoundingMode.HALF_UP,
     ) -> Decimal:
         dec = Decimal(str(value)) if not isinstance(value, Decimal) else value
@@ -42,11 +41,11 @@ class RoundingPolicy:
             return dec.quantize(self._currency_unit, rounding=ROUND_CEILING)
         return dec.quantize(self._currency_unit, rounding=ROUND_HALF_UP)
 
-    def round_rate(self, value: Union[Decimal, int, float, str]) -> Decimal:
+    def round_rate(self, value: Decimal | int | float | str) -> Decimal:
         dec = Decimal(str(value)) if not isinstance(value, Decimal) else value
         return dec.quantize(self._rate_unit, rounding=ROUND_HALF_UP)
 
-    def round_to_nearest_ten(self, value: Union[Decimal, int, float, str]) -> Decimal:
+    def round_to_nearest_ten(self, value: Decimal | int | float | str) -> Decimal:
         """Section 288A/288B statutory rounding to nearest 10 rupees."""
         dec = Decimal(str(value)) if not isinstance(value, Decimal) else value
         # Divide by 10, round half up, multiply by 10

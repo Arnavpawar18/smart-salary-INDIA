@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from app.engine.common.money import quantize_currency
 from app.engine.dto.pf_dto import PfCalculationInput, PfCalculationResult, PfRuleSet
 

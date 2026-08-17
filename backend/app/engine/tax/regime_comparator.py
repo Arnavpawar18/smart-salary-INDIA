@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Dict, Tuple
 
 from app.engine.common.enums import TaxRegime
 from app.engine.dto.tax_dto import TaxCalculationInput, TaxRuleSet
@@ -18,7 +17,7 @@ class RegimeComparator:
         base_input: TaxCalculationInput,
         old_rules: TaxRuleSet,
         new_rules: TaxRuleSet,
-    ) -> Tuple[Dict[str, Decimal], Dict[str, Decimal], Decimal, TaxRegime, str]:
+    ) -> tuple[dict[str, Decimal], dict[str, Decimal], Decimal, TaxRegime, str]:
         # Calculate Old Regime
         old_inp = TaxCalculationInput(
             financial_year=base_input.financial_year,

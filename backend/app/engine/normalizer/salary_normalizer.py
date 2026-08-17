@@ -1,8 +1,8 @@
 from decimal import Decimal
-from typing import Optional
+
 from app.engine.common.errors import InvalidSalaryInputError
-from app.engine.common.money import to_decimal, quantize_currency
-from app.engine.dto.salary_dto import SalaryInput, NormalizedSalary
+from app.engine.common.money import quantize_currency, to_decimal
+from app.engine.dto.salary_dto import NormalizedSalary, SalaryInput
 
 
 class SalaryNormalizer:
@@ -20,7 +20,7 @@ class SalaryNormalizer:
                 raise InvalidSalaryInputError(f"Salary field '{attr}' cannot be negative: {val}")
 
         # Determine gross salary
-        annual_gross: Optional[Decimal] = None
+        annual_gross: Decimal | None = None
         if inp.annual_gross is not None and inp.annual_gross > Decimal("0"):
             annual_gross = quantize_currency(inp.annual_gross)
         elif inp.monthly_gross is not None and inp.monthly_gross > Decimal("0"):

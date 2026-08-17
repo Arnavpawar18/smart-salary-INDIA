@@ -1,4 +1,4 @@
-from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -46,7 +46,7 @@ class PtRuleRepository:
             ProfessionalTaxRuleVersion.state_id == state.id,
             ProfessionalTaxRuleVersion.status == "ACTIVE",
         )
-        ptrv: Optional[ProfessionalTaxRuleVersion] = self.db.scalar(stmt)
+        ptrv: ProfessionalTaxRuleVersion | None = self.db.scalar(stmt)
         if not ptrv or not ptrv.slabs:
             raise ProfessionalTaxRuleNotConfiguredError(
                 f"Professional Tax statutory rule is not verified/configured for state '{state.name}' ({state_code}). "
