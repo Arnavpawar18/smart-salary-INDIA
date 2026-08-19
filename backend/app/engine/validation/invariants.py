@@ -27,7 +27,9 @@ class FinancialInvariantsValidator:
         if annual_pt < Decimal("0.00"):
             raise CalculationInvariantViolationError(f"Professional tax cannot be negative: {annual_pt}")
 
-        expected_take_home = salary.annual_gross - total_tax - employee_pf - annual_pt - salary.other_employee_deductions
+        expected_take_home = (
+            salary.annual_gross - total_tax - employee_pf - annual_pt - salary.other_employee_deductions
+        )
         if abs(take_home_annual - expected_take_home) > Decimal("1.00"):
             raise CalculationInvariantViolationError(
                 f"Take-home reconciliation invariant failed: computed {take_home_annual}, expected {expected_take_home}"

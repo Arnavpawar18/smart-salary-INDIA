@@ -17,6 +17,7 @@ class TenantContext:
     Authoritative Context for the authenticated user within an enterprise organization.
     Enforces defense-in-depth tenant isolation across all enterprise services and queries.
     """
+
     organization_id: int
     user_id: int
     membership_id: int
@@ -68,17 +69,16 @@ def get_tenant_context(
                     detail="Access denied: user is not an active member of the requested organization.",
                 )
         except ValueError as e:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid X-Organization-Id header format") from e
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid X-Organization-Id header format"
+            ) from e
     else:
         target_membership = memberships[0]
 
     mem, org, role = target_membership
 
     # 3. Resolve permissions for role
-    perm_stmt = (
-        select(role_permissions.c.permission_id)
-        .where(role_permissions.c.role_id == role.id)
-    )
+    perm_stmt = select(role_permissions.c.permission_id).where(role_permissions.c.role_id == role.id)
     # We fetch permission names or IDs
     perm_ids = {str(pid) for pid in db.scalars(perm_stmt).all()}
 

@@ -7,6 +7,7 @@ from app.engine.common.enums import CalculationStatus, LineItemCategory, LineIte
 @dataclass(frozen=True)
 class CalculationAssumptions:
     """Explicit statutory assumptions explaining the scope of the calculation result."""
+
     salary_income_only: bool = True
     residential_status: str = "RESIDENT"
     age: int = 25
@@ -84,6 +85,7 @@ class CalculationTraceStepDTO:
 @dataclass(frozen=True)
 class VerifiedCalculationResult:
     """Canonical calculation output with complete financial breakdown, ledger, and trace."""
+
     engine_version: str
     rounding_policy_version: str
     status: CalculationStatus

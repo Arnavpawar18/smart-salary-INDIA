@@ -162,7 +162,9 @@ def login_user(
         raise HTTPException(status_code=403, detail="Account is deactivated")
 
     # Resolve primary role and employee_id
-    role_stmt = select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == user.id)
+    role_stmt = (
+        select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == user.id)
+    )
     role_name = db.scalar(role_stmt) or "EMPLOYEE"
     emp = db.scalar(select(Employee).where(Employee.user_id == user.id))
     employee_id = emp.id if emp else None
@@ -250,7 +252,9 @@ def refresh_session(
         raise HTTPException(status_code=401, detail=str(e)) from e
 
     # Fetch user role & employee
-    role_stmt = select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == user_id)
+    role_stmt = (
+        select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == user_id)
+    )
     role_name = db.scalar(role_stmt) or "EMPLOYEE"
     emp = db.scalar(select(Employee).where(Employee.user_id == user_id))
     employee_id = emp.id if emp else None
@@ -301,7 +305,11 @@ def change_password(
         user_agent=user_agent,
     )
 
-    role_stmt = select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == current_user.id)
+    role_stmt = (
+        select(Role.name)
+        .join(user_roles, Role.id == user_roles.c.role_id)
+        .where(user_roles.c.user_id == current_user.id)
+    )
     role_name = db.scalar(role_stmt) or "EMPLOYEE"
     emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
     employee_id = emp.id if emp else None
@@ -419,7 +427,11 @@ def get_authenticated_user_profile(
     db: Session = Depends(get_db),
 ):
     """Returns profile for currently authenticated user."""
-    role_stmt = select(Role.name).join(user_roles, Role.id == user_roles.c.role_id).where(user_roles.c.user_id == current_user.id)
+    role_stmt = (
+        select(Role.name)
+        .join(user_roles, Role.id == user_roles.c.role_id)
+        .where(user_roles.c.user_id == current_user.id)
+    )
     role_name = db.scalar(role_stmt) or "EMPLOYEE"
     emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
 
@@ -434,5 +446,7 @@ def get_authenticated_user_profile(
             "last_name": emp.last_name if emp else "",
             "work_email": emp.email if emp else "",
             "phone": emp.phone_number if emp else None,
-        } if emp else None,
+        }
+        if emp
+        else None,
     }

@@ -16,6 +16,7 @@ class Organization(Base, TimestampMixin):
     Enterprise Tenant entity.
     Statuses: PENDING_SETUP, ACTIVE, SUSPENDED, ARCHIVED
     """
+
     __tablename__ = "organizations"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -37,7 +38,9 @@ class Organization(Base, TimestampMixin):
 
     # Relationships
     primary_state: Mapped[Optional["State"]] = relationship("State")
-    memberships: Mapped[list["OrganizationMembership"]] = relationship("OrganizationMembership", back_populates="organization", cascade="all, delete-orphan")
+    memberships: Mapped[list["OrganizationMembership"]] = relationship(
+        "OrganizationMembership", back_populates="organization", cascade="all, delete-orphan"
+    )
     employees: Mapped[list["Employee"]] = relationship("Employee", back_populates="organization")
     departments: Mapped[list["Department"]] = relationship("Department", back_populates="organization")
     job_roles: Mapped[list["JobRole"]] = relationship("JobRole", back_populates="organization")
@@ -48,11 +51,16 @@ class OrganizationMembership(Base, TimestampMixin):
     Explicit user membership and role assignment within an organization.
     Statuses: ACTIVE, INACTIVE, INVITED
     """
+
     __tablename__ = "organization_memberships"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    organization_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    organization_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id"), nullable=False)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="ACTIVE", index=True)
     joined_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC), nullable=False)

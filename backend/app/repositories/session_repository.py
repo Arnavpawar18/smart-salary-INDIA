@@ -103,11 +103,7 @@ class SessionRepository:
             jti_uuid = uuid.UUID(jti)
         except ValueError:
             return
-        stmt = (
-            update(UserSession)
-            .where(UserSession.jti == jti_uuid)
-            .values(revoked_at=datetime.now(UTC))
-        )
+        stmt = update(UserSession).where(UserSession.jti == jti_uuid).values(revoked_at=datetime.now(UTC))
         self.db.execute(stmt)
         self.db.commit()
 

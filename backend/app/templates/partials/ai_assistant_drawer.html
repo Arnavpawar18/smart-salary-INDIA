@@ -1,0 +1,141 @@
+<!-- Floating AI Assistant Trigger Button -->
+<div class="fixed bottom-6 right-6 z-50">
+  <button id="ai-assistant-toggle-btn" onclick="toggleAIAssistant()" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-2xl shadow-cyan-500/30 flex items-center justify-center text-2xl transition-all duration-300 hover:scale-105 active:scale-95 group">
+    <span class="group-hover:rotate-12 transition-transform">🤖</span>
+  </button>
+</div>
+
+<!-- Slide-over Assistant Drawer -->
+<div id="ai-assistant-drawer" class="fixed inset-y-0 right-0 max-w-md w-full bg-slate-950/95 backdrop-blur-xl border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+  <!-- Header -->
+  <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-lg">
+        🤖
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-white">SmartSalary AI Assistant</h3>
+        <p class="text-[11px] text-slate-400">Grounded Statutory Intelligence</p>
+      </div>
+    </div>
+    <button onclick="toggleAIAssistant()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+      ✕
+    </button>
+  </div>
+
+  <!-- Messages Scroll Area -->
+  <div id="ai-chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 text-xs font-sans">
+    <!-- Welcome message -->
+    <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800/80 space-y-2 text-slate-300">
+      <p class="font-semibold text-white">Namaste! 👋</p>
+      <p class="leading-relaxed">I am your evidence-grounded financial assistant. Ask me questions about your tax slab, Section 87A rebate, EPF rules, or payslip discrepancies.</p>
+      <div class="pt-2 flex flex-wrap gap-1.5">
+        <button onclick="sendQuickQuery('What is the Section 87A rebate threshold?')" class="px-2.5 py-1 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 text-[10px] transition-colors">
+          Section 87A rebate?
+        </button>
+        <button onclick="sendQuickQuery('How is employee EPF calculated?')" class="px-2.5 py-1 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[10px] transition-colors">
+          EPF calculation?
+        </button>
+        <button onclick="sendQuickQuery('Explain my payslip reconciliation')" class="px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[10px] transition-colors">
+          Payslip reconciliation?
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Bar -->
+  <div class="p-4 border-t border-slate-800 bg-slate-900/60">
+    <form id="ai-chat-form" onsubmit="handleSendAIMessage(event)" class="flex gap-2">
+      <input type="text" id="ai-chat-input" placeholder="Ask about your salary, tax, or PF..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-colors" autocomplete="off">
+      <button type="submit" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-cyan-600/20 flex items-center justify-center">
+        Send
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+let currentSessionId = null;
+
+function toggleAIAssistant() {
+  const drawer = document.getElementById('ai-assistant-drawer');
+  drawer.classList.toggle('translate-x-full');
+}
+
+function sendQuickQuery(query) {
+  document.getElementById('ai-chat-input').value = query;
+  handleSendAIMessage(new Event('submit'));
+}
+
+async function handleSendAIMessage(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('ai-chat-input');
+  const query = input.value.trim();
+  if (!query) return;
+
+  input.value = '';
+  const messagesContainer = document.getElementById('ai-chat-messages');
+
+  // Append User message
+  const userMsgDiv = document.createElement('div');
+  userMsgDiv.className = "p-3.5 rounded-2xl bg-cyan-600/20 border border-cyan-500/30 text-slate-100 text-xs ml-6 leading-relaxed";
+  userMsgDiv.innerText = query;
+  messagesContainer.appendChild(userMsgDiv);
+
+  // Loading skeleton
+  const loadingDiv = document.createElement('div');
+  loadingDiv.id = "ai-loading-indicator";
+  loadingDiv.className = "p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 text-xs mr-6 flex items-center gap-2";
+  loadingDiv.innerHTML = `<span class="animate-pulse">⏳</span> Retrieving statutory evidence...`;
+  messagesContainer.appendChild(loadingDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  try {
+    const res = await fetch('/api/v1/chat/inquire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: query, session_id: currentSessionId }),
+    });
+
+    const indicator = document.getElementById('ai-loading-indicator');
+    if (indicator) indicator.remove();
+
+    if (!res.ok) {
+      const err = await res.json();
+      const errDiv = document.createElement('div');
+      errDiv.className = "p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs mr-6";
+      errDiv.innerText = err.detail || "Unable to retrieve response. Please try again.";
+      messagesContainer.appendChild(errDiv);
+      return;
+    }
+
+    const data = await res.json();
+    currentSessionId = data.session_id;
+
+    // Append AI Response
+    const asstMsgDiv = document.createElement('div');
+    asstMsgDiv.className = "p-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 text-xs mr-4 space-y-3 leading-relaxed";
+
+    // Format simple markdown into paragraphs
+    const formattedContent = data.response.replace(/\n\n/g, '<br><br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    let citationsHtml = '';
+    if (data.citations && data.citations.length > 0) {
+      citationsHtml = `<div class="pt-2.5 border-t border-slate-800/80 space-y-1">
+        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">Verified Statutory Citations:</span>
+        <div class="flex flex-wrap gap-1.5">
+          ${data.citations.map(c => `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-cyan-400 text-[10px] border border-slate-700 font-mono">📜 ${c.authority} • ${c.section_reference}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    asstMsgDiv.innerHTML = `<div>${formattedContent}</div>${citationsHtml}`;
+    messagesContainer.appendChild(asstMsgDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  } catch (err) {
+    const indicator = document.getElementById('ai-loading-indicator');
+    if (indicator) indicator.remove();
+    console.error("AI Inquiry error:", err);
+  }
+}
+</script>

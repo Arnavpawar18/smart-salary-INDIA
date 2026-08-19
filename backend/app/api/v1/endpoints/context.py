@@ -27,13 +27,15 @@ def get_ui_context(db: Session = Depends(get_db)):
     states_data = []
     for s in states:
         has_pt = s.id in active_pt_state_ids or s.code == "DL"  # Delhi is officially exempt
-        states_data.append({
-            "code": s.code,
-            "name": s.name,
-            "is_union_territory": s.is_union_territory,
-            "pt_configured": has_pt,
-            "pt_status_label": "Exempt" if s.code == "DL" else ("Configured" if has_pt else "Not Configured"),
-        })
+        states_data.append(
+            {
+                "code": s.code,
+                "name": s.name,
+                "is_union_territory": s.is_union_territory,
+                "pt_configured": has_pt,
+                "pt_status_label": "Exempt" if s.code == "DL" else ("Configured" if has_pt else "Not Configured"),
+            }
+        )
 
     departments = db.scalars(select(Department).order_by(Department.name)).all()
     depts_data = [{"code": d.code, "name": d.name} for d in departments]

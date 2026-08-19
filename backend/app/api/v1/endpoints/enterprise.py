@@ -26,35 +26,42 @@ def get_enterprise_dashboard(
     org_id = ctx.organization_id
 
     # 1. Headcount
-    headcount = db.scalar(
-        select(func.count(Employee.id)).where(
-            Employee.organization_id == org_id,
-            Employee.employment_status == "ACTIVE",
+    headcount = (
+        db.scalar(
+            select(func.count(Employee.id)).where(
+                Employee.organization_id == org_id,
+                Employee.employment_status == "ACTIVE",
+            )
         )
-    ) or 0
+        or 0
+    )
 
     # 2. Latest Payroll Run
     latest_run = db.scalar(
-        select(PayrollRun).where(
-            PayrollRun.organization_id == org_id
-        ).order_by(PayrollRun.created_at.desc())
+        select(PayrollRun).where(PayrollRun.organization_id == org_id).order_by(PayrollRun.created_at.desc())
     )
 
     # 3. Pending Declarations
-    pending_declarations = db.scalar(
-        select(func.count(TaxDeclaration.id)).where(
-            TaxDeclaration.organization_id == org_id,
-            TaxDeclaration.status.in_(["SUBMITTED", "UNDER_REVIEW"]),
+    pending_declarations = (
+        db.scalar(
+            select(func.count(TaxDeclaration.id)).where(
+                TaxDeclaration.organization_id == org_id,
+                TaxDeclaration.status.in_(["SUBMITTED", "UNDER_REVIEW"]),
+            )
         )
-    ) or 0
+        or 0
+    )
 
     # 4. Pending Compliance Events
-    pending_compliance = db.scalar(
-        select(func.count(StatutoryComplianceEvent.id)).where(
-            StatutoryComplianceEvent.organization_id == org_id,
-            StatutoryComplianceEvent.status == "PENDING",
+    pending_compliance = (
+        db.scalar(
+            select(func.count(StatutoryComplianceEvent.id)).where(
+                StatutoryComplianceEvent.organization_id == org_id,
+                StatutoryComplianceEvent.status == "PENDING",
+            )
         )
-    ) or 0
+        or 0
+    )
 
     return {
         "organization": {
@@ -72,7 +79,9 @@ def get_enterprise_dashboard(
             "total_net_pay": str(latest_run.total_net_pay) if latest_run else "0.00",
             "total_employer_cost": str(latest_run.total_employer_cost) if latest_run else "0.00",
             "result_hash": latest_run.result_hash if latest_run else None,
-        } if latest_run else None,
+        }
+        if latest_run
+        else None,
         "pending_declarations_count": pending_declarations,
         "pending_compliance_events_count": pending_compliance,
     }

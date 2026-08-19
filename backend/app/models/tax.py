@@ -32,20 +32,36 @@ class TaxRuleVersion(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(20), default="ACTIVE", nullable=False)  # DRAFT, ACTIVE, SUPERSEDED
 
     tax_period: Mapped["TaxPeriod"] = relationship("TaxPeriod", back_populates="rule_versions")
-    slabs: Mapped[list["TaxSlab"]] = relationship("TaxSlab", back_populates="rule_version", cascade="all, delete-orphan")
-    rebates: Mapped[list["TaxRebate"]] = relationship("TaxRebate", back_populates="rule_version", cascade="all, delete-orphan")
-    exemptions: Mapped[list["TaxExemption"]] = relationship("TaxExemption", back_populates="rule_version", cascade="all, delete-orphan")
-    deductions: Mapped[list["TaxDeduction"]] = relationship("TaxDeduction", back_populates="rule_version", cascade="all, delete-orphan")
-    surcharges: Mapped[list["TaxSurcharge"]] = relationship("TaxSurcharge", back_populates="rule_version", cascade="all, delete-orphan")
-    cess_rules: Mapped[list["TaxCessRule"]] = relationship("TaxCessRule", back_populates="rule_version", cascade="all, delete-orphan")
-    sources: Mapped[list["TaxSource"]] = relationship("TaxSource", back_populates="rule_version", cascade="all, delete-orphan")
+    slabs: Mapped[list["TaxSlab"]] = relationship(
+        "TaxSlab", back_populates="rule_version", cascade="all, delete-orphan"
+    )
+    rebates: Mapped[list["TaxRebate"]] = relationship(
+        "TaxRebate", back_populates="rule_version", cascade="all, delete-orphan"
+    )
+    exemptions: Mapped[list["TaxExemption"]] = relationship(
+        "TaxExemption", back_populates="rule_version", cascade="all, delete-orphan"
+    )
+    deductions: Mapped[list["TaxDeduction"]] = relationship(
+        "TaxDeduction", back_populates="rule_version", cascade="all, delete-orphan"
+    )
+    surcharges: Mapped[list["TaxSurcharge"]] = relationship(
+        "TaxSurcharge", back_populates="rule_version", cascade="all, delete-orphan"
+    )
+    cess_rules: Mapped[list["TaxCessRule"]] = relationship(
+        "TaxCessRule", back_populates="rule_version", cascade="all, delete-orphan"
+    )
+    sources: Mapped[list["TaxSource"]] = relationship(
+        "TaxSource", back_populates="rule_version", cascade="all, delete-orphan"
+    )
 
 
 class TaxSlab(Base, TimestampMixin):
     __tablename__ = "tax_slabs"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     slab_order: Mapped[int] = mapped_column(nullable=False)
     from_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     to_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)  # NULL for infinite bracket
@@ -58,7 +74,9 @@ class TaxRebate(Base, TimestampMixin):
     __tablename__ = "tax_rebates"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     section: Mapped[str] = mapped_column(String(50), nullable=False)  # e.g., '87A'
     threshold_taxable_income: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     max_rebate_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
@@ -70,7 +88,9 @@ class TaxExemption(Base, TimestampMixin):
     __tablename__ = "tax_exemptions"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     code: Mapped[str] = mapped_column(String(50), nullable=False)  # e.g., 'HRA', 'STANDARD_DEDUCTION', 'LTA'
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     max_limit: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
@@ -83,7 +103,9 @@ class TaxDeduction(Base, TimestampMixin):
     __tablename__ = "tax_deductions"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     section: Mapped[str] = mapped_column(String(50), nullable=False)  # e.g., '80C', '80D', '80CCD(1B)'
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     max_limit: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
@@ -96,7 +118,9 @@ class TaxSurcharge(Base, TimestampMixin):
     __tablename__ = "tax_surcharges"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     from_income: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     to_income: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     surcharge_rate: Mapped[Decimal] = mapped_column(Numeric(10, 4), nullable=False)  # e.g., 0.1000 for 10%
@@ -109,7 +133,9 @@ class TaxCessRule(Base, TimestampMixin):
     __tablename__ = "tax_cess_rules"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     name: Mapped[str] = mapped_column(String(100), default="Health and Education Cess", nullable=False)
     cess_rate: Mapped[Decimal] = mapped_column(Numeric(10, 4), nullable=False)  # e.g., 0.0400 for 4%
 
@@ -120,7 +146,9 @@ class TaxSource(Base, TimestampMixin):
     __tablename__ = "tax_sources"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    tax_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    tax_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)  # e.g., 'Finance Act 2024'
     authority: Mapped[str] = mapped_column(String(100), default="CBDT / Ministry of Finance", nullable=False)
     reference_url: Mapped[str | None] = mapped_column(String(500), nullable=True)

@@ -7,6 +7,7 @@ from app.engine.common.enums import ResidentialStatus, TaxRegime
 @dataclass(frozen=True)
 class TaxCalculationInput:
     """Input parameters passed to the pure Tax Engine."""
+
     financial_year: str
     regime: TaxRegime
     annual_gross_salary: Decimal
@@ -62,6 +63,7 @@ class TaxCessRuleDTO:
 @dataclass(frozen=True)
 class TaxRuleSet:
     """Immutable statutory tax rule set hydrated from database with source provenance."""
+
     rule_version_code: str
     financial_year: str
     regime: TaxRegime

@@ -59,39 +59,41 @@ class DashboardService:
                 pf = snap_res.get("annual_employee_pf", "0.00")
                 pt = snap_res.get("annual_pt", "0.00")
 
-                eff_tax_rate = (
-                    (tax / float(annual_gross) * 100)
-                    if float(annual_gross) > 0
-                    else 0.0
-                )
+                eff_tax_rate = (tax / float(annual_gross) * 100) if float(annual_gross) > 0 else 0.0
 
-                fy_trend.append({
-                    "financial_year": run.financial_year,
-                    "regime": run.regime,
-                    "annual_gross": annual_gross,
-                    "annual_gross_formatted": format_inr(annual_gross),
-                    "taxable_income": str(taxable),
-                    "taxable_income_formatted": format_inr(taxable),
-                    "tax": str(tax),
-                    "tax_formatted": format_inr(tax),
-                    "employee_pf": pf,
-                    "employee_pf_formatted": format_inr(pf),
-                    "pt": pt,
-                    "pt_formatted": format_inr(pt),
-                    "take_home": str(take_home),
-                    "take_home_formatted": format_inr(take_home),
-                    "effective_tax_rate": round(eff_tax_rate, 2),
-                    "calculation_id": run.id,
-                })
+                fy_trend.append(
+                    {
+                        "financial_year": run.financial_year,
+                        "regime": run.regime,
+                        "annual_gross": annual_gross,
+                        "annual_gross_formatted": format_inr(annual_gross),
+                        "taxable_income": str(taxable),
+                        "taxable_income_formatted": format_inr(taxable),
+                        "tax": str(tax),
+                        "tax_formatted": format_inr(tax),
+                        "employee_pf": pf,
+                        "employee_pf_formatted": format_inr(pf),
+                        "pt": pt,
+                        "pt_formatted": format_inr(pt),
+                        "take_home": str(take_home),
+                        "take_home_formatted": format_inr(take_home),
+                        "effective_tax_rate": round(eff_tax_rate, 2),
+                        "calculation_id": run.id,
+                    }
+                )
 
         # 4. What Changed Year-over-Year (if at least 2 distinct FYs exist)
         what_changed = None
         if len(fy_trend) >= 2:
             current_snap = self.db.scalar(
-                select(CalculationSnapshot).where(CalculationSnapshot.calculation_run_id == fy_trend[0]["calculation_id"])
+                select(CalculationSnapshot).where(
+                    CalculationSnapshot.calculation_run_id == fy_trend[0]["calculation_id"]
+                )
             )
             prev_snap = self.db.scalar(
-                select(CalculationSnapshot).where(CalculationSnapshot.calculation_run_id == fy_trend[1]["calculation_id"])
+                select(CalculationSnapshot).where(
+                    CalculationSnapshot.calculation_run_id == fy_trend[1]["calculation_id"]
+                )
             )
             if current_snap and prev_snap:
                 what_changed = ScenarioService.compute_what_changed_delta(

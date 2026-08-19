@@ -32,13 +32,15 @@ class SlabCalculator:
                 tax_in_slab = quantize_currency(taxable_in_slab * rate)
                 total_tax += tax_in_slab
 
-            slab_breakdowns.append({
-                "slab_order": slab.slab_order,
-                "from_amount": from_amt,
-                "to_amount": to_amt,
-                "tax_rate": rate,
-                "taxable_in_slab": taxable_in_slab,
-                "tax_in_slab": tax_in_slab,
-            })
+            slab_breakdowns.append(
+                {
+                    "slab_order": slab.slab_order,
+                    "from_amount": from_amt,
+                    "to_amount": to_amt,
+                    "tax_rate": rate,
+                    "taxable_in_slab": taxable_in_slab,
+                    "tax_in_slab": tax_in_slab,
+                }
+            )
 
         return total_tax, slab_breakdowns

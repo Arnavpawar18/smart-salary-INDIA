@@ -50,7 +50,11 @@ class MarginalReliefCalculator:
 
         # Find matching threshold
         matching_rule = next(
-            (r for r in surcharge_rules if r.from_income <= taxable_income and (r.to_income is None or taxable_income <= r.to_income)),
+            (
+                r
+                for r in surcharge_rules
+                if r.from_income <= taxable_income and (r.to_income is None or taxable_income <= r.to_income)
+            ),
             None,
         )
         if not matching_rule or not matching_rule.marginal_relief_applicable:

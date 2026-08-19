@@ -34,6 +34,11 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# OWASP ASVS Security Headers Middleware
+from app.core.security_headers import SecurityHeadersMiddleware
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Static and Templates Directories
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -261,6 +266,29 @@ def page_security_center(
             "active_page": "security",
             "current_user": current_user,
             "sessions": sessions,
+        },
+    )
+
+
+@app.get("/payslips", response_class=HTMLResponse)
+def page_payslips(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Authenticated Payslip Intelligence & Three-Way Reconciliation Portal."""
+    from app.services.payslip_service import PayslipService
+
+    service = PayslipService(db)
+    docs = service.repo.list_employee_documents(current_user.employee_id) if current_user.employee_id else []
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/payslips.html",
+        context={
+            "active_page": "payslips",
+            "current_user": current_user,
+            "documents": docs,
         },
     )
 

@@ -162,9 +162,7 @@ def get_calculation_detail(
     if not run:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Calculation not found or unauthorized")
 
-    snapshot = db.scalar(
-        select(CalculationSnapshot).where(CalculationSnapshot.calculation_run_id == run.id)
-    )
+    snapshot = db.scalar(select(CalculationSnapshot).where(CalculationSnapshot.calculation_run_id == run.id))
 
     return {
         "id": run.id,
@@ -183,6 +181,8 @@ def get_calculation_detail(
             "result_hash": snapshot.result_hash if snapshot else "",
             "engine_version": snapshot.engine_version if snapshot else "1.0.0",
             "rounding_policy_version": snapshot.rounding_policy_version if snapshot else "1.0.0",
-        } if snapshot else None,
+        }
+        if snapshot
+        else None,
         "created_at": run.created_at.isoformat() if run.created_at else None,
     }

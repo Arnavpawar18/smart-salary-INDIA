@@ -18,15 +18,16 @@ class PayrollPeriod(Base, TimestampMixin):
     Monthly enterprise payroll processing cycle (e.g. FY 2026-27 period '2026-04').
     Statuses: OPEN, INPUT_COLLECTION, CALCULATING, CALCULATED, UNDER_REVIEW, APPROVED, PROCESSING, PROCESSED, LOCKED, CLOSED, REOPEN_REQUESTED, REOPENED
     """
+
     __tablename__ = "payroll_periods"
-    __table_args__ = (
-        UniqueConstraint("organization_id", "period_code", name="uq_payroll_period_org_code"),
-    )
+    __table_args__ = (UniqueConstraint("organization_id", "period_code", name="uq_payroll_period_org_code"),)
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    organization_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     financial_year: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # e.g., '2026-27'
-    period_code: Mapped[str] = mapped_column(String(20), nullable=False, index=True)     # e.g., '2026-04'
+    period_code: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # e.g., '2026-04'
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     pay_date: Mapped[date] = mapped_column(Date, nullable=False)
@@ -40,7 +41,9 @@ class PayrollPeriod(Base, TimestampMixin):
 
     # Relationships
     organization: Mapped["Organization"] = relationship("Organization")
-    payroll_runs: Mapped[list["PayrollRun"]] = relationship("PayrollRun", back_populates="payroll_period", cascade="all, delete-orphan")
+    payroll_runs: Mapped[list["PayrollRun"]] = relationship(
+        "PayrollRun", back_populates="payroll_period", cascade="all, delete-orphan"
+    )
 
 
 class PayrollRun(Base, TimestampMixin):
@@ -48,16 +51,23 @@ class PayrollRun(Base, TimestampMixin):
     Authoritative Payroll Run for an organization & period.
     Idempotency key: (organization_id, payroll_period_id, run_version)
     """
+
     __tablename__ = "payroll_runs"
     __table_args__ = (
         UniqueConstraint("organization_id", "payroll_period_id", "run_version", name="uq_payroll_run_idempotency"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    organization_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
-    payroll_period_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("payroll_periods.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    payroll_period_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("payroll_periods.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     run_version: Mapped[int] = mapped_column(BigInteger, default=1, nullable=False)
-    status: Mapped[str] = mapped_column(String(30), default="DRAFT", nullable=False, index=True)  # DRAFT, CALCULATED, HR_REVIEW, APPROVED, LOCKED
+    status: Mapped[str] = mapped_column(
+        String(30), default="DRAFT", nullable=False, index=True
+    )  # DRAFT, CALCULATED, HR_REVIEW, APPROVED, LOCKED
 
     # Aggregated Financial Totals (Verified against sum of run items)
     total_gross_earnings: Mapped[Decimal] = mapped_column(Numeric(18, 2), default=Decimal("0.00"), nullable=False)
@@ -73,12 +83,18 @@ class PayrollRun(Base, TimestampMixin):
     input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     result_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     engine_version: Mapped[str] = mapped_column(String(50), default="CALC-1.0.0", nullable=False)
-    created_by: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    approved_by: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    approved_by: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
     # Relationships
     payroll_period: Mapped["PayrollPeriod"] = relationship("PayrollPeriod", back_populates="payroll_runs")
-    items: Mapped[list["PayrollRunItem"]] = relationship("PayrollRunItem", back_populates="payroll_run", cascade="all, delete-orphan")
+    items: Mapped[list["PayrollRunItem"]] = relationship(
+        "PayrollRunItem", back_populates="payroll_run", cascade="all, delete-orphan"
+    )
 
 
 class PayrollRunItem(Base, TimestampMixin):
@@ -86,16 +102,21 @@ class PayrollRunItem(Base, TimestampMixin):
     Individual employee payroll line item.
     Directly links to Phase 2 CalculationRun and CalculationSnapshot.
     """
+
     __tablename__ = "payroll_run_items"
-    __table_args__ = (
-        UniqueConstraint("payroll_run_id", "employee_id", name="uq_payroll_item_emp"),
-    )
+    __table_args__ = (UniqueConstraint("payroll_run_id", "employee_id", name="uq_payroll_item_emp"),)
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    payroll_run_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("payroll_runs.id", ondelete="CASCADE"), nullable=False, index=True)
-    employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    payroll_run_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("payroll_runs.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    employee_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     calculation_run_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("calculation_runs.id"), nullable=True)
-    calculation_snapshot_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("calculation_snapshots.id"), nullable=True)
+    calculation_snapshot_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("calculation_snapshots.id"), nullable=True
+    )
 
     # Canonical 3-View Accounting Breakdown
     monthly_gross: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)

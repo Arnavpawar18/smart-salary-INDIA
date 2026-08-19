@@ -1,4 +1,3 @@
-
 from sqlalchemy.orm import Session
 
 from app.engine.common.enums import TaxRegime

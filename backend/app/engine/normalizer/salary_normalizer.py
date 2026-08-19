@@ -56,7 +56,9 @@ class SalaryNormalizer:
             hra = quantize_currency(annual_gross * cls.STANDARD_HRA_RATIO)
             special = quantize_currency(annual_gross - (basic + hra))
         else:
-            raise InvalidSalaryInputError("At least one positive salary amount (annual_gross, monthly_gross, or annual_ctc) must be provided.")
+            raise InvalidSalaryInputError(
+                "At least one positive salary amount (annual_gross, monthly_gross, or annual_ctc) must be provided."
+            )
 
         if annual_gross <= Decimal("0"):
             raise InvalidSalaryInputError("Annual gross salary must be greater than zero.")

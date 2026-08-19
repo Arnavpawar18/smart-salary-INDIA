@@ -41,9 +41,17 @@ class CalculationRepository:
         self.db.flush()
 
         # Look up rule version IDs
-        trv_id = self.db.scalar(select(TaxRuleVersion.id).where(TaxRuleVersion.version_code == result.tax_rule_version_code))
-        pfrv_id = self.db.scalar(select(PFRuleVersion.id).where(PFRuleVersion.version_code == result.pf_rule_version_code))
-        ptrv_id = self.db.scalar(select(ProfessionalTaxRuleVersion.id).where(ProfessionalTaxRuleVersion.version_code == result.pt_rule_version_code))
+        trv_id = self.db.scalar(
+            select(TaxRuleVersion.id).where(TaxRuleVersion.version_code == result.tax_rule_version_code)
+        )
+        pfrv_id = self.db.scalar(
+            select(PFRuleVersion.id).where(PFRuleVersion.version_code == result.pf_rule_version_code)
+        )
+        ptrv_id = self.db.scalar(
+            select(ProfessionalTaxRuleVersion.id).where(
+                ProfessionalTaxRuleVersion.version_code == result.pt_rule_version_code
+            )
+        )
 
         # 2. Create CalculationSnapshot
         snapshot = CalculationSnapshot(

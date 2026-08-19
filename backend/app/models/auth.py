@@ -47,7 +47,9 @@ class Role(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     users: Mapped[list["User"]] = relationship("User", secondary=user_roles, back_populates="roles")
-    permissions: Mapped[list["Permission"]] = relationship("Permission", secondary=role_permissions, back_populates="roles")
+    permissions: Mapped[list["Permission"]] = relationship(
+        "Permission", secondary=role_permissions, back_populates="roles"
+    )
 
 
 class Permission(Base, TimestampMixin):

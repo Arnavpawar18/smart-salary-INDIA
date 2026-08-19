@@ -89,7 +89,11 @@ class TraceBuilder:
                 step_number=1,
                 title="Gross Salary Computation",
                 description="Aggregated all salary components to determine annual gross salary.",
-                inputs={"Basic": f"₹{salary.basic_salary:,.2f}", "HRA": f"₹{salary.hra:,.2f}", "Special": f"₹{salary.special_allowance:,.2f}"},
+                inputs={
+                    "Basic": f"₹{salary.basic_salary:,.2f}",
+                    "HRA": f"₹{salary.hra:,.2f}",
+                    "Special": f"₹{salary.special_allowance:,.2f}",
+                },
                 outputs={"Gross Salary": f"₹{salary.annual_gross:,.2f}"},
                 formula="Gross Salary = Basic + HRA + Special Allowance + Other Allowances",
             )
@@ -204,7 +208,11 @@ class TraceBuilder:
                 step_number=3,
                 title="Tax Liability & Cess Computation",
                 description="Computed bracket tax, applied Section 87A rebate and 4% Health & Education cess.",
-                inputs={"Taxable Income": f"₹{taxable_inc:,.2f}", "Slab Tax": f"₹{slab_tax:,.2f}", "Rebate 87A": f"₹{rebate:,.2f}"},
+                inputs={
+                    "Taxable Income": f"₹{taxable_inc:,.2f}",
+                    "Slab Tax": f"₹{slab_tax:,.2f}",
+                    "Rebate 87A": f"₹{rebate:,.2f}",
+                },
                 outputs={"Cess (4%)": f"₹{cess:,.2f}", "Total Annual Tax Liability": f"₹{total_tax:,.2f}"},
                 formula="Total Tax = round_to_10((Slab Tax - Rebate + Surcharge) * 1.04)",
                 legal_reference="Section 115BAC & Section 288B, Income-tax Act, 1961",
@@ -271,7 +279,10 @@ class TraceBuilder:
                     "Employee PF": f"₹{emp_pf:,.2f}",
                     "Professional Tax": f"₹{pt_annual:,.2f}",
                 },
-                outputs={"Estimated Annual Take-Home": f"₹{take_home_annual:,.2f}", "Monthly Take-Home": f"₹{take_home_annual/Decimal('12'):,.2f}"},
+                outputs={
+                    "Estimated Annual Take-Home": f"₹{take_home_annual:,.2f}",
+                    "Monthly Take-Home": f"₹{take_home_annual / Decimal('12'):,.2f}",
+                },
                 formula="Take-Home = Gross Salary - Tax Liability - Employee PF - Professional Tax - Other Employee Deductions",
             )
         )

@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -87,7 +86,7 @@ class TaxRuleRepository:
             for c in trv.cess_rules
         ]
 
-        source_citation = f"CBDT / Income Tax Department (AY {financial_year[:4]}-{int(financial_year[:4])+1})"
+        source_citation = f"CBDT / Income Tax Department (AY {financial_year[:4]}-{int(financial_year[:4]) + 1})"
         source_doc_hash = compute_sha256_hash(f"ITD-{financial_year}-{regime.value}")
 
         raw_rule_dict = {
@@ -95,7 +94,9 @@ class TaxRuleRepository:
             "financial_year": financial_year,
             "regime": regime.value,
             "slabs": [(s.slab_order, str(s.from_amount), str(s.to_amount), str(s.tax_rate)) for s in slabs_dto],
-            "rebates": [(r.section_code, str(r.taxable_income_threshold), str(r.max_rebate_amount)) for r in rebates_dto],
+            "rebates": [
+                (r.section_code, str(r.taxable_income_threshold), str(r.max_rebate_amount)) for r in rebates_dto
+            ],
             "deductions": [(d.deduction_code, str(d.max_limit)) for d in deductions_dto],
             "cess": [(c.cess_name, str(c.cess_rate)) for c in cess_dto],
         }

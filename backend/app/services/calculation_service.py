@@ -146,7 +146,9 @@ class CalculationService:
         result_hash = compute_sha256_hash(raw_result_summary)
 
         # Combined rule set hash
-        combined_rule_hash = compute_sha256_hash(tax_rules.rule_set_hash + pf_rules.rule_set_hash + pt_rules.rule_set_hash)
+        combined_rule_hash = compute_sha256_hash(
+            tax_rules.rule_set_hash + pf_rules.rule_set_hash + pt_rules.rule_set_hash
+        )
 
         verified_result = VerifiedCalculationResult(
             engine_version=self.ENGINE_VERSION,
@@ -200,8 +202,12 @@ class CalculationService:
         age: int = 25,
         persist: bool = False,
     ) -> RegimeComparisonResult:
-        old_res = self.calculate_salary(salary_input, regime=TaxRegime.OLD, state_code=state_code, age=age, persist=persist)
-        new_res = self.calculate_salary(salary_input, regime=TaxRegime.NEW, state_code=state_code, age=age, persist=persist)
+        old_res = self.calculate_salary(
+            salary_input, regime=TaxRegime.OLD, state_code=state_code, age=age, persist=persist
+        )
+        new_res = self.calculate_salary(
+            salary_input, regime=TaxRegime.NEW, state_code=state_code, age=age, persist=persist
+        )
 
         diff = abs(old_res.total_annual_tax_liability - new_res.total_annual_tax_liability)
         if new_res.total_annual_tax_liability < old_res.total_annual_tax_liability:

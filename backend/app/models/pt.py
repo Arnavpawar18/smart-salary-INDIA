@@ -22,19 +22,27 @@ class ProfessionalTaxRuleVersion(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(20), default="ACTIVE", nullable=False)
 
     state: Mapped["State"] = relationship("State")
-    slabs: Mapped[list["ProfessionalTaxSlab"]] = relationship("ProfessionalTaxSlab", back_populates="rule_version", cascade="all, delete-orphan")
+    slabs: Mapped[list["ProfessionalTaxSlab"]] = relationship(
+        "ProfessionalTaxSlab", back_populates="rule_version", cascade="all, delete-orphan"
+    )
 
 
 class ProfessionalTaxSlab(Base, TimestampMixin):
     __tablename__ = "professional_tax_slabs"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    pt_rule_version_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("professional_tax_rule_versions.id", ondelete="CASCADE"), nullable=False)
+    pt_rule_version_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("professional_tax_rule_versions.id", ondelete="CASCADE"), nullable=False
+    )
     slab_order: Mapped[int] = mapped_column(nullable=False)
     from_monthly_salary: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     to_monthly_salary: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)  # NULL for upper bound
     monthly_tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
-    february_tax_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)  # Special rate for Feb (e.g., MH: Rs 300)
+    february_tax_amount: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 2), nullable=True
+    )  # Special rate for Feb (e.g., MH: Rs 300)
     gender_applicable: Mapped[str] = mapped_column(String(20), default="ALL", nullable=False)  # ALL, MALE, FEMALE
 
-    rule_version: Mapped["ProfessionalTaxRuleVersion"] = relationship("ProfessionalTaxRuleVersion", back_populates="slabs")
+    rule_version: Mapped["ProfessionalTaxRuleVersion"] = relationship(
+        "ProfessionalTaxRuleVersion", back_populates="slabs"
+    )

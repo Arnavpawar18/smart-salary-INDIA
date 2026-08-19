@@ -38,14 +38,18 @@ class SalaryRecord(Base, TimestampMixin):
     currency: Mapped[str] = mapped_column(String(10), default="INR", nullable=False)
 
     employee: Mapped["Employee"] = relationship("Employee", back_populates="salary_records")
-    components: Mapped[list["SalaryComponent"]] = relationship("SalaryComponent", back_populates="salary_record", cascade="all, delete-orphan")
+    components: Mapped[list["SalaryComponent"]] = relationship(
+        "SalaryComponent", back_populates="salary_record", cascade="all, delete-orphan"
+    )
 
 
 class SalaryComponent(Base, TimestampMixin):
     __tablename__ = "salary_components"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    salary_record_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("salary_records.id", ondelete="CASCADE"), nullable=False)
+    salary_record_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("salary_records.id", ondelete="CASCADE"), nullable=False
+    )
     name: Mapped[str] = mapped_column(String(100), nullable=False)  # e.g., Basic, HRA, Special Allowance
     component_type: Mapped[str] = mapped_column(String(50), nullable=False)  # EARNING, DEDUCTION, REIMBURSEMENT
     monthly_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)

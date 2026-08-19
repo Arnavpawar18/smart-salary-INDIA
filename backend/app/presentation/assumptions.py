@@ -29,7 +29,7 @@ class QuickEstimateAssumptionSet:
     ) -> "QuickEstimateAssumptionSet":
         if is_quick_mode:
             bullets = [
-                f"Basic salary derived as 50% of monthly gross (₹{normalized.basic_salary/Decimal('12'):,.2f}/mo) for PF wage evaluation.",
+                f"Basic salary derived as 50% of monthly gross (₹{normalized.basic_salary / Decimal('12'):,.2f}/mo) for PF wage evaluation.",
                 "Standard statutory deduction under Section 16(ia) automatically applied.",
                 "No additional Chapter VI-A investments (80C/80D) or HRA exemptions assumed in Quick Mode.",
                 "Provident Fund capped at statutory ₹15,000 monthly wage ceiling.",
@@ -55,7 +55,9 @@ class QuickEstimateAssumptionSet:
             return cls(
                 is_quick_mode=False,
                 basic_salary_percentage_derived="Explicit Component Breakdown",
-                additional_allowances_assumed=normalized.special_allowance + normalized.bonus + normalized.other_allowances,
+                additional_allowances_assumed=normalized.special_allowance
+                + normalized.bonus
+                + normalized.other_allowances,
                 additional_deductions_assumed=normalized.other_employee_deductions,
                 pf_applicability_assumed="Explicit Basic Base",
                 regime_default_applied=regime_str,

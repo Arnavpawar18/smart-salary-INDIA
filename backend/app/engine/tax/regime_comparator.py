@@ -61,6 +61,8 @@ class RegimeComparator:
             note = f"Old Tax Regime results in lower estimated tax liability by ₹{tax_diff:,.2f} based on the claimed Chapter VI-A deductions."
         else:
             recommended = TaxRegime.NEW
-            note = "Both Old and New regimes result in identical estimated tax liability for the supplied income profile."
+            note = (
+                "Both Old and New regimes result in identical estimated tax liability for the supplied income profile."
+            )
 
         return old_res, new_res, tax_diff, recommended, note

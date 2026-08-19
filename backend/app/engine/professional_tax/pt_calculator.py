@@ -35,9 +35,7 @@ class PtCalculator:
         else:
             monthly_pt = matching_slab.monthly_tax_amount
             february_pt = (
-                matching_slab.february_tax_amount
-                if matching_slab.february_tax_amount is not None
-                else monthly_pt
+                matching_slab.february_tax_amount if matching_slab.february_tax_amount is not None else monthly_pt
             )
 
         # 11 months standard + 1 month February

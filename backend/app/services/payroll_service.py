@@ -103,10 +103,12 @@ class PayrollProcessingService:
         for emp in employees:
             # Fetch active compensation for period pay date
             active_comp = self.db.scalar(
-                select(SalaryRecord).where(
+                select(SalaryRecord)
+                .where(
                     SalaryRecord.employee_id == emp.id,
                     SalaryRecord.effective_from <= period.pay_date,
-                ).order_by(SalaryRecord.effective_from.desc())
+                )
+                .order_by(SalaryRecord.effective_from.desc())
             )
             if not active_comp:
                 continue
@@ -154,9 +156,9 @@ class PayrollProcessingService:
 
             # Snapshot record link
             snap = self.db.scalar(
-                select(CalculationSnapshot).where(
-                    CalculationSnapshot.input_hash == calc_result.input_hash
-                ).order_by(CalculationSnapshot.created_at.desc())
+                select(CalculationSnapshot)
+                .where(CalculationSnapshot.input_hash == calc_result.input_hash)
+                .order_by(CalculationSnapshot.created_at.desc())
             )
             calc_run_id = snap.calculation_run_id if snap else None
 
@@ -194,17 +196,24 @@ class PayrollProcessingService:
             tot_net += net_pay
             tot_empr_cost += employer_cost
 
-            items_payload.append({
-                "employee_id": emp.id,
-                "gross": str(monthly_gross),
-                "net": str(net_pay),
-                "tds": str(monthly_tax),
-                "pf": str(monthly_epf),
-            })
+            items_payload.append(
+                {
+                    "employee_id": emp.id,
+                    "gross": str(monthly_gross),
+                    "net": str(net_pay),
+                    "tds": str(monthly_tax),
+                    "pf": str(monthly_epf),
+                }
+            )
 
         # Cryptographic Provenance Hash
-        inp_str = json.dumps({"org_id": organization_id, "period": period.period_code, "ver": run_version, "emps": len(employees)}, sort_keys=True)
-        res_str = json.dumps({"tot_gross": str(tot_gross), "tot_net": str(tot_net), "items": items_payload}, sort_keys=True)
+        inp_str = json.dumps(
+            {"org_id": organization_id, "period": period.period_code, "ver": run_version, "emps": len(employees)},
+            sort_keys=True,
+        )
+        res_str = json.dumps(
+            {"tot_gross": str(tot_gross), "tot_net": str(tot_net), "items": items_payload}, sort_keys=True
+        )
 
         payroll_run.total_gross_earnings = tot_gross
         payroll_run.total_employee_deductions = tot_emp_ded

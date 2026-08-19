@@ -17,7 +17,11 @@ class SurchargeCalculator:
             return Decimal("0.00")
 
         matching_rule = next(
-            (r for r in surcharge_rules if r.from_income <= taxable_income and (r.to_income is None or taxable_income <= r.to_income)),
+            (
+                r
+                for r in surcharge_rules
+                if r.from_income <= taxable_income and (r.to_income is None or taxable_income <= r.to_income)
+            ),
             None,
         )
 

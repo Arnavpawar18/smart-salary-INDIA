@@ -62,6 +62,7 @@ class CalculationSaveService:
         # 3. Create immutable calculation snapshot
         import hashlib
         import json
+
         snap_str = json.dumps(result_snapshot, sort_keys=True)
         h = hashlib.sha256(snap_str.encode("utf-8")).hexdigest()
         snapshot = CalculationSnapshot(

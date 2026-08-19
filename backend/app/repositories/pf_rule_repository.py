@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,7 +23,9 @@ class PfRuleRepository:
             # Fallback to current active rule if specific FY shell not distinct
             pfrv = self.db.scalar(select(PFRuleVersion).where(PFRuleVersion.status == "ACTIVE"))
             if not pfrv or not pfrv.rules:
-                raise RuleNotFoundError(f"No active statutory EPFO PF rule version found for Financial Year '{financial_year}'.")
+                raise RuleNotFoundError(
+                    f"No active statutory EPFO PF rule version found for Financial Year '{financial_year}'."
+                )
 
         rule = pfrv.rules[0]
         source_citation = "EPFO India / Employees' Provident Funds Scheme, 1952"

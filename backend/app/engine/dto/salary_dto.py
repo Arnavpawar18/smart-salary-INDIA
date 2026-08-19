@@ -5,6 +5,7 @@ from decimal import Decimal
 @dataclass(frozen=True)
 class SalaryInput:
     """Raw user input for salary calculation."""
+
     financial_year: str
     annual_ctc: Decimal | None = None
     annual_gross: Decimal | None = None
@@ -23,6 +24,7 @@ class SalaryInput:
 @dataclass(frozen=True)
 class NormalizedSalary:
     """Validated, categorized, annualized salary structure with distinct deduction breakdowns."""
+
     annual_gross: Decimal
     basic_salary: Decimal
     da: Decimal

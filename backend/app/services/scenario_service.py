@@ -34,7 +34,7 @@ class ScenarioService:
         base_res = self.calc_service.calculate_salary(base_inp, regime=regime, state_code=state_code, persist=False)
 
         simulations = []
-        for pct in raise_percentages[:self.MAX_SCENARIOS_PER_REQUEST]:
+        for pct in raise_percentages[: self.MAX_SCENARIOS_PER_REQUEST]:
             multiplier = Decimal("1.00") + (pct / Decimal("100"))
             sim_gross = quantize_currency(base_salary * multiplier)
             gross_delta = sim_gross - base_salary
@@ -45,20 +45,24 @@ class ScenarioService:
 
             tax_delta = sim_res.total_annual_tax_liability - base_res.total_annual_tax_liability
             take_home_delta = sim_res.estimated_annual_take_home - base_res.estimated_annual_take_home
-            marginal_retention_rate = (take_home_delta / gross_delta * Decimal("100")) if gross_delta > 0 else Decimal("0.00")
+            marginal_retention_rate = (
+                (take_home_delta / gross_delta * Decimal("100")) if gross_delta > 0 else Decimal("0.00")
+            )
 
-            simulations.append({
-                "percentage_increase": f"{pct}%",
-                "simulated_gross": sim_gross,
-                "gross_delta": gross_delta,
-                "simulated_tax": sim_res.total_annual_tax_liability,
-                "tax_delta": tax_delta,
-                "simulated_take_home": sim_res.estimated_annual_take_home,
-                "take_home_delta": take_home_delta,
-                "marginal_retention_rate": quantize_currency(marginal_retention_rate),
-                "retention_explanation": f"You keep approximately ₹{take_home_delta:,.2f} of this ₹{gross_delta:,.2f} raise ({quantize_currency(marginal_retention_rate)}% retention).",
-                "effective_take_home_rate": sim_metrics["effective_take_home_rate"],
-            })
+            simulations.append(
+                {
+                    "percentage_increase": f"{pct}%",
+                    "simulated_gross": sim_gross,
+                    "gross_delta": gross_delta,
+                    "simulated_tax": sim_res.total_annual_tax_liability,
+                    "tax_delta": tax_delta,
+                    "simulated_take_home": sim_res.estimated_annual_take_home,
+                    "take_home_delta": take_home_delta,
+                    "marginal_retention_rate": quantize_currency(marginal_retention_rate),
+                    "retention_explanation": f"You keep approximately ₹{take_home_delta:,.2f} of this ₹{gross_delta:,.2f} raise ({quantize_currency(marginal_retention_rate)}% retention).",
+                    "effective_take_home_rate": sim_metrics["effective_take_home_rate"],
+                }
+            )
 
         return {
             "base_gross": base_salary,
@@ -92,7 +96,9 @@ class ScenarioService:
             narrative_items.append(f"Taxable Income decreased by ₹{abs(taxable_delta):,.2f}.")
 
         if tax_delta > 0:
-            narrative_items.append(f"Income Tax liability increased by ₹{tax_delta:,.2f} due to progressive slab brackets.")
+            narrative_items.append(
+                f"Income Tax liability increased by ₹{tax_delta:,.2f} due to progressive slab brackets."
+            )
         elif tax_delta < 0:
             narrative_items.append(f"Income Tax liability decreased by ₹{abs(tax_delta):,.2f}.")
 

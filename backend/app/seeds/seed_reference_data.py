@@ -211,16 +211,36 @@ def seed_reference_data(db: Session) -> None:
                 (7, Decimal("2400000.00"), None, Decimal("0.3000")),
             ]
             for order, f_amt, t_amt, rate in slabs:
-                db.add(TaxSlab(tax_rule_version_id=trv.id, slab_order=order, from_amount=f_amt, to_amount=t_amt, tax_rate=rate))
+                db.add(
+                    TaxSlab(
+                        tax_rule_version_id=trv.id, slab_order=order, from_amount=f_amt, to_amount=t_amt, tax_rate=rate
+                    )
+                )
 
             # Rebate: Section 87A up to ₹60,000 for income <= ₹12 Lakh
-            db.add(TaxRebate(tax_rule_version_id=trv.id, section="87A", threshold_taxable_income=Decimal("1200000.00"), max_rebate_amount=Decimal("60000.00")))
+            db.add(
+                TaxRebate(
+                    tax_rule_version_id=trv.id,
+                    section="87A",
+                    threshold_taxable_income=Decimal("1200000.00"),
+                    max_rebate_amount=Decimal("60000.00"),
+                )
+            )
 
             # Standard Deduction: ₹75,000
-            db.add(TaxDeduction(tax_rule_version_id=trv.id, section="16(ia)", name="Standard Deduction", max_limit=Decimal("75000.00")))
+            db.add(
+                TaxDeduction(
+                    tax_rule_version_id=trv.id,
+                    section="16(ia)",
+                    name="Standard Deduction",
+                    max_limit=Decimal("75000.00"),
+                )
+            )
 
             # Cess: 4% Health & Education Cess
-            db.add(TaxCessRule(tax_rule_version_id=trv.id, name="Health and Education Cess", cess_rate=Decimal("0.0400")))
+            db.add(
+                TaxCessRule(tax_rule_version_id=trv.id, name="Health and Education Cess", cess_rate=Decimal("0.0400"))
+            )
 
             # Surcharges
             surcharges = [
@@ -229,7 +249,15 @@ def seed_reference_data(db: Session) -> None:
                 (Decimal("20000000.00"), None, Decimal("0.2500")),
             ]
             for f_inc, t_inc, s_rate in surcharges:
-                db.add(TaxSurcharge(tax_rule_version_id=trv.id, from_income=f_inc, to_income=t_inc, surcharge_rate=s_rate, is_marginal_relief_applicable=True))
+                db.add(
+                    TaxSurcharge(
+                        tax_rule_version_id=trv.id,
+                        from_income=f_inc,
+                        to_income=t_inc,
+                        surcharge_rate=s_rate,
+                        is_marginal_relief_applicable=True,
+                    )
+                )
 
     # --- B. FY 2024-25 NEW REGIME (DOC-FINACT-2024) ---
     v_code_2425 = "TRV-2024-25-NEW-v1"
@@ -256,11 +284,31 @@ def seed_reference_data(db: Session) -> None:
             (6, Decimal("1500000.00"), None, Decimal("0.3000")),
         ]
         for order, f_amt, t_amt, rate in slabs_2425:
-            db.add(TaxSlab(tax_rule_version_id=trv_2425.id, slab_order=order, from_amount=f_amt, to_amount=t_amt, tax_rate=rate))
+            db.add(
+                TaxSlab(
+                    tax_rule_version_id=trv_2425.id, slab_order=order, from_amount=f_amt, to_amount=t_amt, tax_rate=rate
+                )
+            )
 
-        db.add(TaxRebate(tax_rule_version_id=trv_2425.id, section="87A", threshold_taxable_income=Decimal("700000.00"), max_rebate_amount=Decimal("25000.00")))
-        db.add(TaxDeduction(tax_rule_version_id=trv_2425.id, section="16(ia)", name="Standard Deduction", max_limit=Decimal("75000.00")))
-        db.add(TaxCessRule(tax_rule_version_id=trv_2425.id, name="Health and Education Cess", cess_rate=Decimal("0.0400")))
+        db.add(
+            TaxRebate(
+                tax_rule_version_id=trv_2425.id,
+                section="87A",
+                threshold_taxable_income=Decimal("700000.00"),
+                max_rebate_amount=Decimal("25000.00"),
+            )
+        )
+        db.add(
+            TaxDeduction(
+                tax_rule_version_id=trv_2425.id,
+                section="16(ia)",
+                name="Standard Deduction",
+                max_limit=Decimal("75000.00"),
+            )
+        )
+        db.add(
+            TaxCessRule(tax_rule_version_id=trv_2425.id, name="Health and Education Cess", cess_rate=Decimal("0.0400"))
+        )
 
     # --- C. OLD REGIME (ALL FYs) ---
     for fy_code in ["2024-25", "2025-26", "2026-27"]:
@@ -286,13 +334,50 @@ def seed_reference_data(db: Session) -> None:
                 (4, Decimal("1000000.00"), None, Decimal("0.3000")),
             ]
             for order, f_amt, t_amt, rate in old_slabs:
-                db.add(TaxSlab(tax_rule_version_id=trv_old.id, slab_order=order, from_amount=f_amt, to_amount=t_amt, tax_rate=rate))
+                db.add(
+                    TaxSlab(
+                        tax_rule_version_id=trv_old.id,
+                        slab_order=order,
+                        from_amount=f_amt,
+                        to_amount=t_amt,
+                        tax_rate=rate,
+                    )
+                )
 
-            db.add(TaxRebate(tax_rule_version_id=trv_old.id, section="87A", threshold_taxable_income=Decimal("500000.00"), max_rebate_amount=Decimal("12500.00")))
-            db.add(TaxDeduction(tax_rule_version_id=trv_old.id, section="16(ia)", name="Standard Deduction", max_limit=Decimal("50000.00")))
-            db.add(TaxDeduction(tax_rule_version_id=trv_old.id, section="80C", name="Section 80C", max_limit=Decimal("150000.00")))
-            db.add(TaxDeduction(tax_rule_version_id=trv_old.id, section="80D", name="Section 80D Health Insurance", max_limit=Decimal("25000.00")))
-            db.add(TaxCessRule(tax_rule_version_id=trv_old.id, name="Health and Education Cess", cess_rate=Decimal("0.0400")))
+            db.add(
+                TaxRebate(
+                    tax_rule_version_id=trv_old.id,
+                    section="87A",
+                    threshold_taxable_income=Decimal("500000.00"),
+                    max_rebate_amount=Decimal("12500.00"),
+                )
+            )
+            db.add(
+                TaxDeduction(
+                    tax_rule_version_id=trv_old.id,
+                    section="16(ia)",
+                    name="Standard Deduction",
+                    max_limit=Decimal("50000.00"),
+                )
+            )
+            db.add(
+                TaxDeduction(
+                    tax_rule_version_id=trv_old.id, section="80C", name="Section 80C", max_limit=Decimal("150000.00")
+                )
+            )
+            db.add(
+                TaxDeduction(
+                    tax_rule_version_id=trv_old.id,
+                    section="80D",
+                    name="Section 80D Health Insurance",
+                    max_limit=Decimal("25000.00"),
+                )
+            )
+            db.add(
+                TaxCessRule(
+                    tax_rule_version_id=trv_old.id, name="Health and Education Cess", cess_rate=Decimal("0.0400")
+                )
+            )
     db.flush()
 
     # -------------------------------------------------------------
@@ -342,8 +427,28 @@ def seed_reference_data(db: Session) -> None:
         )
         db.add(pt_ka)
         db.flush()
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_ka.id, slab_order=1, from_monthly_salary=Decimal("0.00"), to_monthly_salary=Decimal("14999.99"), monthly_tax_amount=Decimal("0.00"), february_tax_amount=Decimal("0.00"), gender_applicable="ALL"))
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_ka.id, slab_order=2, from_monthly_salary=Decimal("15000.00"), to_monthly_salary=None, monthly_tax_amount=Decimal("200.00"), february_tax_amount=Decimal("200.00"), gender_applicable="ALL"))
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_ka.id,
+                slab_order=1,
+                from_monthly_salary=Decimal("0.00"),
+                to_monthly_salary=Decimal("14999.99"),
+                monthly_tax_amount=Decimal("0.00"),
+                february_tax_amount=Decimal("0.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_ka.id,
+                slab_order=2,
+                from_monthly_salary=Decimal("15000.00"),
+                to_monthly_salary=None,
+                monthly_tax_amount=Decimal("200.00"),
+                february_tax_amount=Decimal("200.00"),
+                gender_applicable="ALL",
+            )
+        )
 
     # Maharashtra (MH) - includes Feb adjustment ₹300
     pt_mh = db.scalar(select(ProfessionalTaxRuleVersion).where(ProfessionalTaxRuleVersion.version_code == "PTRV-MH-v1"))
@@ -356,9 +461,39 @@ def seed_reference_data(db: Session) -> None:
         )
         db.add(pt_mh)
         db.flush()
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_mh.id, slab_order=1, from_monthly_salary=Decimal("0.00"), to_monthly_salary=Decimal("7500.00"), monthly_tax_amount=Decimal("0.00"), february_tax_amount=Decimal("0.00"), gender_applicable="ALL"))
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_mh.id, slab_order=2, from_monthly_salary=Decimal("7501.00"), to_monthly_salary=Decimal("10000.00"), monthly_tax_amount=Decimal("175.00"), february_tax_amount=Decimal("175.00"), gender_applicable="ALL"))
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_mh.id, slab_order=3, from_monthly_salary=Decimal("10001.00"), to_monthly_salary=None, monthly_tax_amount=Decimal("200.00"), february_tax_amount=Decimal("300.00"), gender_applicable="ALL"))
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_mh.id,
+                slab_order=1,
+                from_monthly_salary=Decimal("0.00"),
+                to_monthly_salary=Decimal("7500.00"),
+                monthly_tax_amount=Decimal("0.00"),
+                february_tax_amount=Decimal("0.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_mh.id,
+                slab_order=2,
+                from_monthly_salary=Decimal("7501.00"),
+                to_monthly_salary=Decimal("10000.00"),
+                monthly_tax_amount=Decimal("175.00"),
+                february_tax_amount=Decimal("175.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_mh.id,
+                slab_order=3,
+                from_monthly_salary=Decimal("10001.00"),
+                to_monthly_salary=None,
+                monthly_tax_amount=Decimal("200.00"),
+                february_tax_amount=Decimal("300.00"),
+                gender_applicable="ALL",
+            )
+        )
 
     # Telangana (TS)
     pt_ts = db.scalar(select(ProfessionalTaxRuleVersion).where(ProfessionalTaxRuleVersion.version_code == "PTRV-TS-v1"))
@@ -371,8 +506,38 @@ def seed_reference_data(db: Session) -> None:
         )
         db.add(pt_ts)
         db.flush()
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_ts.id, slab_order=1, from_monthly_salary=Decimal("0.00"), to_monthly_salary=Decimal("15000.00"), monthly_tax_amount=Decimal("0.00"), february_tax_amount=Decimal("0.00"), gender_applicable="ALL"))
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_ts.id, slab_order=2, from_monthly_salary=Decimal("15001.00"), to_monthly_salary=Decimal("20000.00"), monthly_tax_amount=Decimal("150.00"), february_tax_amount=Decimal("150.00"), gender_applicable="ALL"))
-        db.add(ProfessionalTaxSlab(pt_rule_version_id=pt_ts.id, slab_order=3, from_monthly_salary=Decimal("20001.00"), to_monthly_salary=None, monthly_tax_amount=Decimal("200.00"), february_tax_amount=Decimal("200.00"), gender_applicable="ALL"))
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_ts.id,
+                slab_order=1,
+                from_monthly_salary=Decimal("0.00"),
+                to_monthly_salary=Decimal("15000.00"),
+                monthly_tax_amount=Decimal("0.00"),
+                february_tax_amount=Decimal("0.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_ts.id,
+                slab_order=2,
+                from_monthly_salary=Decimal("15001.00"),
+                to_monthly_salary=Decimal("20000.00"),
+                monthly_tax_amount=Decimal("150.00"),
+                february_tax_amount=Decimal("150.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_ts.id,
+                slab_order=3,
+                from_monthly_salary=Decimal("20001.00"),
+                to_monthly_salary=None,
+                monthly_tax_amount=Decimal("200.00"),
+                february_tax_amount=Decimal("200.00"),
+                gender_applicable="ALL",
+            )
+        )
 
     db.commit()

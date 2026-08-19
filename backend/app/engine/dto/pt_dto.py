@@ -44,7 +44,9 @@ class PtRuleSet:
                     "from_monthly_salary": f"{s.from_monthly_salary:.2f}",
                     "to_monthly_salary": f"{s.to_monthly_salary:.2f}" if s.to_monthly_salary is not None else None,
                     "monthly_tax_amount": f"{s.monthly_tax_amount:.2f}",
-                    "february_tax_amount": f"{s.february_tax_amount:.2f}" if s.february_tax_amount is not None else None,
+                    "february_tax_amount": f"{s.february_tax_amount:.2f}"
+                    if s.february_tax_amount is not None
+                    else None,
                 }
                 for s in self.slabs
             ],

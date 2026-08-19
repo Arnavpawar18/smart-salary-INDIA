@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Payslip Intelligence &amp; Three-Way Reconciliation — SmartSalary{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+  <!-- Header Banner -->
+  <div class="glass-panel rounded-3xl p-8 border border-slate-800 relative overflow-hidden">
+    <div class="max-w-4xl space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+        <span>📑</span> Phase 6: Multi-Status Three-Way Reconciliation
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+        Payslip Intelligence &amp; Statutory Audit
+      </h1>
+      <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+        Upload your actual corporate payslip to execute strict three-way reconciliation against 
+        <span class="text-cyan-400 font-medium">Document Truth</span>, 
+        <span class="text-indigo-400 font-medium">Employer Payroll Records (Phase 5)</span>, and 
+        <span class="text-emerald-400 font-medium">Statutory Engine Calculations (Phase 2)</span>.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column: Upload & Security Pipeline -->
+    <div class="lg:col-span-1 space-y-6">
+      <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <span>📤</span> Upload Payslip PDF
+        </h2>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Supports native digital &amp; scanned PDF documents. Automatic SHA-256 deduplication and quarantine malware scanning.
+        </p>
+
+        <form id="payslip-upload-form" class="space-y-4" enctype="multipart/form-data">
+          <div class="border-2 border-dashed border-slate-700 hover:border-cyan-500/50 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-slate-900/50 relative group">
+            <input type="file" id="payslip-file" name="file" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleFileSelected(this)">
+            <div class="space-y-2">
+              <div class="w-12 h-12 mx-auto rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                📄
+              </div>
+              <p id="file-label-text" class="text-sm font-medium text-slate-300">Click or drag PDF payslip here</p>
+              <p class="text-xs text-slate-500">Max size: 10MB (PDF only)</p>
+            </div>
+          </div>
+
+          <button type="button" id="upload-btn" onclick="submitPayslipUpload()" class="w-full py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-all shadow-lg shadow-cyan-600/20 flex items-center justify-center gap-2 disabled:opacity-50">
+            <span>⚡</span> Process &amp; Reconcile
+          </button>
+        </form>
+
+        <div id="upload-status-indicator" class="hidden text-xs p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Processing Stage:</span>
+            <span id="pipeline-stage-text" class="font-mono text-cyan-400">Quarantine Scan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uploaded Payslips History -->
+      <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+        <h3 class="text-base font-bold text-white flex items-center justify-between">
+          <span>📜 Processed Payslips</span>
+          <span class="text-xs font-mono text-slate-400">{{ documents|length }} total</span>
+        </h3>
+
+        {% if documents %}
+        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+          {% for doc in documents %}
+          <div onclick="loadPayslipDetails({{ doc.id }})" class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-cyan-500/40 cursor-pointer transition-all space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-white truncate max-w-[160px]">{{ doc.file_name }}</span>
+              {% set val_status = doc.validations[0].validation_status if doc.validations else 'UNRECONCILED' %}
+              {% if val_status == 'MATCHED' %}
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">MATCHED</span>
+              {% elif val_status == 'DISCREPANCY_WARNING' %}
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">WARNING</span>
+              {% elif val_status == 'DISCREPANCY_CRITICAL' %}
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">CRITICAL</span>
+              {% else %}
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">UNRECONCILED</span>
+              {% endif %}
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+              <span>{{ (doc.file_size_bytes / 1024)|round(1) }} KB</span>
+              <span>{{ doc.created_at.strftime('%d %b %Y') if doc.created_at else 'Recent' }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-6 text-slate-500 text-xs">
+          No payslips uploaded yet. Upload a PDF above to begin.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive 3-Way Reconciliation View -->
+    <div class="lg:col-span-2 space-y-6">
+      <div id="reconciliation-detail-panel" class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Three-Way Multi-Status Reconciliation</h2>
+            <p id="recon-meta-subtitle" class="text-xs text-slate-400 mt-1">Select an uploaded payslip or upload a new one to inspect line-by-line concordance.</p>
+          </div>
+          <div id="overall-status-badge" class="hidden"></div>
+        </div>
+
+        <!-- Discrepancy Summary Alert -->
+        <div id="discrepancy-summary-alert" class="hidden p-4 rounded-xl border text-xs leading-relaxed space-y-1"></div>
+
+        <!-- 3-Way Diff Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400 font-mono">
+                <th class="py-3 px-3">Salary Component</th>
+                <th class="py-3 px-3 text-cyan-400">Actual Slip (A)</th>
+                <th class="py-3 px-3 text-indigo-400">Payroll Run (B)</th>
+                <th class="py-3 px-3 text-emerald-400">Statutory (C)</th>
+                <th class="py-3 px-3 text-right">Variance</th>
+                <th class="py-3 px-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="recon-table-body" class="divide-y divide-slate-800/60 font-mono">
+              <tr>
+                <td colspan="6" class="py-12 text-center text-slate-500 font-sans">
+                  No active reconciliation view. Upload a PDF payslip on the left to start.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Extraction Provenance Drawer -->
+        <div id="provenance-section" class="hidden pt-6 border-t border-slate-800 space-y-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2 font-sans">
+            <span>🔍</span> Extraction Provenance &amp; Metadata
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs" id="metadata-chips"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function handleFileSelected(input) {
+  if (input.files && input.files[0]) {
+    document.getElementById('file-label-text').innerText = input.files[0].name;
+  }
+}
+
+async function submitPayslipUpload() {
+  const fileInput = document.getElementById('payslip-file');
+  if (!fileInput.files || !fileInput.files[0]) {
+    alert("Please select a PDF payslip to upload.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  const btn = document.getElementById('upload-btn');
+  const statusDiv = document.getElementById('upload-status-indicator');
+  const stageText = document.getElementById('pipeline-stage-text');
+
+  btn.disabled = true;
+  statusDiv.classList.remove('hidden');
+  stageText.innerText = "Quarantine & Malware Scan...";
+
+  try {
+    const res = await fetch('/api/v1/payslips/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert("Upload failed: " + (err.detail || "Unknown error"));
+      return;
+    }
+
+    stageText.innerText = "Reconciliation Complete!";
+    const data = await res.json();
+    loadPayslipDetails(data.document_id);
+    setTimeout(() => { window.location.reload(); }, 1200);
+
+  } catch (err) {
+    alert("An error occurred: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadPayslipDetails(docId) {
+  try {
+    const res = await fetch(`/api/v1/payslips/${docId}`);
+    if (!res.ok) return;
+    const doc = await res.json();
+    renderReconciliation(doc);
+  } catch (e) {
+    console.error("Failed to load details:", e);
+  }
+}
+
+function renderReconciliation(doc) {
+  const val = doc.validation;
+  const ext = doc.extraction;
+  if (!val) return;
+
+  const statusBadge = document.getElementById('overall-status-badge');
+  statusBadge.classList.remove('hidden');
+
+  let badgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+  if (val.reconciliation_status === "DISCREPANCY_WARNING") badgeClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+  if (val.reconciliation_status === "DISCREPANCY_CRITICAL") badgeClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+  statusBadge.innerHTML = `<span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${val.reconciliation_status}</span>`;
+
+  // Summary Alert
+  const alertDiv = document.getElementById('discrepancy-summary-alert');
+  alertDiv.classList.remove('hidden');
+  alertDiv.className = `p-4 rounded-xl border text-xs leading-relaxed space-y-1 ${badgeClass}`;
+  alertDiv.innerHTML = `<p class="font-bold">${val.summary_explanation}</p><p class="text-[11px] opacity-80">Concordance Score: ${(val.overall_score * 100).toFixed(0)}% • Total Discrepancies: ${val.total_discrepancies}</p>`;
+
+  // Table Body
+  const tbody = document.getElementById('recon-table-body');
+  tbody.innerHTML = '';
+
+  (val.items || []).forEach(it => {
+    let rowStatusBadge = `<span class="text-emerald-400 font-bold">✓ MATCH</span>`;
+    if (it.status === "WARNING") rowStatusBadge = `<span class="text-amber-400 font-bold">⚠ ROUNDING</span>`;
+    if (it.status === "CRITICAL") rowStatusBadge = `<span class="text-rose-400 font-bold">✕ MISMATCH</span>`;
+
+    const tr = document.createElement('tr');
+    tr.className = "hover:bg-slate-900/40 transition-colors";
+    tr.innerHTML = `
+      <td class="py-3 px-3 font-sans font-medium text-slate-200">${it.display_name}</td>
+      <td class="py-3 px-3 text-cyan-300">₹${it.document_value || '0.00'}</td>
+      <td class="py-3 px-3 text-indigo-300">${it.payroll_value ? '₹' + it.payroll_value : '—'}</td>
+      <td class="py-3 px-3 text-emerald-300">${it.statutory_value ? '₹' + it.statutory_value : '—'}</td>
+      <td class="py-3 px-3 text-right ${it.delta_document_vs_payroll > 0 ? 'text-rose-400' : 'text-slate-400'}">₹${it.delta_document_vs_payroll}</td>
+      <td class="py-3 px-3 text-center">${rowStatusBadge}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Provenance Chips
+  const provSection = document.getElementById('provenance-section');
+  provSection.classList.remove('hidden');
+  const chipsDiv = document.getElementById('metadata-chips');
+  chipsDiv.innerHTML = `
+    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+      <span class="text-slate-500 block text-[10px]">PAN Extracted</span>
+      <span class="font-mono font-semibold text-slate-200">${ext.pan || 'Not found'}</span>
+    </div>
+    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+      <span class="text-slate-500 block text-[10px]">Pay Period</span>
+      <span class="font-mono font-semibold text-slate-200">${ext.period_code || 'N/A'}</span>
+    </div>
+    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+      <span class="text-slate-500 block text-[10px]">Confidence</span>
+      <span class="font-mono font-semibold text-cyan-400">${(ext.overall_confidence * 100).toFixed(0)}% (${ext.extraction_status})</span>
+    </div>
+    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+      <span class="text-slate-500 block text-[10px]">Formula Check</span>
+      <span class="font-mono font-semibold ${ext.formula_verified ? 'text-emerald-400' : 'text-rose-400'}">${ext.formula_verified ? 'VERIFIED' : 'MISMATCH'}</span>
+    </div>
+  `;
+}
+</script>
+{% endblock %}

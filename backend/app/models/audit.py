@@ -14,6 +14,7 @@ class AuditLog(Base, TimestampMixin):
     """
     System-wide immutable audit trail for actions, entity changes, and administrative events.
     """
+
     __tablename__ = "audit_logs"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)

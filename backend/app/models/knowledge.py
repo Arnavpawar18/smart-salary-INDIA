@@ -13,6 +13,7 @@ class KnowledgeSource(Base, TimestampMixin):
     Statutory legal citations and document provenance.
     Strict date types: publication_date (DATE), effective_date (DATE), retrieved_at (TIMESTAMPTZ).
     """
+
     __tablename__ = "knowledge_sources"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -32,7 +33,9 @@ class KnowledgeDocument(Base, TimestampMixin):
     __tablename__ = "knowledge_documents"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    source_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("knowledge_sources.id", ondelete="SET NULL"), nullable=True)
+    source_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("knowledge_sources.id", ondelete="SET NULL"), nullable=True
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     document_type: Mapped[str] = mapped_column(String(50), nullable=False)  # STATUTE, GUIDE, FAQ, CIRCULAR
     version: Mapped[str] = mapped_column(String(20), default="1.0", nullable=False)
@@ -40,17 +43,22 @@ class KnowledgeDocument(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     source: Mapped[Optional["KnowledgeSource"]] = relationship("KnowledgeSource", back_populates="documents")
-    chunks: Mapped[list["KnowledgeChunk"]] = relationship("KnowledgeChunk", back_populates="document", cascade="all, delete-orphan")
+    chunks: Mapped[list["KnowledgeChunk"]] = relationship(
+        "KnowledgeChunk", back_populates="document", cascade="all, delete-orphan"
+    )
 
 
 class KnowledgeChunk(Base, TimestampMixin):
     """
     Embedding-ready text chunks for future RAG / pgvector retrieval (no pgvector installed in Phase 1).
     """
+
     __tablename__ = "knowledge_chunks"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    document_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("knowledge_documents.id", ondelete="CASCADE"), nullable=False)
+    document_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("knowledge_documents.id", ondelete="CASCADE"), nullable=False
+    )
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     token_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
