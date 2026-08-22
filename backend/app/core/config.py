@@ -55,7 +55,7 @@ class RateLimitSettings(BaseSettings):
     REDIS_TIMEOUT_SECONDS: int = Field(2, ge=1, description="Socket timeout for Redis operations")
 
     # Environment identifier – reused from Settings for key namespacing
-    ENVIRONMENT: Literal["development", "test", "production"] = Field(...)
+    ENVIRONMENT: Literal["development", "test", "production"] = Field("development")
 
     # Rate‑limit defaults (can be overridden per‑operation via env vars if needed)
     CALC_RATE_LIMIT: int = Field(10, ge=1, description="Maximum calculation requests per window")
