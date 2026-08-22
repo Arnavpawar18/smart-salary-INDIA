@@ -8,21 +8,12 @@ Tests:
 - Append-only snapshot corrections (immutability)
 - Single-Rupee Provenance full vertical trace
 """
+
 from decimal import Decimal
 from uuid import uuid4
-import pytest
 
 from app.core.compliance.evidence_registry import EvidenceRegistry
-from app.core.compliance.question_graph import DynamicQuestionEngine, InsufficientApplicabilityFactsError
 from app.core.compliance.rule_registry import ComplianceRuleRegistry, RuleStatus
-from app.engine.analytics.expense_savings_engine import (
-    ExpenseFrequency,
-    ExpenseItemInput,
-    ExpenseNature,
-    ExpenseSavingsEngine,
-    SavingsItemInput,
-    SavingsVehicle,
-)
 from app.engine.dto.snapshot_contract_v1 import (
     ApplicabilityDecisionV1,
     CalculationSnapshotV1,

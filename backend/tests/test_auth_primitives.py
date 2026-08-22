@@ -58,7 +58,9 @@ def test_session_repository_lifecycle_and_reuse_defense():
 
         # Rotate session
         new_raw, new_jti, new_expire = JWTProvider.create_refresh_token(user_id=user.id)
-        new_session = repo.rotate_session(old_jti=jti, new_raw_refresh_token=new_raw, new_jti=new_jti, new_expires_at=new_expire)
+        new_session = repo.rotate_session(
+            old_jti=jti, new_raw_refresh_token=new_raw, new_jti=new_jti, new_expires_at=new_expire
+        )
         assert new_session.id is not None
 
         # Verify old session was revoked
@@ -67,7 +69,9 @@ def test_session_repository_lifecycle_and_reuse_defense():
 
         # Token Reuse Test: Attempting to rotate using old_jti again must raise error and revoke all sessions
         with pytest.raises(ValueError) as exc:
-            repo.rotate_session(old_jti=jti, new_raw_refresh_token="fake", new_jti=str(uuid.uuid4()), new_expires_at=new_expire)
+            repo.rotate_session(
+                old_jti=jti, new_raw_refresh_token="fake", new_jti=str(uuid.uuid4()), new_expires_at=new_expire
+            )
         assert "reuse detected" in str(exc.value)
 
         # Active session count for user should now be 0

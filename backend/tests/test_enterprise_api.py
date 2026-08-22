@@ -111,11 +111,11 @@ def test_enterprise_dashboard_summary_api(enterprise_api_fixture):
     emp_id = enterprise_api_fixture["emp_id"]
 
     token = JWTProvider.create_access_token(user_id=user_id, role="HR_MANAGER", employee_id=emp_id)
+    client.cookies.set("access_token", token)
 
     res = client.get(
         "/api/v1/enterprise/dashboard-summary",
         headers={"X-Organization-Id": str(org_id)},
-        cookies={"access_token": token},
     )
     assert res.status_code == 200
     data = res.json()

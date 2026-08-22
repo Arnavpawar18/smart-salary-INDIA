@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Help &amp; Resource Center — SmartSalary India{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-5xl mx-auto pb-16">
+  
+  <!-- Hero Section -->
+  <div class="text-center space-y-4 pt-6">
+    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+      <span>🛡️</span> <span>Knowledge Base &bull; FY 2025-26</span>
+    </div>
+    <h1 class="text-3xl sm:text-5xl font-extrabold font-heading text-white tracking-tight">
+      How can we help you today?
+    </h1>
+    <p class="text-sm text-slate-400 max-w-xl mx-auto">
+      Search for tax guides, payroll how-tos, Section 80 compliance rules, and platform documentation.
+    </p>
+
+    <!-- Search Input Bar -->
+    <div class="max-w-2xl mx-auto pt-2">
+      <div class="relative flex items-center">
+        <span class="absolute left-4 text-slate-400 text-base">🔍</span>
+        <input type="text" placeholder="e.g., How to declare HRA, Form 16 download, EPF interest rate" class="w-full bg-slate-900/90 border border-slate-800 focus:border-indigo-500 rounded-2xl py-3.5 pl-11 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none shadow-lg shadow-black/40">
+      </div>
+    </div>
+  </div>
+
+  <!-- Common Topics Grid (Stitch Layout) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Topic Cards (2 cols) -->
+    <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      
+      <!-- Card 1 -->
+      <a href="/calculator" class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-2 group">
+        <div class="w-10 h-10 rounded-xl bg-indigo-950/80 text-indigo-400 flex items-center justify-center text-lg mb-3 border border-indigo-800/60">
+          📄
+        </div>
+        <h3 class="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">Understanding Form 16</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          A complete guide to downloading, reading Part A &amp; Part B, and verifying TDS credits on TRACES.
+        </p>
+      </a>
+
+      <!-- Card 2 -->
+      <a href="/tax-center" class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-2 group">
+        <div class="w-10 h-10 rounded-xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center text-lg mb-3 border border-emerald-800/60">
+          🏛️
+        </div>
+        <h3 class="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">HRA Rules 2025</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Calculate your House Rent Allowance exemption with metro (50%) vs non-metro (40%) provisions.
+        </p>
+      </a>
+
+      <!-- Card 3 -->
+      <a href="/tax-center" class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-2 group">
+        <div class="w-10 h-10 rounded-xl bg-amber-950/80 text-amber-400 flex items-center justify-center text-lg mb-3 border border-amber-800/60">
+          ⚡
+        </div>
+        <h3 class="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">New vs Old Tax Regime</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Compare the standard deductions and tax slabs to find out which one saves you more this financial year.
+        </p>
+      </a>
+
+      <!-- Card 4 -->
+      <a href="/tax-center" class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 transition-all space-y-2 group">
+        <div class="w-10 h-10 rounded-xl bg-purple-950/80 text-purple-400 flex items-center justify-center text-lg mb-3 border border-purple-800/60">
+          📑
+        </div>
+        <h3 class="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">Investment Declarations</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Step-by-step instructions on submitting proofs for 80C, 80D, NPS, and home loan interest.
+        </p>
+      </a>
+
+    </div>
+
+    <!-- Need More Help & Tickets Sidebar (1 col) -->
+    <div class="space-y-6">
+      
+      <!-- Live Support Box -->
+      <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+        <h3 class="text-sm font-bold text-white">Need more help?</h3>
+        <p class="text-xs text-slate-400">Our support team is available to assist you with complex payroll or tax queries.</p>
+        
+        <button onclick="toggleAiDrawer()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-600/20">
+          <span>💬</span> Start Live Chat
+        </button>
+        <a href="mailto:support@smartsalary.in" class="w-full py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors">
+          <span>✉️</span> Submit a Ticket
+        </a>
+      </div>
+
+      <!-- Recent Tickets / Status -->
+      <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Your Recent Tickets</span>
+          <span class="text-[10px] text-emerald-400 font-mono">1 Open</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="font-semibold text-white">Update Bank Details</span>
+            <span class="text-[10px] font-bold text-amber-400 font-mono">Open</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono block">#T-8042 &bull; 2 days ago</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="font-semibold text-white">PF Transfer Status</span>
+            <span class="text-[10px] font-bold text-slate-400 font-mono">Closed</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono block">#T-8010 &bull; 1 week ago</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

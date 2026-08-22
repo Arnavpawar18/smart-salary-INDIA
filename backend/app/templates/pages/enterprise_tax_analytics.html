@@ -1,0 +1,106 @@
+{% extends "enterprise_base.html" %}
+{% import "partials/enterprise_components.html" as ui %}
+
+{% block title %}Tax Analytics — SmartSalary India{% endblock %}
+{% block section_title %}Corporate Tax Optimization &amp; Analytics{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Top KPIs -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {{ ui.kpi_card("Total Tax Liability (YTD)", analytics.total_tax_liability_ytd|inr, "Direct Withholding", "+2.4%", False) }}
+    {{ ui.kpi_card("Avg Employee Tax Saving", analytics.avg_employee_tax_saving|inr, "Optimal Slabs", "+8.1%", True) }}
+    {{ ui.kpi_card("Compliance Rate", analytics.compliance_rate ~ "%", "Verified Proofs", "+1.2%", True) }}
+    {{ ui.kpi_card("Projected AI Savings", analytics.projected_ai_savings|inr, "Potential Savings", "+15.0%", True) }}
+  </div>
+
+  <!-- Middle Row: Optimization Trends (8 cols) & Deduction Distribution (4 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Trends Chart Placeholder -->
+    <div class="lg:col-span-8 glass-card p-6 rounded-2xl flex flex-col justify-between border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Tax Optimization Trends</h3>
+          <p class="text-xs text-slate-500">6-Month Withholding vs Statutory Savings</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">6M</button>
+          <button class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white">YTD</button>
+        </div>
+      </div>
+
+      <!-- Bar Representation -->
+      <div class="h-48 flex items-end justify-between gap-3 pt-6 px-2 border-b border-slate-200 dark:border-slate-800">
+        {% for m, h in [('Oct', '45%'), ('Nov', '60%'), ('Dec', '55%'), ('Jan', '75%'), ('Feb', '85%'), ('Mar', '95%')] %}
+        <div class="flex-1 flex flex-col items-center gap-2 group">
+          <div class="w-full max-w-[48px] bg-indigo-600/80 hover:bg-indigo-600 rounded-t-lg transition-all" style="height: {{ h }};"></div>
+          <span class="text-[10px] font-mono text-slate-500">{{ m }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Deduction Distribution -->
+    <div class="lg:col-span-4 glass-card p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white">Deduction Distribution</h3>
+      <div class="space-y-3">
+        {% for d in analytics.deduction_distribution %}
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-medium">
+            <span class="text-slate-700 dark:text-slate-300">{{ d.name }}</span>
+            <span class="font-mono text-slate-500">{{ d.percentage }}%</span>
+          </div>
+          <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-indigo-600 rounded-full" style="width: {{ d.percentage }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Departmental Compliance & AI Insights -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Departmental Compliance Table -->
+    <div class="glass-card p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white">Departmental Compliance</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold uppercase">
+              <th class="pb-2">Department</th>
+              <th class="pb-2">Headcount</th>
+              <th class="pb-2 text-right">Compliance</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for row in analytics.departmental_compliance %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+              <td class="py-2.5 font-medium text-slate-900 dark:text-white">{{ row.department }}</td>
+              <td class="py-2.5 font-mono text-slate-500">{{ row.headcount }}</td>
+              <td class="py-2.5 text-right font-mono font-bold text-emerald-600">{{ row.compliance_percentage }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AI Insights Panel -->
+    <div class="glass-card p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="flex items-center gap-2">
+        <span>💡</span>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Statutory Optimization Insights</h3>
+      </div>
+      <div class="space-y-3">
+        {% for insight in analytics.ai_insights %}
+        <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">{{ insight.title }}</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ insight.detail }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

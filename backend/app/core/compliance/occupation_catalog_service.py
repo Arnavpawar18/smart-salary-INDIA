@@ -3,6 +3,7 @@ SmartSalary India — Occupation Catalog Service
 Provides the 7-tier occupation hierarchy and enforces the sovereign invariant:
 Occupation selects dynamic questions, income sources, and facts — NEVER the statutory tax regime.
 """
+
 from dataclasses import dataclass
 
 from app.models.occupation_enums import TaxpayerType

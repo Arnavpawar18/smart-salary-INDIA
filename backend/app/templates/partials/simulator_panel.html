@@ -1,19 +1,102 @@
-<!-- What-If Simulator Partial -->
-<div class="mt-4 bg-slate-800/80 p-4 rounded-xl border border-indigo-500/30 space-y-3 animate-fade-in font-sans">
-    <div class="flex justify-between items-center text-xs">
-        <span class="font-bold text-indigo-300 uppercase tracking-wider">Raise Simulation Results</span>
-        <span class="text-slate-400">Base Salary: {{ format_inr(sim_data.base_gross) }}</span>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
-        {% for sim in sim_data.simulations %}
-        <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-700 space-y-1">
-            <div class="text-indigo-400 font-bold text-sm">{{ sim.percentage_increase }} Raise</div>
-            <div class="text-slate-300">New Gross: {{ format_inr(sim.simulated_gross) }} (+{{ format_inr(sim.gross_delta) }})</div>
-            <div class="text-emerald-400 font-bold">New Take-Home: {{ format_inr(sim.simulated_take_home) }}</div>
-            <div class="text-indigo-200 text-[11px] font-sans pt-1">
-                {{ sim.retention_explanation }}
-            </div>
+<!-- Non-Destructive What-If Simulation Drawer -->
+<div id="whatif-simulator-drawer" class="fixed inset-y-0 right-0 max-w-lg w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-800 z-50 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+  <!-- Header -->
+  <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/60">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
+        Δ
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h3 class="text-xs sm:text-sm font-bold font-heading text-slate-900 dark:text-white">What-If Salary Simulator</h3>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            SIMULATION MODE
+          </span>
         </div>
-        {% endfor %}
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Saved calculations remain immutable and unchanged.</p>
+      </div>
     </div>
+    <button onclick="toggleSimulator()" type="button" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+      ✕
+    </button>
+  </div>
+
+  <!-- Simulation Content -->
+  <div class="flex-1 p-5 overflow-y-auto space-y-6 text-xs">
+    <!-- Disclaimer Callout -->
+    <div class="p-3.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 text-xs leading-relaxed">
+      This simulator computes real-time scenarios for appraisal planning and tax regime switching without modifying your baseline calculation record.
+    </div>
+
+    <!-- Sliders -->
+    <div class="space-y-4">
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="font-semibold text-slate-700 dark:text-slate-300">Annual Appraisal / Salary Hike</label>
+          <span id="sim-hike-val" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">+15%</span>
+        </div>
+        <input type="range" id="sim-hike-slider" min="0" max="50" step="5" value="15" oninput="updateSimHike(this.value)" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+        <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+          <span>0%</span>
+          <span>+25%</span>
+          <span>+50%</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="font-semibold text-slate-700 dark:text-slate-300">Annual Performance Bonus (₹)</label>
+          <span id="sim-bonus-val" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">₹ 1,00,000</span>
+        </div>
+        <input type="range" id="sim-bonus-slider" min="0" max="500000" step="25000" value="100000" oninput="updateSimBonus(this.value)" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+        <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+          <span>₹ 0</span>
+          <span>₹ 2.5L</span>
+          <span>₹ 5.0L</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Simulation Delta Cards -->
+    <div class="space-y-3 pt-2">
+      <span class="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs block">Projected Impact</span>
+      
+      <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 dark:text-slate-400">Estimated In-Hand Increase</span>
+          <span id="sim-delta-takehome" class="font-money font-bold text-emerald-600 dark:text-emerald-400 text-sm">+ ₹ 8,950 / mo</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 dark:text-slate-400">Marginal Tax Impact</span>
+          <span id="sim-delta-tax" class="font-money font-bold text-saffron-600 dark:text-saffron-400 text-sm">+ ₹ 3,550 / mo</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-800">
+          <span class="font-bold text-slate-900 dark:text-white">Retention Ratio</span>
+          <span id="sim-retention" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">71.6% Retained</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+function toggleSimulator() {
+  const drawer = document.getElementById('whatif-simulator-drawer');
+  if (!drawer) return;
+  if (drawer.classList.contains('translate-x-full')) {
+    drawer.classList.remove('translate-x-full');
+  } else {
+    drawer.classList.add('translate-x-full');
+  }
+}
+
+function updateSimHike(val) {
+  const label = document.getElementById('sim-hike-val');
+  if (label) label.innerText = `+${val}%`;
+}
+
+function updateSimBonus(val) {
+  const label = document.getElementById('sim-bonus-val');
+  if (label) label.innerText = `₹ ${parseInt(val).toLocaleString('en-IN')}`;
+}
+</script>

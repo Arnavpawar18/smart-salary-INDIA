@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import BigInteger, Date, ForeignKey, Numeric, String, Text
+from sqlalchemy import BigInteger, Date, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -22,6 +22,7 @@ class TaxPeriod(Base, TimestampMixin):
 
 class TaxRuleVersion(Base, TimestampMixin):
     __tablename__ = "tax_rule_versions"
+    __table_args__ = (Index("ix_tax_rule_version_period_regime_status", "tax_period_id", "regime", "status"),)
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     tax_period_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("tax_periods.id"), nullable=False)

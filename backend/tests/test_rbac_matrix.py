@@ -1,6 +1,8 @@
 import uuid
+from datetime import date
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from app.core.database import SessionLocal
 from app.core.security import JWTProvider, PasswordHasher
@@ -32,7 +34,7 @@ def test_rbac_permission_matrix_enforcement():
             first_name="RBAC",
             last_name="Employee",
             email=email,
-            date_of_joining="2026-04-01",
+            date_of_joining=date(2026, 4, 1),
             state_id=1,
         )
         db.add(emp)
@@ -41,6 +43,7 @@ def test_rbac_permission_matrix_enforcement():
         db.refresh(emp)
 
         token = JWTProvider.create_access_token(user_id=user.id, role="EMPLOYEE", employee_id=emp.id)
+        client.cookies.set("access_token", token)
 
         # 1. Calculator Access: Allowed for Employee
         res_calc = client.post(
@@ -51,25 +54,22 @@ def test_rbac_permission_matrix_enforcement():
                 "regime": "NEW",
                 "state_code": "KA",
             },
-            cookies={"access_token": token},
         )
         assert res_calc.status_code == 201
 
         # 2. History Access: Allowed for Employee
-        res_hist = client.get("/api/v1/calculations/history", cookies={"access_token": token})
+        res_hist = client.get("/api/v1/calculations/history")
         assert res_hist.status_code == 200
 
         # 3. Security Center / Active Sessions: Allowed for Employee
-        res_sess = client.get("/api/v1/auth/sessions", cookies={"access_token": token})
+        res_sess = client.get("/api/v1/auth/sessions")
         assert res_sess.status_code == 200
-
-
-from sqlalchemy import select
 
 
 def test_guest_cannot_access_employee_history():
     """
     Unauthenticated / Guest user attempting to query employee calculation history receives 401.
     """
+    client.cookies.clear()
     res = client.get("/api/v1/calculations/history")
     assert res.status_code == 401

@@ -1,0 +1,137 @@
+{% extends "enterprise_base.html" %}
+{% import "partials/enterprise_components.html" as ui %}
+
+{% block title %}Compliance Center — SmartSalary India{% endblock %}
+{% block section_title %}Compliance Audit Reports &amp; Filings{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Top Row: Health Score (4 cols) & Report Config (8 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Compliance Health Score -->
+    <div class="lg:col-span-4 glass-card p-6 rounded-2xl flex flex-col justify-between items-center text-center border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="w-full text-left">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Compliance Health Score</h3>
+        <p class="text-xs text-slate-500">Overall statutory standing</p>
+      </div>
+
+      <div class="relative w-40 h-40 flex items-center justify-center my-4">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" stroke="rgba(226, 232, 240, 0.5)" stroke-width="8" fill="transparent"></circle>
+          <circle cx="50" cy="50" r="42" stroke="#10b981" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="14" stroke-linecap="round" fill="transparent"></circle>
+        </svg>
+        <div class="absolute flex flex-col items-center">
+          <span class="text-3xl font-extrabold font-heading text-emerald-600 font-mono">95%</span>
+          <span class="text-[10px] text-slate-400 font-semibold uppercase">EXCELLENT</span>
+        </div>
+      </div>
+
+      <div class="w-full flex justify-between text-xs text-slate-500 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <span>TDS, PF, ESI, PT Verified</span>
+        <span class="text-emerald-600 font-semibold">+2.4% vs FY24</span>
+      </div>
+    </div>
+
+    <!-- Report Configuration Generator -->
+    <div class="lg:col-span-8 glass-card p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Generate Statutory Audit Report</h3>
+          <p class="text-xs text-slate-500">Produce regulatory-grade compliance exports for statutory review</p>
+        </div>
+        <span class="text-base">⚙️</span>
+      </div>
+
+      <form class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Audit Type</label>
+          <select class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+            <option>TDS Compliance Verification (Form 24Q)</option>
+            <option>Investment Proof Audit (Section 80)</option>
+            <option>Payroll Three-Way Reconciliation</option>
+            <option>PF / ESI Statutory Monthly Returns</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Financial Year</label>
+          <select class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+            <option>FY 2025-2026 (AY 2026-27)</option>
+            <option>FY 2024-2025 (AY 2025-26)</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quarter / Period</label>
+          <select class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+            <option>Q4 (Jan - Mar)</option>
+            <option>Q3 (Oct - Dec)</option>
+            <option>Q2 (Jul - Sep)</option>
+            <option>Q1 (Apr - Jun)</option>
+            <option>Annual Statement</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-6">
+          <input type="checkbox" id="raw-data" class="rounded border-slate-300 text-indigo-600">
+          <label for="raw-data" class="text-xs text-slate-600 dark:text-slate-400 cursor-pointer">Include cryptographic provenance hash</label>
+        </div>
+      </form>
+
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+        <button type="button" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Export Template
+        </button>
+        <button type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm">
+          Generate Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Reports Table -->
+  <div class="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Recent Compliance Audit Reports</h3>
+        <p class="text-xs text-slate-500">Audit logs and export history for regulatory verification</p>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-400 uppercase font-semibold border-b border-slate-200 dark:border-slate-800">
+          <tr>
+            <th class="px-6 py-3">Report Name</th>
+            <th class="px-6 py-3">Type</th>
+            <th class="px-6 py-3">Period</th>
+            <th class="px-6 py-3">Status</th>
+            <th class="px-6 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for r in [
+            ('TDS_Q3_FY2526_Final', 'TDS Compliance', 'Q3 (Oct-Dec)', 'READY'),
+            ('InvProof_Audit_Run2', 'Investment Proofs', 'Annual', 'UNDER_REVIEW'),
+            ('Annual_Statutory_FY2425', 'PF / ESI Returns', 'Annual', 'READY'),
+          ] %}
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="px-6 py-3.5 font-medium text-slate-900 dark:text-white flex items-center gap-2">
+              <span>📄</span> {{ r[0] }}
+            </td>
+            <td class="px-6 py-3.5 text-slate-500">{{ r[1] }}</td>
+            <td class="px-6 py-3.5 font-mono text-slate-500">{{ r[2] }}</td>
+            <td class="px-6 py-3.5">{{ ui.status_pill(r[3]) }}</td>
+            <td class="px-6 py-3.5 text-right">
+              <button class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-[11px] font-semibold">
+                Download
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

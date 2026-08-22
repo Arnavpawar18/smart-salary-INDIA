@@ -1,53 +1,24 @@
-"""
-Authoritative export of all 40 domain models for SmartSalary India.
-Total Domain Tables: Exactly 40.
-"""
-
-# 11. Audit (1 table)
+# Authoritative export of all 40 domain models for SmartSalary India.
 from app.models.audit import AuditLog
-
-# 1. Auth & RBAC (6 tables)
 from app.models.auth import Permission, Role, User, role_permissions, user_roles
 from app.models.base import Base, TimestampMixin
-
-# 4. Calculation & Audit Engine (4 tables)
 from app.models.calculation import (
     CalculationLineItem,
     CalculationRun,
     CalculationSnapshot,
     CalculationTrace,
 )
-
-# 10. Chat Foundation (2 tables)
 from app.models.chat import ChatMessage, ChatSession
-
-# Enterprise Tax Declarations & Statutory Compliance (3 tables)
 from app.models.compliance import StatutoryComplianceEvent, TaxDeclaration, TaxDeclarationItem
-
-# 2. Employee & Organizational (7 tables)
 from app.models.employee import Department, Employee, JobRole, State, TaxpayerProfile
-
-# 9. Knowledge & RAG Repository (3 tables)
 from app.models.knowledge import KnowledgeChunk, KnowledgeDocument, KnowledgeSource
 from app.models.organization import Organization, OrganizationMembership
-
-# Enterprise Payroll Core (3 tables)
 from app.models.payroll import PayrollPeriod, PayrollRun, PayrollRunItem
-
-# 8. Payslip Domain (3 tables)
 from app.models.payslip import PayslipDocument, PayslipExtraction, PayslipValidation
-
-# 6. Provident Fund Domain (3 tables)
 from app.models.pf import PFInterestRule, PFRule, PFRuleVersion
-
-# 7. Professional Tax Domain (2 tables)
 from app.models.pt import ProfessionalTaxRuleVersion, ProfessionalTaxSlab
-
-# 3. Salary & Income (3 tables)
 from app.models.salary import IncomeSource, SalaryComponent, SalaryRecord
 from app.models.session import UserSession
-
-# 5. Tax Engine Domain (9 tables)
 from app.models.tax import (
     TaxCessRule,
     TaxDeduction,
@@ -59,6 +30,7 @@ from app.models.tax import (
     TaxSource,
     TaxSurcharge,
 )
+from app.models.verification_token import VerificationToken
 
 __all__ = [
     "Base",
@@ -70,6 +42,7 @@ __all__ = [
     "user_roles",
     "role_permissions",
     "UserSession",
+    "VerificationToken",
     # Enterprise & Organization
     "Organization",
     "OrganizationMembership",

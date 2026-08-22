@@ -30,23 +30,49 @@ class AIToolService:
         self.current_user = current_user
         self.retriever = FinancialRAGRetriever(db)
 
-    def get_current_calculation(self) -> ToolExecutionResult:
-        if not self.current_user.employee_id:
+    def _get_user_employee_id(self) -> int | None:
+        if hasattr(self.current_user, "employee_id") and self.current_user.employee_id:
+            return self.current_user.employee_id
+        if hasattr(self.current_user, "employee") and self.current_user.employee:
+            return self.current_user.employee.id
+        # Fallback: query employee from DB by user_id
+        if self.db is not None:
+            from app.models.employee import Employee
+            emp = self.db.scalar(select(Employee).where(Employee.user_id == self.current_user.id))
+            return emp.id if emp else None
+        return None
+
+    def get_current_calculation(self, snapshot_id: int | None = None) -> ToolExecutionResult:
+        from app.models.calculation import CalculationRun
+
+        emp_id = self._get_user_employee_id()
+        if not emp_id:
             return ToolExecutionResult(
                 tool_name="get_current_calculation",
                 is_authorized=False,
                 error_message="User has no linked employee profile.",
             )
 
-        snapshot = self.db.scalar(
+        query = (
             select(CalculationSnapshot)
-            .join(CalculationSnapshot.calculation_run)
-            .where(
-                CalculationSnapshot.calculation_run.property.mapper.class_.employee_id == self.current_user.employee_id,
-                CalculationSnapshot.is_active,
-            )
-            .order_by(CalculationSnapshot.created_at.desc())
+            .join(CalculationRun, CalculationSnapshot.calculation_run_id == CalculationRun.id)
+            .where(CalculationRun.employee_id == emp_id)
         )
+
+        if snapshot_id is not None:
+            # Explicit snapshot requested: check if it belongs to this employee
+            target = self.db.scalar(select(CalculationSnapshot).where(CalculationSnapshot.id == snapshot_id))
+            if target:
+                run = self.db.scalar(select(CalculationRun).where(CalculationRun.id == target.calculation_run_id))
+                if not run or run.employee_id != emp_id:
+                    return ToolExecutionResult(
+                        tool_name="get_current_calculation",
+                        is_authorized=False,
+                        error_message="Access Denied: You cannot access calculation snapshots belonging to another employee.",
+                    )
+            query = query.where(CalculationSnapshot.id == snapshot_id)
+
+        snapshot = self.db.scalar(query.order_by(CalculationSnapshot.created_at.desc()))
 
         if not snapshot:
             return ToolExecutionResult(
@@ -55,26 +81,29 @@ class AIToolService:
                 data={"status": "NO_CALCULATION_FOUND"},
             )
 
+        run = snapshot.calculation_run
+        res_snap = snapshot.result_snapshot or {}
+        inp_snap = snapshot.input_snapshot or {}
+
         return ToolExecutionResult(
             tool_name="get_current_calculation",
             is_authorized=True,
             data={
                 "snapshot_id": snapshot.id,
-                "financial_year": snapshot.financial_year,
-                "tax_regime": snapshot.tax_regime,
-                "annual_gross_income": str(snapshot.annual_gross_income),
-                "total_tax_liability": str(snapshot.total_tax_liability),
-                "total_pf_employee": str(snapshot.total_pf_employee),
-                "total_professional_tax": str(snapshot.total_professional_tax),
-                "annual_take_home": str(snapshot.annual_take_home),
-                "monthly_take_home": str(snapshot.monthly_take_home),
-                "effective_tax_rate_pct": str(snapshot.effective_tax_rate_pct),
-                "calculation_trace_hash": snapshot.calculation_trace_hash,
+                "financial_year": run.financial_year if run else inp_snap.get("financial_year", "2025-26"),
+                "tax_regime": run.regime if run else inp_snap.get("regime", "NEW"),
+                "annual_gross_income": str(inp_snap.get("annual_gross_salary", inp_snap.get("annual_gross", "0"))),
+                "total_tax_liability": str(run.total_tax_liability if run else res_snap.get("total_tax_liability", "0")),
+                "annual_take_home": str(run.net_take_home_annual if run else res_snap.get("net_take_home_annual", "0")),
+                "monthly_take_home": str(run.net_take_home_monthly if run else res_snap.get("net_take_home_monthly", "0")),
+                "result_hash": snapshot.result_hash,
+                "input_hash": snapshot.input_hash,
             },
         )
 
     def get_payroll_summary(self, period_code: str) -> ToolExecutionResult:
-        if not self.current_user.employee_id:
+        emp_id = self._get_user_employee_id()
+        if not emp_id:
             return ToolExecutionResult(
                 tool_name="get_payroll_summary",
                 is_authorized=False,
@@ -88,7 +117,7 @@ class AIToolService:
                 PayrollPeriod, PayrollPeriod.id == PayrollRunItem.payroll_run.property.mapper.class_.payroll_period_id
             )
             .where(
-                PayrollRunItem.employee_id == self.current_user.employee_id,
+                PayrollRunItem.employee_id == emp_id,
                 PayrollPeriod.period_code == period_code,
             )
         )
@@ -115,6 +144,7 @@ class AIToolService:
         )
 
     def get_payslip_reconciliation(self, document_id: int) -> ToolExecutionResult:
+        emp_id = self._get_user_employee_id()
         doc = self.db.scalar(select(PayslipDocument).where(PayslipDocument.id == document_id))
         if not doc:
             return ToolExecutionResult(
@@ -126,7 +156,7 @@ class AIToolService:
         # IDOR Boundary Check
         user_roles = [r.name for r in self.current_user.roles]
         is_hr_or_admin = any(r in ["SUPER_ADMIN", "ADMIN", "HR_MANAGER", "PAYROLL_ADMIN"] for r in user_roles)
-        if not is_hr_or_admin and doc.employee_id != self.current_user.employee_id:
+        if not is_hr_or_admin and doc.employee_id != emp_id:
             return ToolExecutionResult(
                 tool_name="get_payslip_reconciliation",
                 is_authorized=False,

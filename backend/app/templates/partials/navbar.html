@@ -1,36 +1,231 @@
-<header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur-md sticky top-0 z-50">
+<header class="glass-nav sticky top-0 z-40 transition-colors duration-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
+    <!-- Brand Logo -->
+    <div class="flex items-center space-x-6">
       <a href="/" class="flex items-center space-x-3 group">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-          <span class="text-xl font-bold text-white">₹</span>
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <span class="text-lg font-bold text-white tracking-tight">₹</span>
         </div>
         <div>
-          <span class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-            SmartSalary
-          </span>
-          <span class="text-xs text-slate-400 block">India Statutory Intelligence</span>
+          <div class="flex items-center gap-2">
+            <span class="text-base font-bold font-heading text-slate-900 dark:text-white tracking-tight">
+              SmartSalary<span class="text-indigo-600 dark:text-indigo-400">.IN</span>
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              ✓ AY 2026-27
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">Statutory Financial Intelligence</span>
         </div>
       </a>
     </div>
 
-    <nav class="flex items-center space-x-6">
-      <a href="/" class="text-sm font-medium {% if active_page == 'home' %}text-cyan-400{% else %}text-slate-300 hover:text-white{% endif %} transition-colors">
+    <!-- Desktop Navigation Links -->
+    <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+      <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'home' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
         Home
       </a>
-      <a href="/calculator" class="text-sm font-medium {% if active_page == 'calculator' %}text-cyan-400{% else %}text-slate-300 hover:text-white{% endif %} transition-colors">
-        Calculator
+      <a href="/calculator" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'calculator' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
+        Salary Calculator
       </a>
-      <a href="/payslips" class="text-sm font-medium {% if active_page == 'payslips' %}text-cyan-400{% else %}text-slate-300 hover:text-white{% endif %} transition-colors">
+      {% if current_user %}
+      <a href="/dashboard" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'dashboard' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
+        Payroll Dashboard
+      </a>
+      <a href="/tax-center" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'tax-center' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
+        Tax Center
+      </a>
+      <a href="/payslips" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'payslips' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
         Payslips
       </a>
-      <a href="/system-status" class="text-sm font-medium {% if active_page == 'system-status' %}text-cyan-400{% else %}text-slate-300 hover:text-white{% endif %} transition-colors">
-        Architecture Explorer
+      {% endif %}
+      <a href="/system-status" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'system-status' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
+        Evidence &amp; Status
       </a>
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-        Phase 6 Payslip Intelligence
-      </span>
+      <a href="/help" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if active_page == 'help' %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% else %}text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900{% endif %} transition-colors">
+        Help Center
+      </a>
+      {% if current_user and current_user.employee and current_user.employee.organization_id %}
+      <a href="/enterprise" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+        Company Portal
+      </a>
+      {% endif %}
     </nav>
+
+    <!-- Header Actions -->
+    <div class="flex items-center space-x-2.5">
+      <!-- AI Assistant Slide-over Trigger -->
+      <button onclick="toggleAiDrawer()" type="button" id="nav-ai-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+        {% if current_user %}bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border dark:border-indigo-800 hover:bg-indigo-100{% else %}bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700{% endif %}">
+        <svg class="w-3.5 h-3.5 {% if current_user %}text-indigo-600 dark:text-indigo-400{% else %}text-slate-400{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        <span>AI Explains</span>
+        {% if current_user %}
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-subtle" title="Connected"></span>
+        {% endif %}
+      </button>
+
+      {% if current_user %}
+      <!-- ===== AUTHENTICATED: Profile Dropdown ===== -->
+      <div class="relative" id="profile-dropdown-wrapper">
+        <button
+          id="profile-menu-btn"
+          onclick="toggleProfileMenu()"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+          class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+        >
+          <!-- Avatar initial -->
+          <div class="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
+            <span class="text-[11px] font-bold text-white leading-none">{{ (current_user.full_name or 'U')[0] | upper }}</span>
+          </div>
+          <!-- Name -->
+          <div class="hidden sm:flex flex-col items-start leading-none">
+            <span class="text-xs font-semibold text-slate-900 dark:text-white">{{ (current_user.full_name or '').split()[0] }}</span>
+            {% if current_user.employee %}
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5">{{ current_user.employee.employee_code }}</span>
+            {% endif %}
+          </div>
+          <!-- Chevron -->
+          <svg id="profile-chevron" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <!-- Dropdown Panel -->
+        <div
+          id="profile-menu"
+          role="menu"
+          aria-labelledby="profile-menu-btn"
+          class="hidden absolute right-0 top-full mt-2 w-52 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/10 dark:shadow-slate-950/50 z-50 overflow-hidden"
+        >
+          <!-- User info header -->
+          <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+            <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ current_user.full_name }}</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{{ current_user.email }}</p>
+            <span class="inline-flex items-center gap-1 mt-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+              Active Employee
+            </span>
+          </div>
+
+          <!-- Navigation items -->
+          <div class="py-1.5">
+            <a href="/dashboard" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              My Dashboard
+            </a>
+            <a href="/calculator" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              My Calculations
+            </a>
+            <a href="/payslips" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Payslips
+            </a>
+            <a href="/profile/security" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              Security Center
+            </a>
+          </div>
+
+          <!-- Logout -->
+          <div class="border-t border-slate-100 dark:border-slate-800 py-1.5">
+            <button
+              id="btn-logout"
+              onclick="performLogout()"
+              type="button"
+              role="menuitem"
+              class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      <!-- ===== UNAUTHENTICATED: Sign In + Calculate ===== -->
+      <a href="/login" class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        Sign In
+      </a>
+      <a href="/register" class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        Register
+      </a>
+      <a href="/calculator" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 shadow-sm transition-all hover:shadow">
+        Calculate
+      </a>
+      {% endif %}
+    </div>
   </div>
 </header>
+
+<script>
+// ── Profile Menu ──────────────────────────────────────────────
+function toggleProfileMenu() {
+  const menu = document.getElementById('profile-menu');
+  const btn = document.getElementById('profile-menu-btn');
+  const chevron = document.getElementById('profile-chevron');
+  if (!menu) return;
+  const isHidden = menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !isHidden);
+  if (btn) btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+  if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+}
+
+// Close on outside click
+document.addEventListener('click', function(e) {
+  const wrapper = document.getElementById('profile-dropdown-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    const menu = document.getElementById('profile-menu');
+    const btn = document.getElementById('profile-menu-btn');
+    const chevron = document.getElementById('profile-chevron');
+    if (menu) menu.classList.add('hidden');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    if (chevron) chevron.style.transform = '';
+  }
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const menu = document.getElementById('profile-menu');
+    const btn = document.getElementById('profile-menu-btn');
+    const chevron = document.getElementById('profile-chevron');
+    if (menu && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden');
+      if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
+      if (chevron) chevron.style.transform = '';
+    }
+  }
+});
+
+// ── Logout ──────────────────────────────────────────────────
+async function performLogout() {
+  const btn = document.getElementById('btn-logout');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing out...'; }
+
+  // Read CSRF token from cookie (non-HttpOnly, set at login)
+  const csrfToken = document.cookie.split('; ').reduce((acc, c) => {
+    const [k, v] = c.split('=');
+    return k === 'csrf_token' ? decodeURIComponent(v) : acc;
+  }, '');
+
+  try {
+    await fetch('/api/v1/auth/logout', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
+    });
+  } catch (_) {
+    // Even if the request fails, clear local state and redirect
+  }
+  window.location.href = '/';
+}
+</script>

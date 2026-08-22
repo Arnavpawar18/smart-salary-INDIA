@@ -1,0 +1,116 @@
+{% extends "enterprise_base.html" %}
+{% import "partials/enterprise_components.html" as ui %}
+
+{% block title %}AI Risk Engine — SmartSalary India{% endblock %}
+{% block section_title %}AI Risk Engine &amp; Anomaly Detection{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Top Row: Risk Gauge (4 cols) & Critical Anomalies Feed (8 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Risk Exposure Gauge -->
+    <div class="lg:col-span-4 glass-card p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="w-full flex justify-between items-center mb-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Risk Exposure Index</h3>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20">
+          {{ metrics.risk_level }}
+        </span>
+      </div>
+
+      <div class="relative w-44 h-44 flex items-center justify-center my-2">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-100 dark:text-slate-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="2.5"></path>
+          <path class="text-rose-500 gauge-path" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="{{ metrics.risk_index }}, 100" stroke-width="3" stroke-linecap="round"></path>
+        </svg>
+        <div class="absolute flex flex-col items-center">
+          <span class="text-4xl font-extrabold font-heading text-slate-900 dark:text-white font-mono tabular-nums">
+            {{ metrics.risk_index }}
+          </span>
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">SCORE / 100</span>
+        </div>
+      </div>
+
+      <div class="text-center mt-2">
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          <span class="text-rose-500 font-semibold">{{ metrics.vs_last_month }}</span> vs historical baseline
+        </p>
+      </div>
+    </div>
+
+    <!-- Critical Anomalies Feed -->
+    <div class="lg:col-span-8 glass-card p-6 rounded-2xl flex flex-col border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>⚠️</span> Critical Compliance Anomalies
+        </h3>
+        <span class="text-xs text-slate-500 font-mono">{{ metrics.anomalies|length }} Active</span>
+      </div>
+
+      <div class="space-y-3 flex-1 overflow-y-auto max-h-[280px] pr-1">
+        {% for a in metrics.anomalies %}
+        <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-900 dark:text-white">{{ a.title }}</span>
+              {{ ui.status_pill(a.severity) }}
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ a.description }}</p>
+            <span class="text-[10px] text-slate-400 font-mono block">Scope: {{ a.department }}</span>
+          </div>
+          <a href="/enterprise/approvals" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shrink-0">
+            Review
+          </a>
+        </div>
+        {% else %}
+        {{ ui.empty_state("✓", "Zero Critical Anomalies", "All payroll runs and employee investment declarations are in good standing.") }}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Predictive Heatmap & AI Insights -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Predictive Risk Map -->
+    <div class="glass-card p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>🗺️</span> Departmental Risk Heatmap
+        </h3>
+        <span class="text-[10px] text-slate-400 uppercase font-mono">Live Matrix</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {% for d in metrics.department_heatmap %}
+        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-center space-y-1">
+          <span class="text-xs font-semibold text-slate-900 dark:text-white block truncate">{{ d.department }}</span>
+          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold {% if d.risk == 'High' %}bg-rose-500/10 text-rose-600{% elif d.risk == 'Medium' %}bg-amber-500/10 text-amber-600{% else %}bg-emerald-500/10 text-emerald-600{% endif %}">
+            {{ d.risk }} ({{ d.score }}%)
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- AI Anomaly Insights -->
+    <div class="glass-card p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🤖</span>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">AI Engine Findings</h3>
+      </div>
+
+      <div class="p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/30 space-y-2">
+        <p class="text-xs font-semibold text-indigo-900 dark:text-indigo-200 leading-relaxed">
+          {{ metrics.ai_insights.summary }}
+        </p>
+        <p class="text-[11px] text-slate-600 dark:text-slate-400">
+          {{ metrics.ai_insights.supporting_evidence }}
+        </p>
+        <div class="pt-2 border-t border-indigo-200/50 dark:border-indigo-800/50 flex items-center justify-between text-xs">
+          <span class="font-bold text-indigo-700 dark:text-indigo-300">Recommendation:</span>
+          <span class="text-slate-700 dark:text-slate-300 text-[11px]">{{ metrics.ai_insights.recommendation }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

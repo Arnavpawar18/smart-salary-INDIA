@@ -1,11 +1,11 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import BigInteger, ForeignKey, Numeric, String, Text
+from sqlalchemy import BigInteger, ForeignKey, Integer, Numeric, String, Text, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, JSONField, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.employee import Employee
@@ -14,9 +14,11 @@ if TYPE_CHECKING:
 class CalculationRun(Base, TimestampMixin):
     __tablename__ = "calculation_runs"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        Integer().with_variant(BigInteger, "postgresql"), primary_key=True, autoincrement=True
+    )
     employee_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("employees.id", ondelete="CASCADE"), nullable=True
+        Integer().with_variant(BigInteger, "postgresql"), ForeignKey("employees.id", ondelete="CASCADE"), nullable=True
     )
     financial_year: Mapped[str] = mapped_column(String(20), nullable=False)  # '2024-25', etc.
     regime: Mapped[str] = mapped_column(String(10), nullable=False)  # OLD, NEW
@@ -48,16 +50,22 @@ class CalculationSnapshot(Base, TimestampMixin):
 
     __tablename__ = "calculation_snapshots"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        Integer().with_variant(BigInteger, "postgresql"), primary_key=True, autoincrement=True
+    )
     # Enforce strict 1..1 with CalculationRun at DB level (UNIQUE + NOT NULL)
     calculation_run_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("calculation_runs.id", ondelete="CASCADE"), unique=True, nullable=False
+        Integer().with_variant(BigInteger, "postgresql"),
+        ForeignKey("calculation_runs.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
     )
 
-    input_snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
-    result_snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    input_snapshot: Mapped[dict[str, Any]] = mapped_column(JSONField, nullable=False)
+    result_snapshot: Mapped[dict[str, Any]] = mapped_column(JSONField, nullable=False)
     input_hash: Mapped[str] = mapped_column(String(64), nullable=False)  # Canonical SHA-256
     result_hash: Mapped[str] = mapped_column(String(64), nullable=False)  # Canonical SHA-256
+
     engine_version: Mapped[str] = mapped_column(String(32), default="1.0.0", nullable=False)
 
     # Referential integrity to rule versions
@@ -71,6 +79,24 @@ class CalculationSnapshot(Base, TimestampMixin):
     rounding_policy_version: Mapped[str] = mapped_column(String(32), default="1.0.0", nullable=False)
 
     calculation_run: Mapped["CalculationRun"] = relationship("CalculationRun", back_populates="snapshot")
+
+
+@event.listens_for(CalculationSnapshot, "before_update")
+def calculation_snapshot_block_update(mapper, connection, target):
+    from app.engine.common.errors import AuditImmutabilityError
+
+    raise AuditImmutabilityError(
+        f"MUTATION_PROHIBITED: CalculationSnapshot records are immutable (snapshot id={target.id}, calculation_run_id={target.calculation_run_id})."
+    )
+
+
+@event.listens_for(CalculationSnapshot, "before_delete")
+def calculation_snapshot_block_delete(mapper, connection, target):
+    from app.engine.common.errors import AuditImmutabilityError
+
+    raise AuditImmutabilityError(
+        f"DELETION_PROHIBITED: CalculationSnapshot records are immutable historical truth (snapshot id={target.id})."
+    )
 
 
 class CalculationLineItem(Base, TimestampMixin):

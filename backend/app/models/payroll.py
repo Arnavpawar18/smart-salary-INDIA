@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import BigInteger, Date, ForeignKey, Numeric, String, UniqueConstraint
+from sqlalchemy import BigInteger, Date, ForeignKey, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -20,7 +20,10 @@ class PayrollPeriod(Base, TimestampMixin):
     """
 
     __tablename__ = "payroll_periods"
-    __table_args__ = (UniqueConstraint("organization_id", "period_code", name="uq_payroll_period_org_code"),)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "period_code", name="uq_payroll_period_org_code"),
+        Index("ix_payroll_period_org_fy", "organization_id", "financial_year"),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     organization_id: Mapped[int] = mapped_column(

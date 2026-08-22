@@ -3,13 +3,14 @@ SmartSalary India — Expense & Savings Financial Health Engine (M2.4)
 Enforces statutory invariant: Expense != Tax Deduction unless explicitly authorized by a verified statutory rule.
 Computes Cash Surplus, Savings Rate, Expense Ratio, Discretionary Breakdowns, and Negative Cash-Flow alerts.
 """
-from dataclasses import dataclass, field
+
+from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
 
 from app.engine.common.errors import InvalidSalaryInputError
-from app.engine.common.money import Money, quantize_currency, to_decimal
+from app.engine.common.money import quantize_currency, to_decimal
 
 
 class ExpenseFrequency(StrEnum):
@@ -21,9 +22,9 @@ class ExpenseFrequency(StrEnum):
 
 
 class ExpenseNature(StrEnum):
-    ESSENTIAL = "ESSENTIAL"        # Rent, Groceries, Utilities, Healthcare, Debt EMIs
+    ESSENTIAL = "ESSENTIAL"  # Rent, Groceries, Utilities, Healthcare, Debt EMIs
     DISCRETIONARY = "DISCRETIONARY"  # Dining, Travel, Entertainment, Subscriptions
-    ONE_TIME = "ONE_TIME"          # Major asset purchase, emergency repairs
+    ONE_TIME = "ONE_TIME"  # Major asset purchase, emergency repairs
 
 
 class SavingsVehicle(StrEnum):

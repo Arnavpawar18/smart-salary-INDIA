@@ -2,6 +2,7 @@
 SmartSalary India — Stage M2.1 Evidence Ingestion Tests
 Validates cataloging, SHA-256 deduplication, authority classification, and citation resolution from docs/tax_pdf.
 """
+
 from pathlib import Path
 
 from app.core.compliance.document_registry import DocumentRegistry
@@ -11,7 +12,8 @@ from app.core.compliance.rule_registry import ComplianceRuleRegistry
 
 def test_tax_pdf_vault_scanning():
     """Verify scanning and hashing of docs/tax_pdf documents."""
-    docs_root = Path("..") / "docs" / "tax_pdf"
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    docs_root = repo_root / "docs" / "tax_pdf"
     catalog = DocumentRegistry.scan_tax_pdf_vault(docs_root)
     assert len(catalog) > 0, "Expected at least one document found in docs/tax_pdf"
 
@@ -36,7 +38,8 @@ def test_evidence_registry_resolution():
 
 def test_product_faq_corpus_exists():
     """Verify that curated product knowledge documents are seeded and readable."""
-    faq_path = Path("..") / "docs" / "knowledge" / "product" / "faq.md"
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    faq_path = repo_root / "docs" / "knowledge" / "product" / "faq.md"
     assert faq_path.exists(), "Product FAQ corpus file missing"
     content = faq_path.read_text(encoding="utf-8")
     assert "SmartSalary" in content

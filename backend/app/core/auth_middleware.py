@@ -1,4 +1,5 @@
 import hmac
+import logging
 import os
 import secrets
 from typing import Annotated
@@ -88,11 +89,21 @@ async def verify_csrf(
 ):
     """Dependency verifying CSRF for mutating requests."""
     if request.method in ["POST", "PUT", "PATCH", "DELETE"]:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer ") and not request.cookies.get("access_token"):
+            return
+
         token = x_csrf_token
         if not token:
-            form_data = await request.form()
-            token = form_data.get("csrf_token")
-
+            content_type = request.headers.get("content-type", "")
+            if "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
+                try:
+                    form_data = await request.form()
+                    token = form_data.get("csrf_token")
+                except Exception:
+                    pass
+        if not token:
+            token = request.cookies.get("csrf_token")
         if not token or not CSRFProtection.validate_csrf_token(str(token)):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -112,13 +123,16 @@ def get_current_user(
         token = authorization.split(" ")[1]
 
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
 
     try:
         payload = JWTProvider.decode_token(token)
         if payload.get("type") != "access":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
         user_id = int(payload["sub"])
+        session_jti = payload.get("session_jti")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Authentication failed: {e}") from e
 
@@ -126,7 +140,71 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account disabled or not found")
 
+    if session_jti:
+        from app.repositories.session_repository import SessionRepository
+
+        session_repo = SessionRepository(db)
+        active_session = session_repo.get_active_session_by_jti(session_jti)
+        if not active_session:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session has been revoked or expired")
+
     return user
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_optional_user(
+    request: Request,
+    access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
+    db: Session = Depends(get_db),
+) -> "User | None":
+    """
+    Optional auth dependency — returns the authenticated User or None.
+    NEVER raises HTTP 401/403. Used by public pages that need auth context
+    for UI rendering (navbar state) without requiring login.
+
+    Session states:
+        AUTHENTICATED   → User object returned
+        UNAUTHENTICATED → None (no cookie)
+        SESSION_EXPIRED → None (token expired)
+        INVALID_TOKEN   → None (malformed/wrong type)
+        DELETED_USER    → None (user removed from DB)
+
+    Unexpected database errors are logged but do not produce HTTP errors.
+    """
+    token = access_token
+    if not token and authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+
+    if not token:
+        return None
+
+    try:
+        payload = JWTProvider.decode_token(token)
+        if payload.get("type") != "access":
+            return None  # SESSION_EXPIRED or wrong token type
+        user_id = int(payload["sub"])
+        session_jti = payload.get("session_jti")
+    except Exception:
+        return None  # INVALID_TOKEN or SESSION_EXPIRED
+
+    try:
+        user = db.scalar(select(User).where(User.id == user_id, User.is_active.is_(True)))
+        if not user:
+            return None
+        if session_jti:
+            from app.repositories.session_repository import SessionRepository
+
+            session_repo = SessionRepository(db)
+            if not session_repo.get_active_session_by_jti(session_jti):
+                return None
+    except Exception:
+        logger.exception("get_optional_user: unexpected DB error for user_id=%s", user_id)
+        return None  # Safe degradation — don't expose 500 on optional pages
+
+    return user  # None if not found or inactive (DELETED_USER)
 
 
 def require_permission(required_permission_code: str):

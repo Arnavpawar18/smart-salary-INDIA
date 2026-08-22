@@ -22,7 +22,7 @@ def test_pf_engine_statutory_ceiling_default():
         assert res.monthly_employee_epf == Decimal("1800.00")
         assert res.annual_employee_epf == Decimal("21600.00")
         assert res.monthly_employer_eps == Decimal("1249.50")  # 8.33% of 15k
-        assert res.monthly_employer_edli == Decimal("75.00")   # 0.50% of 15k
+        assert res.monthly_employer_edli == Decimal("75.00")  # 0.50% of 15k
 
 
 def test_pf_engine_higher_wage_opt_in():

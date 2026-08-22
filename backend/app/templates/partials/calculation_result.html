@@ -1,156 +1,236 @@
-<div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-fade-in">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 text-white flex justify-between items-center">
-        <div>
-            <div class="text-xs uppercase tracking-widest text-indigo-400 font-semibold mb-1">Calculation Output &bull; {{ result.financial_year }}</div>
-            <h2 class="text-2xl font-bold">Estimated Take-Home & Tax Liability</h2>
-        </div>
-        <div class="flex items-center space-x-2">
-            <span class="px-3 py-1 bg-indigo-900/60 border border-indigo-700 text-indigo-200 text-xs font-mono rounded-full">
-                {{ result.regime }} REGIME
-            </span>
-            <span class="px-3 py-1 bg-emerald-900/60 border border-emerald-700 text-emerald-300 text-xs font-mono rounded-full">
-                {{ result.status }}
-            </span>
-        </div>
-    </div>
-
-    <!-- Core Financial Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-slate-50 border-b border-slate-200">
-        <!-- Card 1: Annual Take-Home -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Estimated Take-Home (Annual)</div>
-            <div class="text-3xl font-extrabold text-emerald-600 font-mono">₹{{ "{:,.2f}".format(result.estimated_annual_take_home|float) }}</div>
-            <div class="text-xs text-slate-500 mt-2 font-mono">≈ ₹{{ "{:,.2f}".format(result.estimated_monthly_take_home|float) }} / month</div>
-        </div>
-
-        <!-- Card 2: Annual Tax Liability -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Estimated Annual Tax</div>
-            <div class="text-3xl font-extrabold text-indigo-600 font-mono">₹{{ "{:,.2f}".format(result.total_annual_tax_liability|float) }}</div>
-            <div class="text-xs text-slate-500 mt-2 font-mono">≈ ₹{{ "{:,.2f}".format(result.estimated_monthly_tax|float) }} / month</div>
-        </div>
-
-        <!-- Card 3: Employee PF -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Employee EPF (Annual)</div>
-            <div class="text-3xl font-extrabold text-amber-600 font-mono">₹{{ "{:,.2f}".format(result.annual_employee_pf|float) }}</div>
-            <div class="text-xs text-slate-500 mt-2 font-mono">₹{{ "{:,.2f}".format(result.monthly_employee_pf|float) }} / month (12%)</div>
-        </div>
-
-        <!-- Card 4: Professional Tax -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Professional Tax ({{ result.state_code }})</div>
-            <div class="text-3xl font-extrabold text-slate-700 font-mono">₹{{ "{:,.2f}".format(result.annual_professional_tax|float) }}</div>
-            <div class="text-xs text-slate-500 mt-2 font-mono">₹{{ "{:,.2f}".format(result.monthly_professional_tax|float) }} / month</div>
-        </div>
-    </div>
-
-    <!-- Detailed Tax Breakdown & Trace Trigger -->
-    <div class="p-6 space-y-6">
-        <!-- Assumptions Block -->
-        <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 text-xs text-amber-900">
-            <div class="font-bold uppercase tracking-wider mb-1.5 flex items-center">
-                <svg class="w-4 h-4 mr-1.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Statutory Scope & Calculation Assumptions
-            </div>
-            <ul class="list-disc list-inside space-y-1 text-amber-800/90 ml-1">
-                {% for note in result.assumptions.notes %}
-                <li>{{ note }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Tax Computation Breakdown Table -->
-        <div>
-            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">Statutory Tax Ledger Summary</h3>
-            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <table class="w-full text-left text-sm">
-                    <tbody class="divide-y divide-slate-200">
-                        <tr class="bg-slate-50/50">
-                            <td class="px-4 py-2.5 font-medium text-slate-600">Annual Gross Salary</td>
-                            <td class="px-4 py-2.5 text-right font-mono font-semibold text-slate-900">₹{{ "{:,.2f}".format(result.annual_gross_salary|float) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-2.5 text-slate-600">Less: Standard Deduction u/s 16(ia)</td>
-                            <td class="px-4 py-2.5 text-right font-mono text-emerald-600">-₹{{ "{:,.2f}".format(result.standard_deduction|float) }}</td>
-                        </tr>
-                        <tr class="bg-slate-50/50 font-semibold">
-                            <td class="px-4 py-2.5 text-slate-800">Net Taxable Income</td>
-                            <td class="px-4 py-2.5 text-right font-mono text-slate-900">₹{{ "{:,.2f}".format(result.taxable_income|float) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-2.5 text-slate-600">Slab Tax Computed</td>
-                            <td class="px-4 py-2.5 text-right font-mono text-slate-900">₹{{ "{:,.2f}".format(result.slab_tax|float) }}</td>
-                        </tr>
-                        {% if result.section_87a_rebate|float > 0 %}
-                        <tr>
-                            <td class="px-4 py-2.5 text-slate-600">Less: Section 87A Tax Rebate</td>
-                            <td class="px-4 py-2.5 text-right font-mono text-emerald-600">-₹{{ "{:,.2f}".format(result.section_87a_rebate|float) }}</td>
-                        </tr>
-                        {% endif %}
-                        <tr>
-                            <td class="px-4 py-2.5 text-slate-600">Health and Education Cess (4%)</td>
-                            <td class="px-4 py-2.5 text-right font-mono text-slate-900">+₹{{ "{:,.2f}".format(result.health_education_cess|float) }}</td>
-                        </tr>
-                        <tr class="bg-indigo-50/60 font-bold">
-                            <td class="px-4 py-3 text-indigo-950">Total Annual Tax Liability</td>
-                            <td class="px-4 py-3 text-right font-mono text-indigo-950 text-base">₹{{ "{:,.2f}".format(result.total_annual_tax_liability|float) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Interactive "How Was This Calculated?" Accordion / Ledger Trigger -->
-        <div class="pt-2">
-            <details class="group bg-slate-900 text-white rounded-xl overflow-hidden border border-slate-800 transition-all">
-                <summary class="p-4 font-semibold text-sm cursor-pointer flex justify-between items-center bg-slate-950 hover:bg-slate-900">
-                    <span class="flex items-center text-indigo-300">
-                        <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                        View Complete Mathematical Trace & Step-by-Step Ledger
+<div class="glass-card overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-fade-in shadow-lg">
+    <!-- Top Result Banner -->
+    <div class="p-6 sm:p-7 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-indigo-50/50 via-white to-white dark:from-indigo-950/30 dark:via-slate-900 dark:to-slate-900">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Calculation Snapshot</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        ✓ {{ result.status }}
                     </span>
-                    <span class="text-xs px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-md font-mono">
-                        {{ result.line_items|length }} Line Items
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                        {{ result.regime }} REGIME
+                    </span>
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                    Financial Year: <strong class="text-slate-800 dark:text-slate-200">{{ result.financial_year }}</strong> &bull; State: <strong class="text-slate-800 dark:text-slate-200">{{ result.state_code }}</strong>
+                </div>
+            </div>
+
+            <!-- Hero In-Hand Take-Home Display -->
+            <div class="text-left sm:text-right">
+                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-0.5">Estimated Monthly In-Hand</span>
+                <div class="text-3xl sm:text-4xl font-extrabold font-money text-emerald-600 dark:text-emerald-400 tracking-tight">
+                    ₹{{ "{:,.2f}".format(result.estimated_monthly_take_home|float) }}
+                </div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    Annual: ₹{{ "{:,.2f}".format(result.estimated_annual_take_home|float) }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Financial 4-Stat Metric Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 p-5 sm:p-6 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+        <!-- Metric 1: Annual Gross -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Annual Gross</span>
+            <span class="text-lg sm:text-xl font-bold font-money text-slate-900 dark:text-white block">
+                ₹{{ "{:,.2f}".format(result.annual_gross_salary|float) }}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">Baseline earnings</span>
+        </div>
+
+        <!-- Metric 2: Annual Tax Liability -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Income Tax</span>
+            <span class="text-lg sm:text-xl font-bold font-money text-indigo-600 dark:text-indigo-400 block">
+                ₹{{ "{:,.2f}".format(result.total_annual_tax_liability|float) }}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">≈ ₹{{ "{:,.2f}".format(result.estimated_monthly_tax|float) }}/mo</span>
+        </div>
+
+        <!-- Metric 3: Employee PF -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">EPFO PF (12%)</span>
+            <span class="text-lg sm:text-xl font-bold font-money text-saffron-600 dark:text-saffron-400 block">
+                ₹{{ "{:,.2f}".format(result.annual_employee_pf|float) }}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">₹{{ "{:,.2f}".format(result.monthly_employee_pf|float) }}/mo</span>
+        </div>
+
+        <!-- Metric 4: Professional Tax -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">State PT ({{ result.state_code }})</span>
+            <span class="text-lg sm:text-xl font-bold font-money text-slate-700 dark:text-slate-300 block">
+                ₹{{ "{:,.2f}".format(result.annual_professional_tax|float) }}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">₹{{ "{:,.2f}".format(result.monthly_professional_tax|float) }}/mo</span>
+        </div>
+    </div>
+
+    <!-- Interactive Rupee Journey Flow Visualization -->
+    <div class="p-6 border-b border-slate-100 dark:border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold font-heading uppercase tracking-wider text-slate-900 dark:text-white block">Rupee Journey</span>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Step-by-step statutory deduction flow</span>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                100% Deterministic Lineage
+            </span>
+        </div>
+
+        <!-- Visual Flow Nodes -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center text-xs">
+            <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                <span class="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">Monthly Gross</span>
+                <span class="font-money font-bold text-slate-900 dark:text-white block mt-0.5">
+                    ₹{{ "{:,.0f}".format((result.annual_gross_salary|float) / 12) }}
+                </span>
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60">
+                <span class="text-[10px] text-amber-700 dark:text-amber-400 block font-medium">Less: EPF (12%)</span>
+                <span class="font-money font-bold text-amber-700 dark:text-amber-300 block mt-0.5">
+                    -₹{{ "{:,.0f}".format(result.monthly_employee_pf|float) }}
+                </span>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                <span class="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">Less: State PT</span>
+                <span class="font-money font-bold text-slate-700 dark:text-slate-300 block mt-0.5">
+                    -₹{{ "{:,.0f}".format(result.monthly_professional_tax|float) }}
+                </span>
+            </div>
+
+            <div class="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60">
+                <span class="text-[10px] text-indigo-700 dark:text-indigo-400 block font-medium">Less: TDS Tax</span>
+                <span class="font-money font-bold text-indigo-700 dark:text-indigo-300 block mt-0.5">
+                    -₹{{ "{:,.0f}".format(result.estimated_monthly_tax|float) }}
+                </span>
+            </div>
+
+            <div class="col-span-2 sm:col-span-1 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700">
+                <span class="text-[10px] text-emerald-700 dark:text-emerald-400 block font-bold">Net In-Hand</span>
+                <span class="font-money font-extrabold text-emerald-700 dark:text-emerald-300 block mt-0.5">
+                    ₹{{ "{:,.0f}".format(result.estimated_monthly_take_home|float) }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statutory Tax Ledger Summary Table -->
+    <div class="p-6 space-y-4">
+        <span class="text-xs font-bold font-heading uppercase tracking-wider text-slate-900 dark:text-white block">
+            Statutory Computation Ledger
+        </span>
+
+        <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
+            <table class="w-full text-left text-xs">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/40 font-medium">
+                        <td class="px-4 py-2.5">Annual Gross Salary</td>
+                        <td class="px-4 py-2.5 text-right font-mono font-bold text-slate-900 dark:text-white">
+                            ₹{{ "{:,.2f}".format(result.annual_gross_salary|float) }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5">Less: Standard Deduction u/s 16(ia)</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                            -₹{{ "{:,.2f}".format(result.standard_deduction|float) }}
+                        </td>
+                    </tr>
+                    <tr class="font-semibold bg-slate-50/30 dark:bg-slate-800/20">
+                        <td class="px-4 py-2.5 text-slate-900 dark:text-white">Net Taxable Income</td>
+                        <td class="px-4 py-2.5 text-right font-mono font-bold text-slate-900 dark:text-white">
+                            ₹{{ "{:,.2f}".format(result.taxable_income|float) }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5">Slab Tax Computed (7 Slabs)</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-slate-900 dark:text-white">
+                            ₹{{ "{:,.2f}".format(result.slab_tax|float) }}
+                        </td>
+                    </tr>
+                    {% if result.section_87a_rebate|float > 0 %}
+                    <tr>
+                        <td class="px-4 py-2.5">Less: Section 87A Tax Rebate / Relief</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                            -₹{{ "{:,.2f}".format(result.section_87a_rebate|float) }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="px-4 py-2.5">Health and Education Cess (4%)</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-slate-900 dark:text-white">
+                            +₹{{ "{:,.2f}".format(result.health_education_cess|float) }}
+                        </td>
+                    </tr>
+                    <tr class="bg-indigo-50/60 dark:bg-indigo-950/50 font-bold text-indigo-950 dark:text-indigo-200">
+                        <td class="px-4 py-3 text-xs sm:text-sm">Total Annual Tax Liability</td>
+                        <td class="px-4 py-3 text-right font-mono text-sm sm:text-base">
+                            ₹{{ "{:,.2f}".format(result.total_annual_tax_liability|float) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mathematical Trace & Provenance Accordion -->
+        <div class="pt-2">
+            <details class="group rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <summary class="p-3.5 text-xs font-semibold cursor-pointer flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <span>View Mathematical Trace &amp; Legal Citations</span>
+                    </span>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
+                        SHA-256: {{ result.result_hash[:12] }}...
                     </span>
                 </summary>
-                <div class="p-5 space-y-4 text-xs font-mono bg-slate-900/90 text-slate-300 border-t border-slate-800">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-3 border-b border-slate-800 text-[11px]">
-                        <div><span class="text-slate-500">Engine Version:</span> {{ result.engine_version }}</div>
-                        <div><span class="text-slate-500">Rounding Version:</span> {{ result.rounding_policy_version }}</div>
-                        <div><span class="text-slate-500">Tax Rule Version:</span> {{ result.tax_rule_version_code }}</div>
-                        <div><span class="text-slate-500">PF Rule Version:</span> {{ result.pf_rule_version_code }}</div>
-                        <div><span class="text-slate-500">PT Rule Version:</span> {{ result.pt_rule_version_code }}</div>
-                        <div><span class="text-slate-500">SHA-256 Hash:</span> <span class="text-indigo-400">{{ result.result_hash[:16] }}...</span></div>
+                
+                <div class="p-4 bg-white dark:bg-slate-900 text-xs font-mono space-y-3 border-t border-slate-200 dark:border-slate-800">
+                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-500 dark:text-slate-400 pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <div>Engine: <span class="text-slate-800 dark:text-slate-200">{{ result.engine_version }}</span></div>
+                        <div>Tax Rule: <span class="text-slate-800 dark:text-slate-200">{{ result.tax_rule_version_code }}</span></div>
+                        <div>PF Rule: <span class="text-slate-800 dark:text-slate-200">{{ result.pf_rule_version_code }}</span></div>
+                        <div>PT Rule: <span class="text-slate-800 dark:text-slate-200">{{ result.pt_rule_version_code }}</span></div>
                     </div>
 
-                    <div class="space-y-3">
+                    <div class="space-y-2.5">
                         {% for step in result.trace_steps %}
-                        <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800">
-                            <div class="font-bold text-indigo-300 text-sm mb-1">Step {{ step.step_number }}: {{ step.title }}</div>
-                            <p class="text-slate-400 text-xs mb-2">{{ step.description }}</p>
-                            {% if step.formula %}
-                            <div class="bg-slate-900 p-2 rounded text-emerald-400 text-xs mb-2">Formula: {{ step.formula }}</div>
-                            {% endif %}
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div>
-                                    <span class="text-slate-500 font-semibold block mb-0.5">Inputs:</span>
-                                    {% for k, v in step.inputs.items() %}
-                                    <div>&bull; {{ k }}: {{ v }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div>
-                                    <span class="text-slate-500 font-semibold block mb-0.5">Outputs:</span>
-                                    {% for k, v in step.outputs.items() %}
-                                    <div class="text-indigo-200 font-semibold">&bull; {{ k }}: {{ v }}</div>
-                                    {% endfor %}
-                                </div>
+                        <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                            <div class="font-bold text-slate-900 dark:text-white text-xs mb-1">
+                                Step {{ step.step_number }}: {{ step.title }}
                             </div>
+                            <p class="text-slate-500 dark:text-slate-400 text-[11px] mb-2">{{ step.description }}</p>
+                            {% if step.formula %}
+                            <div class="p-2 rounded bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 text-[11px] mb-2 font-mono">
+                                {{ step.formula }}
+                            </div>
+                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
                 </div>
             </details>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2 flex flex-wrap items-center gap-3">
+            <button onclick="toggleSimulator()" type="button" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
+                <span>Run What-If Simulation &rarr;</span>
+            </button>
+            <button onclick="toggleAiDrawer()" type="button" class="px-4 py-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Ask AI to Explain</span>
+            </button>
+            <a href="/print-summary" target="_blank" class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5">
+                <span>Print Official Summary</span>
+            </a>
         </div>
     </div>
 </div>

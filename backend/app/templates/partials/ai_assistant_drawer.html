@@ -1,141 +1,356 @@
 <!-- Floating AI Assistant Trigger Button -->
-<div class="fixed bottom-6 right-6 z-50">
-  <button id="ai-assistant-toggle-btn" onclick="toggleAIAssistant()" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-2xl shadow-cyan-500/30 flex items-center justify-center text-2xl transition-all duration-300 hover:scale-105 active:scale-95 group">
-    <span class="group-hover:rotate-12 transition-transform">🤖</span>
+<div class="fixed bottom-6 right-6 z-40">
+  <button id="ai-assistant-toggle-btn" onclick="toggleAiDrawer()" type="button" aria-label="Open AI Assistant" class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/30 flex items-center justify-center text-xl transition-all duration-200 hover:scale-105 active:scale-95 group cursor-pointer">
+    <svg class="w-6 h-6 text-white group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    </svg>
   </button>
 </div>
 
 <!-- Slide-over Assistant Drawer -->
-<div id="ai-assistant-drawer" class="fixed inset-y-0 right-0 max-w-md w-full bg-slate-950/95 backdrop-blur-xl border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+<div id="ai-assistant-drawer" class="fixed inset-y-0 right-0 max-w-md w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-800 z-50 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
   <!-- Header -->
-  <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+  <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/60">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-lg">
-        🤖
+      <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
+        AI
       </div>
       <div>
-        <h3 class="text-sm font-bold text-white">SmartSalary AI Assistant</h3>
-        <p class="text-[11px] text-slate-400">Grounded Statutory Intelligence</p>
+        <h3 class="text-xs sm:text-sm font-bold font-heading text-slate-900 dark:text-white">SmartSalary AI</h3>
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">AI Explains &bull; Code Calculates &bull; Laws Authorize</p>
       </div>
     </div>
-    <button onclick="toggleAIAssistant()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
-      ✕
-    </button>
+    <div class="flex items-center gap-2">
+      <!-- Auth status indicator — updated by JS -->
+      <span id="ai-auth-status" class="hidden items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-lg"></span>
+      <button onclick="toggleAiDrawer()" type="button" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        ✕
+      </button>
+    </div>
   </div>
 
   <!-- Messages Scroll Area -->
-  <div id="ai-chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 text-xs font-sans">
-    <!-- Welcome message -->
-    <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800/80 space-y-2 text-slate-300">
-      <p class="font-semibold text-white">Namaste! 👋</p>
-      <p class="leading-relaxed">I am your evidence-grounded financial assistant. Ask me questions about your tax slab, Section 87A rebate, EPF rules, or payslip discrepancies.</p>
-      <div class="pt-2 flex flex-wrap gap-1.5">
-        <button onclick="sendQuickQuery('What is the Section 87A rebate threshold?')" class="px-2.5 py-1 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 text-[10px] transition-colors">
-          Section 87A rebate?
-        </button>
-        <button onclick="sendQuickQuery('How is employee EPF calculated?')" class="px-2.5 py-1 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[10px] transition-colors">
-          EPF calculation?
-        </button>
-        <button onclick="sendQuickQuery('Explain my payslip reconciliation')" class="px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[10px] transition-colors">
-          Payslip reconciliation?
-        </button>
-      </div>
-    </div>
+  <div id="ai-chat-messages" class="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3.5 text-xs font-sans">
+    <!-- Welcome message injected by JS based on auth state -->
+    <div id="ai-welcome-block"></div>
   </div>
 
-  <!-- Input Bar -->
-  <div class="p-4 border-t border-slate-800 bg-slate-900/60">
-    <form id="ai-chat-form" onsubmit="handleSendAIMessage(event)" class="flex gap-2">
-      <input type="text" id="ai-chat-input" placeholder="Ask about your salary, tax, or PF..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-cyan-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-colors" autocomplete="off">
-      <button type="submit" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-cyan-600/20 flex items-center justify-center">
-        Send
+  <!-- Input Bar — hidden when unauthenticated -->
+  <div id="ai-input-bar" class="hidden p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60">
+    <form id="ai-chat-form" class="flex gap-2">
+      <textarea
+        id="ai-chat-input"
+        placeholder="Ask about your calculation..."
+        rows="1"
+        class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:border-indigo-500 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-colors resize-none"
+        style="min-height:36px; max-height:100px;"
+        autocomplete="off"
+      ></textarea>
+      <button id="ai-send-btn" type="submit" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs transition-colors shadow-sm cursor-pointer flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
       </button>
     </form>
+    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 text-center">Enter to send &nbsp;·&nbsp; Shift+Enter for newline</p>
   </div>
 </div>
 
 <script>
+// ── State ─────────────────────────────────────────────────────
+// Server-derived: current_user is rendered by Jinja2 at page load.
+// This is the authoritative source — not localStorage.
+const AI_AUTH_STATE = {{ 'true' if current_user else 'false' }};
+
+// Quick-suggestion sets based on context
+const QUICK_QUERIES_UNAUTH = [
+  'What is Section 87A rebate?',
+  'How does EPF work?',
+  'What is the New Tax Regime?',
+  'How is professional tax calculated?',
+];
+const QUICK_QUERIES_AUTH = [
+  'Why is my EPF contribution ₹1,800?',
+  'How does Section 87A rebate apply to my calculation?',
+  'Why is my professional tax this amount?',
+  'Explain my take-home salary.',
+];
+
 let currentSessionId = null;
 
-function toggleAIAssistant() {
+// ── Helpers ───────────────────────────────────────────────────
+function getCsrfToken() {
+  return document.cookie.split('; ').reduce((acc, c) => {
+    const [k, v] = c.split('=');
+    return k === 'csrf_token' ? decodeURIComponent(v) : acc;
+  }, '');
+}
+
+/**
+ * SAFE rendering: AI output is untrusted content.
+ * We render plain text only. Bold/newline supported via DOM — no innerHTML from AI.
+ */
+function renderAiText(el, text) {
+  el.textContent = '';
+  // Split on double-newline for paragraphs
+  const paragraphs = text.split(/\n\n+/);
+  paragraphs.forEach((para, i) => {
+    const p = document.createElement('p');
+    p.className = i === 0 ? 'leading-relaxed' : 'leading-relaxed mt-2';
+    // Render **bold** inline
+    const parts = para.split(/\*\*(.+?)\*\*/g);
+    parts.forEach((part, idx) => {
+      if (idx % 2 === 1) {
+        const b = document.createElement('strong');
+        b.textContent = part;
+        p.appendChild(b);
+      } else {
+        p.appendChild(document.createTextNode(part));
+      }
+    });
+    el.appendChild(p);
+  });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ── Drawer ────────────────────────────────────────────────────
+function toggleAiDrawer() {
   const drawer = document.getElementById('ai-assistant-drawer');
-  drawer.classList.toggle('translate-x-full');
+  if (!drawer) return;
+  if (drawer.classList.contains('translate-x-full')) {
+    drawer.classList.remove('translate-x-full');
+    initAiDrawer();
+  } else {
+    drawer.classList.add('translate-x-full');
+  }
 }
 
+function initAiDrawer() {
+  const statusEl = document.getElementById('ai-auth-status');
+  const welcomeEl = document.getElementById('ai-welcome-block');
+  const inputBar = document.getElementById('ai-input-bar');
+
+  if (AI_AUTH_STATE) {
+    // AUTHENTICATED
+    if (statusEl) {
+      statusEl.classList.remove('hidden');
+      statusEl.classList.add('inline-flex', 'bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-950/40', 'dark:text-emerald-400');
+      statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Connected';
+    }
+    if (inputBar) inputBar.classList.remove('hidden');
+    if (welcomeEl) {
+      welcomeEl.innerHTML = `
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2 text-slate-600 dark:text-slate-300">
+          <p class="font-bold text-slate-900 dark:text-white text-xs">Evidence-Grounded Assistant 👋</p>
+          <p class="text-xs leading-relaxed">
+            I explain the mathematical and statutory reasoning behind your calculation. Ask about tax slabs, Section 87A rebate, EPF wage ceiling, or state professional tax.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-1.5">
+            ${QUICK_QUERIES_AUTH.map(q =>
+              `<button onclick="sendQuickQuery(this.dataset.q)" data-q="${escapeHtml(q)}"
+                class="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 text-[10px] font-medium hover:bg-indigo-50 transition-colors cursor-pointer">
+                ${escapeHtml(q)}
+              </button>`
+            ).join('')}
+          </div>
+        </div>`;
+    }
+  } else {
+    // UNAUTHENTICATED
+    if (statusEl) {
+      statusEl.classList.remove('hidden');
+      statusEl.classList.add('inline-flex', 'bg-amber-50', 'text-amber-700', 'dark:bg-amber-950/40', 'dark:text-amber-400');
+      statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span> Sign in required';
+    }
+    if (inputBar) inputBar.classList.add('hidden');
+    if (welcomeEl) {
+      welcomeEl.innerHTML = `
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-4">
+          <div class="w-10 h-10 mx-auto rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-bold text-slate-900 dark:text-white text-sm">SmartSalary AI</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Sign in to ask questions about your salary calculations, tax liabilities, and statutory deductions.
+            </p>
+          </div>
+          <div class="pt-1 flex flex-wrap gap-1.5 justify-center">
+            ${QUICK_QUERIES_UNAUTH.map(q =>
+              `<span class="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-[10px]">${escapeHtml(q)}</span>`
+            ).join('')}
+          </div>
+          <a href="/login" class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-sm transition-colors">
+            Sign In to Continue
+          </a>
+        </div>`;
+    }
+  }
+}
+
+// ── Send ──────────────────────────────────────────────────────
 function sendQuickQuery(query) {
-  document.getElementById('ai-chat-input').value = query;
-  handleSendAIMessage(new Event('submit'));
+  const input = document.getElementById('ai-chat-input');
+  if (input) {
+    input.value = query;
+    submitAiMessage();
+  }
 }
 
-async function handleSendAIMessage(e) {
-  if (e) e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('ai-chat-form');
   const input = document.getElementById('ai-chat-input');
-  const query = input.value.trim();
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitAiMessage();
+    });
+  }
+
+  // Enter to send, Shift+Enter for newline
+  if (input) {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitAiMessage();
+      }
+    });
+    // Auto-resize textarea
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+  }
+});
+
+async function submitAiMessage() {
+  if (!AI_AUTH_STATE) return;
+
+  const input = document.getElementById('ai-chat-input');
+  const sendBtn = document.getElementById('ai-send-btn');
+  const query = input ? input.value.trim() : '';
   if (!query) return;
 
-  input.value = '';
-  const messagesContainer = document.getElementById('ai-chat-messages');
+  const messagesDiv = document.getElementById('ai-chat-messages');
+  if (!messagesDiv) return;
 
-  // Append User message
-  const userMsgDiv = document.createElement('div');
-  userMsgDiv.className = "p-3.5 rounded-2xl bg-cyan-600/20 border border-cyan-500/30 text-slate-100 text-xs ml-6 leading-relaxed";
-  userMsgDiv.innerText = query;
-  messagesContainer.appendChild(userMsgDiv);
+  // Append user message — using textContent for safety
+  const userMsg = document.createElement('div');
+  userMsg.className = 'p-3 rounded-xl bg-indigo-600 text-white text-xs ml-6 leading-relaxed shadow-xs';
+  userMsg.textContent = query;
+  messagesDiv.appendChild(userMsg);
+  if (input) { input.value = ''; input.style.height = 'auto'; }
 
-  // Loading skeleton
-  const loadingDiv = document.createElement('div');
-  loadingDiv.id = "ai-loading-indicator";
-  loadingDiv.className = "p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 text-xs mr-6 flex items-center gap-2";
-  loadingDiv.innerHTML = `<span class="animate-pulse">⏳</span> Retrieving statutory evidence...`;
-  messagesContainer.appendChild(loadingDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  // Append thinking placeholder
+  const botMsg = document.createElement('div');
+  botMsg.className = 'p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs mr-6 space-y-2 border border-slate-200 dark:border-slate-700 leading-relaxed';
+  const thinking = document.createElement('span');
+  thinking.className = 'text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse';
+  thinking.textContent = 'Evaluating statutory sources...';
+  botMsg.appendChild(thinking);
+  messagesDiv.appendChild(botMsg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  if (sendBtn) sendBtn.disabled = true;
 
   try {
+    const csrfToken = getCsrfToken();
     const res = await fetch('/api/v1/chat/inquire', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
       body: JSON.stringify({ query: query, session_id: currentSessionId }),
     });
 
-    const indicator = document.getElementById('ai-loading-indicator');
-    if (indicator) indicator.remove();
+    botMsg.innerHTML = '';
+
+    if (res.status === 401) {
+      // Session expired — distinct from "not logged in"
+      const expiredEl = document.createElement('div');
+      expiredEl.className = 'space-y-2 text-center';
+      const msg = document.createElement('p');
+      msg.className = 'font-semibold text-amber-700 dark:text-amber-400 text-xs';
+      msg.textContent = '⚠ Your session has expired.';
+      const sub = document.createElement('p');
+      sub.className = 'text-slate-500 dark:text-slate-400 text-xs';
+      sub.textContent = 'Please sign in again to continue using the AI assistant.';
+      const link = document.createElement('a');
+      link.href = '/login';
+      link.className = 'inline-block mt-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 transition-colors';
+      link.textContent = 'Sign In Again';
+      expiredEl.appendChild(msg);
+      expiredEl.appendChild(sub);
+      expiredEl.appendChild(link);
+      botMsg.appendChild(expiredEl);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return;
+    }
 
     if (!res.ok) {
-      const err = await res.json();
-      const errDiv = document.createElement('div');
-      errDiv.className = "p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs mr-6";
-      errDiv.innerText = err.detail || "Unable to retrieve response. Please try again.";
-      messagesContainer.appendChild(errDiv);
+      // Generic backend error — show retry
+      const errEl = document.createElement('div');
+      errEl.className = 'space-y-2';
+      const errMsg = document.createElement('p');
+      errMsg.className = 'text-rose-600 dark:text-rose-400 text-xs';
+      errMsg.textContent = 'I could not retrieve the statutory evidence right now. Your calculation has not been changed.';
+      const retryBtn = document.createElement('button');
+      retryBtn.type = 'button';
+      retryBtn.className = 'text-xs font-semibold text-indigo-600 dark:text-indigo-400 underline cursor-pointer';
+      retryBtn.textContent = 'Retry';
+      retryBtn.onclick = () => {
+        if (input) { input.value = query; }
+        botMsg.remove();
+        submitAiMessage();
+      };
+      errEl.appendChild(errMsg);
+      errEl.appendChild(retryBtn);
+      botMsg.appendChild(errEl);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
       return;
     }
 
     const data = await res.json();
     currentSessionId = data.session_id;
 
-    // Append AI Response
-    const asstMsgDiv = document.createElement('div');
-    asstMsgDiv.className = "p-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 text-xs mr-4 space-y-3 leading-relaxed";
+    // Safe rendering — AI text goes through renderAiText (textContent only)
+    const textEl = document.createElement('div');
+    renderAiText(textEl, data.response || 'Response generated from verified statutory rules.');
+    botMsg.appendChild(textEl);
 
-    // Format simple markdown into paragraphs
-    const formattedContent = data.response.replace(/\n\n/g, '<br><br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    let citationsHtml = '';
+    // Citations — safe DOM construction, no innerHTML from untrusted data
     if (data.citations && data.citations.length > 0) {
-      citationsHtml = `<div class="pt-2.5 border-t border-slate-800/80 space-y-1">
-        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">Verified Statutory Citations:</span>
-        <div class="flex flex-wrap gap-1.5">
-          ${data.citations.map(c => `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-cyan-400 text-[10px] border border-slate-700 font-mono">📜 ${c.authority} • ${c.section_reference}</span>`).join('')}
-        </div>
-      </div>`;
+      const citDiv = document.createElement('div');
+      citDiv.className = 'pt-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5 mt-2';
+      data.citations.forEach(c => {
+        const chip = document.createElement('span');
+        chip.className = 'px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-indigo-600 dark:text-indigo-400';
+        chip.textContent = '📄 ' + (c.source_title || c.authority || 'Government Evidence');
+        citDiv.appendChild(chip);
+      });
+      botMsg.appendChild(citDiv);
     }
 
-    asstMsgDiv.innerHTML = `<div>${formattedContent}</div>${citationsHtml}`;
-    messagesContainer.appendChild(asstMsgDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
   } catch (err) {
-    const indicator = document.getElementById('ai-loading-indicator');
-    if (indicator) indicator.remove();
-    console.error("AI Inquiry error:", err);
+    botMsg.innerHTML = '';
+    const errEl = document.createElement('div');
+    errEl.className = 'space-y-2';
+    const errMsg = document.createElement('p');
+    errMsg.className = 'text-rose-600 dark:text-rose-400 text-xs';
+    errMsg.textContent = 'Connection error. Please ensure the application is running.';
+    errEl.appendChild(errMsg);
+    botMsg.appendChild(errEl);
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 }
 </script>

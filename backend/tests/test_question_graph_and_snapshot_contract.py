@@ -1,15 +1,15 @@
 """
 Tests for Question Graph Declarative Dependency Engine and Snapshot Contract V1
 """
+
 from decimal import Decimal
 from uuid import uuid4
+
 import pytest
 
 from app.core.compliance.question_graph import (
     DynamicQuestionEngine,
     InsufficientApplicabilityFactsError,
-    QuestionDataType,
-    QuestionOperator,
 )
 from app.engine.dto.snapshot_contract_v1 import (
     ApplicabilityDecisionV1,

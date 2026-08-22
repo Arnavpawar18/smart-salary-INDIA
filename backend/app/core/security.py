@@ -12,6 +12,11 @@ from pwdlib.hashers.argon2 import Argon2Hasher
 password_hash = PasswordHash((Argon2Hasher(),))
 
 
+def normalize_email(email: str) -> str:
+    """Canonical email normalization: strips whitespace and converts to lowercase."""
+    return email.strip().lower()
+
+
 class PasswordHasher:
     """Isolates password hashing and verification behind an authoritative interface."""
 
@@ -42,6 +47,7 @@ class JWTProvider:
         role: str,
         employee_id: int | None = None,
         expires_delta: timedelta | None = None,
+        session_jti: str | None = None,
     ) -> str:
         now = datetime.now(UTC)
         expire = now + (expires_delta if expires_delta else timedelta(minutes=cls.ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -54,6 +60,8 @@ class JWTProvider:
             "exp": expire,
             "jti": str(uuid.uuid4()),
         }
+        if session_jti:
+            payload["session_jti"] = session_jti
         return jwt.encode(payload, cls.SECRET_KEY, algorithm=cls.ALGORITHM)
 
     @classmethod
@@ -84,6 +92,26 @@ class JWTProvider:
             return payload
         except jwt.PyJWTError as e:
             raise ValueError(f"Invalid or expired token: {e}") from e
+
+    @classmethod
+    def create_password_reset_token(
+        cls,
+        user_id: int,
+        email: str,
+        expires_delta: timedelta | None = None,
+    ) -> str:
+        """Issues short-lived signed JWT for completing two-stage password reset."""
+        now = datetime.now(UTC)
+        expire = now + (expires_delta if expires_delta else timedelta(minutes=10))
+        payload = {
+            "sub": str(user_id),
+            "email": email,
+            "type": "password_reset",
+            "iat": now,
+            "exp": expire,
+            "jti": str(uuid.uuid4()),
+        }
+        return jwt.encode(payload, cls.SECRET_KEY, algorithm=cls.ALGORITHM)
 
     @classmethod
     def compute_token_hash(cls, token: str) -> str:

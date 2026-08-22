@@ -1,41 +1,39 @@
 <!-- Minimal Level 1 Result Card -->
-<div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transition-all">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 text-white flex justify-between items-start">
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in">
+    <!-- Header Summary Strip -->
+    <div class="p-6 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-            <div class="flex items-center space-x-2 mb-1.5">
-                <span class="text-xs uppercase tracking-widest text-indigo-400 font-semibold font-mono">
-                    {{ result.financial_year }} &bull; {{ result.regime }} REGIME
-                </span>
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ quality.badge_class }}" aria-label="{{ quality.aria_label }}">
-                    {{ quality.badge_label }}
-                </span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">Your Calculation Result</span>
+            <div class="text-xs text-slate-300 font-mono mt-0.5">
+                FY {{ result.financial_year }} &bull; State: {{ result.state_code }} &bull; {{ result.regime }} Regime
             </div>
-            <h2 class="text-2xl font-black tracking-tight text-white">Your Calculation Result</h2>
         </div>
-        <div class="text-right">
-            <span class="px-3 py-1 bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono rounded-lg">
-                State: {{ result.state_code }}
+        <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-semibold">
+                ✓ Verified Lineage
+            </span>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border {{ quality.badge_class }}" aria-label="{{ quality.aria_label }}">
+                {{ quality.badge_label }}
             </span>
         </div>
     </div>
 
     <!-- Core Take-Home & Tax Highlight (Minimal First View) -->
-    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/70 border-b border-slate-200">
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
         <!-- Annual Take-Home -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Estimated Annual Take-Home</div>
-            <div class="text-4xl font-extrabold text-emerald-600 font-mono tracking-tight">{{ format_inr(result.estimated_annual_take_home) }}</div>
-            <div class="text-xs text-slate-500 font-medium font-mono pt-1">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1 min-w-0">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Estimated Annual Take-Home</div>
+            <div class="num-responsive-hero text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">{{ format_inr(result.estimated_annual_take_home) }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono pt-1">
                 ≈ {{ format_inr(result.estimated_monthly_take_home) }} / month (Projected Allocation)
             </div>
         </div>
 
         <!-- Annual Tax Liability -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Estimated Annual Tax</div>
-            <div class="text-4xl font-extrabold text-indigo-600 font-mono tracking-tight">{{ format_inr(result.total_annual_tax_liability) }}</div>
-            <div class="text-xs text-slate-500 font-medium font-mono pt-1">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1 min-w-0">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Estimated Annual Tax</div>
+            <div class="num-responsive-hero text-indigo-600 dark:text-indigo-400 font-mono tracking-tight">{{ format_inr(result.total_annual_tax_liability) }}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono pt-1">
                 ≈ {{ format_inr(result.estimated_monthly_tax) }} / month
             </div>
         </div>
@@ -43,14 +41,14 @@
 
     <!-- Analytical Ratio Bar & Quality Notice -->
     <div class="p-6 space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-4 p-4 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs">
+        <div class="flex flex-wrap items-center justify-between gap-4 p-4 bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800/60 rounded-xl text-xs">
             <div class="space-y-0.5">
-                <span class="font-bold text-indigo-950">Effective Take-Home Rate: <span class="font-mono text-emerald-700 text-sm font-extrabold">{{ metrics.effective_take_home_rate }}%</span></span>
-                <p class="text-indigo-900/80 text-[11px]">You retain approximately {{ metrics.effective_take_home_rate }}% of your total gross earnings.</p>
+                <span class="font-bold text-indigo-950 dark:text-indigo-200">Effective Take-Home Rate: <span class="font-mono text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">{{ metrics.effective_take_home_rate }}%</span></span>
+                <p class="text-indigo-900/80 dark:text-indigo-300 text-[11px]">You retain approximately {{ metrics.effective_take_home_rate }}% of your total gross earnings.</p>
             </div>
             <div class="space-y-0.5 text-right">
-                <span class="font-bold text-indigo-950">Effective Tax Rate: <span class="font-mono text-indigo-700 text-sm font-extrabold">{{ metrics.effective_tax_rate }}%</span></span>
-                <p class="text-indigo-900/80 text-[11px]">Computed on Net Taxable Income of {{ format_inr(result.taxable_income) }}.</p>
+                <span class="font-bold text-indigo-950 dark:text-indigo-200">Effective Tax Rate: <span class="font-mono text-indigo-600 dark:text-indigo-400 text-sm font-extrabold">{{ metrics.effective_tax_rate }}%</span></span>
+                <p class="text-indigo-900/80 dark:text-indigo-300 text-[11px]">Computed on Net Taxable Income of {{ format_inr(result.taxable_income) }}.</p>
             </div>
         </div>
 
@@ -63,15 +61,37 @@
             <p class="text-[11px] leading-relaxed">{{ quality.description }}</p>
         </div>
 
+        {% if not current_user %}
+        <!-- Anonymous Preview Notice -->
+        <div class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="space-y-0.5">
+                <span class="font-bold text-indigo-950 dark:text-indigo-200">Save this calculation to your profile</span>
+                <p class="text-[11px] text-indigo-800 dark:text-indigo-300">Sign in or create an account to save immutable history, generate payslips, and unlock AI explanations.</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="/login" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">Sign In</a>
+                <a href="/register" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold text-xs">Register</a>
+            </div>
+        </div>
+        {% else %}
+        <!-- Calculation Saved & Snapshot Provenance Badge -->
+        <div class="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 px-1">
+            <span class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span>✓</span> Snapshot Saved (#CAL-{{ "%04d"|format(calculation_id) }})
+            </span>
+            <span class="truncate max-w-[220px]">Hash: {{ result.result_hash[:12] }}...</span>
+        </div>
+        {% endif %}
+
         <!-- Prominent Level 2 Trigger: "How was this calculated?" Button -->
         <div class="pt-2">
             <button hx-get="/calculator/{{ calculation_id }}/how"
                     hx-target="#how-details-container"
                     hx-swap="innerHTML"
                     hx-indicator="#how-spinner"
-                    class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center space-x-2">
+                    class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center space-x-2 cursor-pointer">
                 <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                <span>HOW WAS THIS CALCULATED? (View Trace & Ledger)</span>
+                <span>HOW WAS THIS CALCULATED? (View Trace &amp; Ledger)</span>
                 <svg id="how-spinner" class="htmx-indicator animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -80,6 +100,20 @@
         </div>
     </div>
 </div>
+
+<script>
+// Notify AI Drawer with active Calculation Snapshot ID
+if (typeof setActiveCalculationContext === 'function') {
+    setActiveCalculationContext({
+        calculation_id: {{ calculation_id }},
+        financial_year: "{{ result.financial_year }}",
+        state_code: "{{ result.state_code }}",
+        regime: "{{ result.regime }}",
+        monthly_take_home: "{{ format_inr(result.estimated_monthly_take_home) }}",
+        annual_gross: "{{ format_inr(result.annual_gross_salary) }}"
+    });
+}
+</script>
 
 <!-- Lazy-Loaded Container for Level 2 Explanation, Charts, What-if & Trust Center -->
 <div id="how-details-container" class="space-y-6 pt-2"></div>

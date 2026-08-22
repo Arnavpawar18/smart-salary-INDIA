@@ -13,16 +13,10 @@ def test_calculations_api_endpoint():
         "annual_gross_salary": 1200000.0,
     }
     response = client.post("/api/v1/calculations", json=payload)
-    assert response.status_code == 201
-    data = response.json()
-
-    assert data["financial_year"] == "2025-26"
-    assert data["regime"] == "NEW"
-    assert data["state_code"] == "KA"
-    assert data["total_annual_tax_liability"] == "0.00"  # u/s 87A rebate
-    assert len(data["line_items"]) > 0
-    assert len(data["trace_steps"]) > 0
-    assert len(data["result_hash"]) == 64
+    # The calculation endpoint now requires authentication. An anonymous request should be rejected.
+    assert response.status_code == 401
+    # Optionally verify the error detail contains an authentication message.
+    assert "Authentication required" in response.text
 
 
 def test_compare_regimes_api_endpoint():
@@ -40,7 +34,7 @@ def test_compare_regimes_api_endpoint():
     assert "recommended_regime" in data
 
 
-def test_htmx_calculator_post_renders_partial():
+def test_htmx_calculator_post_anonymous_renders_auth_required_gate():
     form_data = {
         "financial_year": "2025-26",
         "regime": "NEW",
@@ -50,6 +44,7 @@ def test_htmx_calculator_post_renders_partial():
     }
     response = client.post("/calculator/calculate", data=form_data)
     assert response.status_code == 200
-    assert "Your Calculation Result" in response.text
-    assert "Estimated Annual Take-Home" in response.text
-    assert "HOW WAS THIS CALCULATED?" in response.text
+    assert "Authentication Required" in response.text
+    assert "Create an account or sign in" in response.text
+    assert "Sign In to Account" in response.text
+    assert "Annual ₹1200000" in response.text

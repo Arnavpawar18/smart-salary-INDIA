@@ -7,6 +7,7 @@ Create Date: 2026-08-17 10:00:00.000000
 
 Exact 40 Domain Tables for SmartSalary India.
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa

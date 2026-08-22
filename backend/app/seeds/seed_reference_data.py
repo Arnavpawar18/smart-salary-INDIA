@@ -310,6 +310,22 @@ def seed_reference_data(db: Session) -> None:
             TaxCessRule(tax_rule_version_id=trv_2425.id, name="Health and Education Cess", cess_rate=Decimal("0.0400"))
         )
 
+        surcharges_2425 = [
+            (Decimal("5000000.00"), Decimal("10000000.00"), Decimal("0.1000")),
+            (Decimal("10000000.00"), Decimal("20000000.00"), Decimal("0.1500")),
+            (Decimal("20000000.00"), None, Decimal("0.2500")),
+        ]
+        for f_inc, t_inc, s_rate in surcharges_2425:
+            db.add(
+                TaxSurcharge(
+                    tax_rule_version_id=trv_2425.id,
+                    from_income=f_inc,
+                    to_income=t_inc,
+                    surcharge_rate=s_rate,
+                    is_marginal_relief_applicable=True,
+                )
+            )
+
     # --- C. OLD REGIME (ALL FYs) ---
     for fy_code in ["2024-25", "2025-26", "2026-27"]:
         v_code_old = f"TRV-{fy_code}-OLD-v1"
@@ -378,6 +394,24 @@ def seed_reference_data(db: Session) -> None:
                     tax_rule_version_id=trv_old.id, name="Health and Education Cess", cess_rate=Decimal("0.0400")
                 )
             )
+
+            # Surcharges for Old Regime
+            surcharges_old = [
+                (Decimal("5000000.00"), Decimal("10000000.00"), Decimal("0.1000")),
+                (Decimal("10000000.00"), Decimal("20000000.00"), Decimal("0.1500")),
+                (Decimal("20000000.00"), Decimal("50000000.00"), Decimal("0.2500")),
+                (Decimal("50000000.00"), None, Decimal("0.3700")),
+            ]
+            for f_inc, t_inc, s_rate in surcharges_old:
+                db.add(
+                    TaxSurcharge(
+                        tax_rule_version_id=trv_old.id,
+                        from_income=f_inc,
+                        to_income=t_inc,
+                        surcharge_rate=s_rate,
+                        is_marginal_relief_applicable=True,
+                    )
+                )
     db.flush()
 
     # -------------------------------------------------------------
@@ -536,6 +570,141 @@ def seed_reference_data(db: Session) -> None:
                 to_monthly_salary=None,
                 monthly_tax_amount=Decimal("200.00"),
                 february_tax_amount=Decimal("200.00"),
+                gender_applicable="ALL",
+            )
+        )
+
+    # West Bengal (WB)
+    pt_wb = db.scalar(select(ProfessionalTaxRuleVersion).where(ProfessionalTaxRuleVersion.version_code == "PTRV-WB-v1"))
+    if not pt_wb:
+        pt_wb = ProfessionalTaxRuleVersion(
+            state_id=states_dict["WB"],
+            version_code="PTRV-WB-v1",
+            effective_from=date(2024, 4, 1),
+            status="ACTIVE",
+        )
+        db.add(pt_wb)
+        db.flush()
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_wb.id,
+                slab_order=1,
+                from_monthly_salary=Decimal("0.00"),
+                to_monthly_salary=Decimal("10000.00"),
+                monthly_tax_amount=Decimal("0.00"),
+                february_tax_amount=Decimal("0.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_wb.id,
+                slab_order=2,
+                from_monthly_salary=Decimal("10001.00"),
+                to_monthly_salary=Decimal("15000.00"),
+                monthly_tax_amount=Decimal("110.00"),
+                february_tax_amount=Decimal("110.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_wb.id,
+                slab_order=3,
+                from_monthly_salary=Decimal("15001.00"),
+                to_monthly_salary=Decimal("25000.00"),
+                monthly_tax_amount=Decimal("130.00"),
+                february_tax_amount=Decimal("130.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_wb.id,
+                slab_order=4,
+                from_monthly_salary=Decimal("25001.00"),
+                to_monthly_salary=Decimal("40000.00"),
+                monthly_tax_amount=Decimal("150.00"),
+                february_tax_amount=Decimal("150.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_wb.id,
+                slab_order=5,
+                from_monthly_salary=Decimal("40001.00"),
+                to_monthly_salary=None,
+                monthly_tax_amount=Decimal("200.00"),
+                february_tax_amount=Decimal("200.00"),
+                gender_applicable="ALL",
+            )
+        )
+
+    # Gujarat (GJ)
+    pt_gj = db.scalar(select(ProfessionalTaxRuleVersion).where(ProfessionalTaxRuleVersion.version_code == "PTRV-GJ-v1"))
+    if not pt_gj:
+        pt_gj = ProfessionalTaxRuleVersion(
+            state_id=states_dict["GJ"],
+            version_code="PTRV-GJ-v1",
+            effective_from=date(2024, 4, 1),
+            status="ACTIVE",
+        )
+        db.add(pt_gj)
+        db.flush()
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_gj.id,
+                slab_order=1,
+                from_monthly_salary=Decimal("0.00"),
+                to_monthly_salary=Decimal("12000.00"),
+                monthly_tax_amount=Decimal("0.00"),
+                february_tax_amount=Decimal("0.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_gj.id,
+                slab_order=2,
+                from_monthly_salary=Decimal("12001.00"),
+                to_monthly_salary=None,
+                monthly_tax_amount=Decimal("200.00"),
+                february_tax_amount=Decimal("200.00"),
+                gender_applicable="ALL",
+            )
+        )
+
+    # Tamil Nadu (TN)
+    pt_tn = db.scalar(select(ProfessionalTaxRuleVersion).where(ProfessionalTaxRuleVersion.version_code == "PTRV-TN-v1"))
+    if not pt_tn:
+        pt_tn = ProfessionalTaxRuleVersion(
+            state_id=states_dict["TN"],
+            version_code="PTRV-TN-v1",
+            effective_from=date(2024, 4, 1),
+            status="ACTIVE",
+        )
+        db.add(pt_tn)
+        db.flush()
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_tn.id,
+                slab_order=1,
+                from_monthly_salary=Decimal("0.00"),
+                to_monthly_salary=Decimal("21000.00"),
+                monthly_tax_amount=Decimal("0.00"),
+                february_tax_amount=Decimal("0.00"),
+                gender_applicable="ALL",
+            )
+        )
+        db.add(
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_tn.id,
+                slab_order=2,
+                from_monthly_salary=Decimal("21001.00"),
+                to_monthly_salary=None,
+                monthly_tax_amount=Decimal("208.33"),
+                february_tax_amount=Decimal("208.37"),
                 gender_applicable="ALL",
             )
         )

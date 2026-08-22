@@ -50,7 +50,11 @@ def test_tax_declaration_six_stage_lifecycle_and_transition_invariants():
             financial_year="2026-27",
             regime="OLD",
             items=[
-                {"section_code": "80C", "category_name": "Public Provident Fund", "declared_amount": Decimal("150000.00")},
+                {
+                    "section_code": "80C",
+                    "category_name": "Public Provident Fund",
+                    "declared_amount": Decimal("150000.00"),
+                },
                 {"section_code": "80D", "category_name": "Health Insurance", "declared_amount": Decimal("25000.00")},
             ],
         )

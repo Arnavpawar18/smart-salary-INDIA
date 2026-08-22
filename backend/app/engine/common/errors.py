@@ -44,3 +44,27 @@ class SnapshotIntegrityError(FinancialEngineError):
     """Raised when a calculation snapshot fails hash verification or tampering checks."""
 
     pass
+
+
+class AuditImmutabilityError(FinancialEngineError):
+    """Raised when an UPDATE, DELETE, or in-place mutation is attempted on append-only audit logs or snapshots."""
+
+    pass
+
+
+class AuditChainTamperError(FinancialEngineError):
+    """Raised when cryptographic hash-chain verification detects an altered, missing, inserted, or reordered event."""
+
+    pass
+
+
+class AuditConcurrencyError(FinancialEngineError):
+    """Raised when atomic chain-head allocation or lock contention fails during concurrent audit writes."""
+
+    pass
+
+
+class TenantAuditIsolationError(FinancialEngineError):
+    """Raised when a cross-tenant audit ledger read, injection, or verification operation is attempted."""
+
+    pass

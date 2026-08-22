@@ -2,6 +2,7 @@
 SmartSalary India — Occupation & Taxpayer Enums
 Defines 7-tier occupation hierarchy levels, taxpayer economic types, and business structures.
 """
+
 from enum import StrEnum
 
 

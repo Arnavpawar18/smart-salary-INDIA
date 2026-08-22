@@ -1,0 +1,55 @@
+{% extends "enterprise_base.html" %}
+{% import "partials/enterprise_components.html" as ui %}
+
+{% block title %}Enterprise Dashboard — SmartSalary India{% endblock %}
+{% block section_title %}Corporate Executive Overview{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Welcome Banner -->
+  <div class="glass-card p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-slate-200 dark:border-slate-800" style="background:var(--bg-surface);">
+    <div>
+      <h1 class="text-xl font-bold font-heading text-slate-900 dark:text-white">
+        Welcome, {{ current_user.full_name }}
+      </h1>
+      <p class="text-xs text-slate-500 mt-1">
+        Managing {{ summary.organization.display_name }} ({{ summary.organization.organization_code }}) &bull; Active Headcount: {{ summary.headcount }}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/enterprise/approvals" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm transition-all">
+        Approvals Queue ({{ summary.pending_declarations_count }})
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {{ ui.kpi_card("Active Headcount", summary.headcount, "Verified Employees", "+3 this month", True) }}
+    {{ ui.kpi_card("Payroll Gross (Latest)", summary.latest_payroll_run.total_gross_earnings|inr if summary.latest_payroll_run else '₹0.00', "Monthly Run", "Locked", True) }}
+    {{ ui.kpi_card("Pending Declarations", summary.pending_declarations_count, "Awaiting Review", "Cutoff: 31 Mar", False) }}
+    {{ ui.kpi_card("Compliance Filings", summary.pending_compliance_events_count, "Statutory Tasks", "Form 24Q / PF", False) }}
+  </div>
+
+  <!-- Quick Access Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <a href="/enterprise/risk-engine" class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-all group" style="background:var(--bg-surface);">
+      <div class="text-2xl mb-2">⚡</div>
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">AI Risk Engine</h3>
+      <p class="text-xs text-slate-500 mt-1">Real-time statutory anomaly scanner, TDS underpayment alerts, and predictive heatmap.</p>
+    </a>
+
+    <a href="/enterprise/tax-analytics" class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-all group" style="background:var(--bg-surface);">
+      <div class="text-2xl mb-2">📈</div>
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">Tax Analytics</h3>
+      <p class="text-xs text-slate-500 mt-1">Executive YTD tax liabilities, Section 80C/80D distribution, and departmental compliance.</p>
+    </a>
+
+    <a href="/enterprise/compliance-reports" class="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-all group" style="background:var(--bg-surface);">
+      <div class="text-2xl mb-2">📑</div>
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600">Compliance Reports</h3>
+      <p class="text-xs text-slate-500 mt-1">Generate regulatory compliance audit exports and review historical filing ledgers.</p>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -76,6 +76,14 @@ class SessionRepository:
             self.revoke_all_user_sessions(old_session.user_id)
             raise ValueError("Refresh token reuse detected. All user sessions have been terminated for security.")
 
+        expires_at = old_session.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        if expires_at <= datetime.now(UTC):
+            old_session.revoked_at = datetime.now(UTC)
+            self.db.commit()
+            raise ValueError("Refresh session has expired")
+
         # Revoke old session and link to new JTI
         new_jti_uuid = uuid.UUID(new_jti)
         old_session.revoked_at = datetime.now(UTC)

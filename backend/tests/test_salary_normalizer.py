@@ -14,7 +14,7 @@ def test_normalize_annual_gross_default_breakdown():
     assert norm.annual_gross == Decimal("1200000.00")
     assert norm.monthly_gross == Decimal("100000.00")
     assert norm.basic_salary == Decimal("600000.00")  # 50%
-    assert norm.hra == Decimal("240000.00")           # 20%
+    assert norm.hra == Decimal("240000.00")  # 20%
     assert norm.special_allowance == Decimal("360000.00")  # 30%
     assert norm.pf_wage_base_monthly == Decimal("50000.00")
 

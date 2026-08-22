@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 from typing import Annotated
 
@@ -11,15 +12,19 @@ from app.core.auth_middleware import (
     clear_auth_cookies,
     get_current_user,
     set_auth_cookies,
+    verify_csrf,
 )
 from app.core.database import get_db
 from app.core.rate_limiter import InMemoryRateLimiter
-from app.core.security import JWTProvider, PasswordHasher
+from app.core.security import JWTProvider, PasswordHasher, normalize_email
 from app.models.auth import Role, User, user_roles
-from app.models.employee import Employee
+from app.models.employee import Employee, State
 from app.models.session import UserSession
+from app.models.verification_token import VerificationToken
 from app.repositories.session_repository import SessionRepository
 from app.services.audit_service import AuditEvent, AuditService
+from app.services.email_service import EmailService
+from app.services.otp_service import OTPPurpose, OTPService
 
 router = APIRouter()
 
@@ -29,7 +34,35 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=8)
     full_name: str
     phone: str | None = None
+    sector: str | None = Field(default="IT / Software")
+    occupation: str | None = Field(default="SOFTWARE_IT")
+    state_code: str | None = Field(default="KA")
+    employment_type: str | None = Field(default="FULL_TIME")
     guest_session_token: str | None = None
+
+
+class VerifyEmailOtpRequest(BaseModel):
+    verification_id: uuid.UUID
+    otp: str = Field(min_length=6, max_length=6)
+
+
+class ResendOtpRequest(BaseModel):
+    verification_id: uuid.UUID
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyPasswordResetOtpRequest(BaseModel):
+    verification_id: uuid.UUID
+    otp: str = Field(min_length=6, max_length=6)
+
+
+class ResetPasswordRequest(BaseModel):
+    reset_token: str
+    new_password: str = Field(min_length=8)
+    confirm_password: str
 
 
 class LoginRequest(BaseModel):
@@ -54,72 +87,140 @@ def get_csrf_token(response: Response):
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(
     req: RegisterRequest,
-    response: Response,
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """Registers a new employee user account and establishes a persistent refresh session."""
+    """
+    Registers a new employee user account in an unverified state (is_active=False),
+    creates the verification token, and dispatches a 6-digit email OTP.
+    Zero JWT tokens or cookies are issued at this stage.
+    """
     client_ip = InMemoryRateLimiter.get_client_ip(request)
     InMemoryRateLimiter.check_rate_limit(f"register:{client_ip}", max_requests=10, window_seconds=60)
 
-    existing = db.scalar(select(User).where(User.email == req.email))
-    if existing:
+    normalized_email = normalize_email(req.email)
+    existing = db.scalar(select(User).where(User.email == normalized_email))
+    if existing and existing.is_active:
         raise HTTPException(status_code=400, detail="Email already registered")
 
     # Hash password with Argon2id
     hashed = PasswordHasher.hash_password(req.password)
-    user = User(
-        email=req.email,
-        hashed_password=hashed,
-        full_name=req.full_name,
-        is_active=True,
-        is_superuser=False,
-    )
-    db.add(user)
-    db.flush()
 
-    # Assign default EMPLOYEE role
-    emp_role = db.scalar(select(Role).where(Role.name == "EMPLOYEE"))
-    if emp_role:
-        db.execute(user_roles.insert().values(user_id=user.id, role_id=emp_role.id))
+    if existing and not existing.is_active:
+        # Re-registration of an unverified account: update password and profile
+        user = existing
+        user.hashed_password = hashed
+        user.full_name = req.full_name
+        db.flush()
+    else:
+        user = User(
+            email=normalized_email,
+            hashed_password=hashed,
+            full_name=req.full_name,
+            is_active=False,  # Gated until email OTP verification
+            is_superuser=False,
+        )
+        db.add(user)
+        db.flush()
 
-    # Create associated Employee record
+        # Assign default EMPLOYEE role
+        emp_role = db.scalar(select(Role).where(Role.name == "EMPLOYEE"))
+        if emp_role:
+            db.execute(user_roles.insert().values(user_id=user.id, role_id=emp_role.id))
+
+    # Create/update associated Employee record
     employee_code = f"EMP-{user.id:04d}"
-    employee = Employee(
-        user_id=user.id,
-        employee_code=employee_code,
-        first_name=req.full_name.split()[0] if req.full_name else "User",
-        last_name=req.full_name.split()[-1] if len(req.full_name.split()) > 1 else "",
-        email=req.email,
-        phone_number=req.phone,
-        date_of_joining=date.today(),
-        state_id=1,  # Default KA
-    )
-    db.add(employee)
+    state_id = 1
+    if req.state_code:
+        state_obj = db.scalar(select(State).where(State.code == req.state_code.strip().upper()))
+        if state_obj:
+            state_id = state_obj.id
+
+    employee = db.scalar(select(Employee).where(Employee.user_id == user.id))
+    if not employee:
+        employee = Employee(
+            user_id=user.id,
+            employee_code=employee_code,
+            first_name=req.full_name.split()[0] if req.full_name else "User",
+            last_name=req.full_name.split()[-1] if len(req.full_name.split()) > 1 else "",
+            email=normalized_email,
+            phone_number=req.phone,
+            date_of_joining=date.today(),
+            employment_type=req.employment_type or "FULL_TIME",
+            state_id=state_id,
+        )
+        db.add(employee)
+    else:
+        employee.first_name = req.full_name.split()[0] if req.full_name else "User"
+        employee.last_name = req.full_name.split()[-1] if len(req.full_name.split()) > 1 else ""
+        employee.phone_number = req.phone
+        employee.employment_type = req.employment_type or "FULL_TIME"
+        employee.state_id = state_id
+
     db.commit()
     db.refresh(user)
 
-    # Issue JWT tokens and create persistent session
-    access_token = JWTProvider.create_access_token(user_id=user.id, role="EMPLOYEE", employee_id=employee.id)
-    raw_refresh, jti, expire = JWTProvider.create_refresh_token(user_id=user.id)
-
-    session_repo = SessionRepository(db)
-    user_agent = request.headers.get("user-agent")
-    session_repo.create_session(
+    # Create EMAIL_VERIFICATION token & send email
+    token, raw_otp = OTPService.create_verification_token(
+        db=db,
+        email=normalized_email,
+        purpose=OTPPurpose.EMAIL_VERIFICATION,
         user_id=user.id,
-        raw_refresh_token=raw_refresh,
-        jti=jti,
-        expires_at=expire,
-        ip_address=client_ip,
-        user_agent=user_agent,
     )
 
-    csrf_token = CSRFProtection.generate_csrf_token()
-    set_auth_cookies(response, access_token=access_token, raw_refresh_token=raw_refresh, csrf_token=csrf_token)
+    # Dispatch verification OTP synchronously and ensure delivery
+    if not EmailService.send_email_verification_otp(to_email=normalized_email, otp=raw_otp):
+        raise HTTPException(status_code=502, detail="Failed to send verification email")
+
+    return {
+        "status": "OTP_REQUIRED",
+        "message": "Account created. A 6-digit verification code has been sent to your email.",
+        "verification_id": str(token.verification_id),
+        "email": normalized_email,
+    }
+
+
+@router.post("/verify-email-otp")
+def verify_email_otp(
+    req: VerifyEmailOtpRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Verifies the email verification OTP, activates user account (is_active=True).
+    User can now proceed to login.
+    """
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    user_agent = request.headers.get("user-agent")
+    InMemoryRateLimiter.check_rate_limit(f"verify_otp:{client_ip}", max_requests=20, window_seconds=60)
+
+    success, msg, token = OTPService.verify_otp(
+        db=db,
+        verification_id=req.verification_id,
+        raw_otp=req.otp,
+        expected_purpose=OTPPurpose.EMAIL_VERIFICATION,
+    )
+
+    if not success or not token:
+        raise HTTPException(status_code=400, detail=msg)
+
+    # Activate user
+    user = None
+    if token.user_id:
+        user = db.scalar(select(User).where(User.id == token.user_id))
+    if not user:
+        user = db.scalar(select(User).where(User.email == normalize_email(token.email)))
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User account associated with this verification code not found.")
+
+    user.is_active = True
+    db.commit()
+    db.refresh(user)
 
     AuditService.log_event(
         db=db,
-        action=AuditEvent.LOGIN_SUCCESS,
+        action=AuditEvent.EMAIL_VERIFICATION_SUCCESS,
         entity_name="USER",
         user_id=user.id,
         entity_id=user.id,
@@ -128,9 +229,187 @@ def register_user(
     )
 
     return {
-        "message": "Account created successfully",
-        "user": {"id": user.id, "email": user.email, "role": "EMPLOYEE", "employee_id": employee.id},
-        "csrf_token": csrf_token,
+        "status": "VERIFIED",
+        "message": "Email verified successfully. You can now log in to your account.",
+    }
+
+
+@router.post("/resend-otp")
+def resend_otp(
+    req: ResendOtpRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Resends a fresh OTP for an existing verification record with 60-second cooldown enforcement.
+    """
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    InMemoryRateLimiter.check_rate_limit(f"resend_otp:{client_ip}", max_requests=10, window_seconds=60)
+
+    old_token = db.scalar(
+        select(VerificationToken).where(VerificationToken.verification_id == req.verification_id)
+    )
+    if not old_token:
+        raise HTTPException(status_code=404, detail="Verification session not found.")
+
+    new_token, raw_otp = OTPService.create_verification_token(
+        db=db,
+        email=old_token.email,
+        purpose=old_token.purpose,
+        user_id=old_token.user_id,
+    )
+
+    if old_token.purpose == OTPPurpose.EMAIL_VERIFICATION:
+        if not EmailService.send_email_verification_otp(to_email=old_token.email, otp=raw_otp):
+            raise HTTPException(status_code=502, detail="Failed to resend verification email")
+    else:
+        if not EmailService.send_password_reset_otp(to_email=old_token.email, otp=raw_otp):
+            raise HTTPException(status_code=502, detail="Failed to resend password reset email")
+
+    return {
+        "status": "RESENT",
+        "message": "A new verification code has been dispatched to your email.",
+        "verification_id": str(new_token.verification_id),
+    }
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    req: ForgotPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Initiates two-stage password reset with anti-enumeration protection.
+    Always returns a generic success response.
+    """
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    user_agent = request.headers.get("user-agent")
+    InMemoryRateLimiter.check_rate_limit(f"forgot_pwd:{client_ip}", max_requests=5, window_seconds=60)
+
+    normalized_email = normalize_email(req.email)
+    user = db.scalar(select(User).where(User.email == normalized_email))
+
+    verification_id_str = str(uuid.uuid4())
+    if user and user.is_active:
+        token, raw_otp = OTPService.create_verification_token(
+            db=db,
+            email=normalized_email,
+            purpose=OTPPurpose.PASSWORD_RESET,
+            user_id=user.id,
+        )
+        if not EmailService.send_password_reset_otp(to_email=normalized_email, otp=raw_otp):
+            raise HTTPException(status_code=502, detail="Failed to send password reset email")
+        verification_id_str = str(token.verification_id)
+
+        AuditService.log_event(
+            db=db,
+            action=AuditEvent.PASSWORD_RESET_REQUESTED,
+            entity_name="USER",
+            user_id=user.id,
+            entity_id=user.id,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        )
+
+    return {
+        "status": "SUCCESS",
+        "message": "If an active account exists for this email, a 6-digit verification code has been sent.",
+        "verification_id": verification_id_str,
+    }
+
+
+@router.post("/verify-password-reset-otp")
+def verify_password_reset_otp(
+    req: VerifyPasswordResetOtpRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Stage 1 of Password Reset: Validates 6-digit OTP and issues a short-lived signed reset_token (JWT).
+    """
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    InMemoryRateLimiter.check_rate_limit(f"verify_reset_otp:{client_ip}", max_requests=20, window_seconds=60)
+
+    success, msg, token = OTPService.verify_otp(
+        db=db,
+        verification_id=req.verification_id,
+        raw_otp=req.otp,
+        expected_purpose=OTPPurpose.PASSWORD_RESET,
+    )
+
+    if not success or not token:
+        raise HTTPException(status_code=400, detail=msg)
+
+    user = None
+    if token.user_id:
+        user = db.scalar(select(User).where(User.id == token.user_id))
+    if not user:
+        user = db.scalar(select(User).where(User.email == normalize_email(token.email)))
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found.")
+
+    reset_token = JWTProvider.create_password_reset_token(user_id=user.id, email=user.email)
+
+    return {
+        "status": "OTP_VERIFIED",
+        "message": "Identity verified. You may now set a new password.",
+        "reset_token": reset_token,
+    }
+
+
+@router.post("/reset-password")
+def reset_password(
+    req: ResetPasswordRequest,
+    response: Response,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Stage 2 of Password Reset: Consumes signed reset_token, updates password with Argon2id,
+    and revokes all active user sessions for zero-trust security.
+    """
+    client_ip = InMemoryRateLimiter.get_client_ip(request)
+    user_agent = request.headers.get("user-agent")
+    InMemoryRateLimiter.check_rate_limit(f"reset_pwd:{client_ip}", max_requests=5, window_seconds=60)
+
+    if req.new_password != req.confirm_password:
+        raise HTTPException(status_code=400, detail="New password and confirmation do not match")
+
+    try:
+        payload = JWTProvider.decode_token(req.reset_token)
+        if payload.get("type") != "password_reset":
+            raise HTTPException(status_code=400, detail="Invalid token type for password reset")
+        user_id = int(payload["sub"])
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid or expired reset token: {e}") from e
+
+    user = db.scalar(select(User).where(User.id == user_id))
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found")
+
+    # Hash new password with Argon2id
+    user.hashed_password = PasswordHasher.hash_password(req.new_password)
+    db.commit()
+
+    # Revoke ALL existing active sessions
+    session_repo = SessionRepository(db)
+    session_repo.revoke_all_user_sessions(user.id)
+    clear_auth_cookies(response)
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.PASSWORD_CHANGED,
+        entity_name="USER",
+        user_id=user.id,
+        entity_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
+
+    return {
+        "status": "PASSWORD_RESET_SUCCESS",
+        "message": "Password has been reset successfully. Please log in with your new password.",
     }
 
 
@@ -146,7 +425,8 @@ def login_user(
     user_agent = request.headers.get("user-agent")
     InMemoryRateLimiter.check_rate_limit(f"login:{client_ip}", max_requests=15, window_seconds=60)
 
-    user = db.scalar(select(User).where(User.email == req.email))
+    normalized_email = normalize_email(req.email)
+    user = db.scalar(select(User).where(User.email == normalized_email))
     if not user or not PasswordHasher.verify_password(req.password, user.hashed_password):
         AuditService.log_event(
             db=db,
@@ -156,10 +436,13 @@ def login_user(
             ip_address=client_ip,
             user_agent=user_agent,
         )
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
 
     if not user.is_active:
-        raise HTTPException(status_code=403, detail="Account is deactivated")
+        raise HTTPException(
+            status_code=403,
+            detail="Email not verified. Please verify your email before logging in.",
+        )
 
     # Resolve primary role and employee_id
     role_stmt = (
@@ -170,8 +453,10 @@ def login_user(
     employee_id = emp.id if emp else None
 
     # Issue tokens
-    access_token = JWTProvider.create_access_token(user_id=user.id, role=role_name, employee_id=employee_id)
     raw_refresh, jti, expire = JWTProvider.create_refresh_token(user_id=user.id)
+    access_token = JWTProvider.create_access_token(
+        user_id=user.id, role=role_name, employee_id=employee_id, session_jti=jti
+    )
 
     session_repo = SessionRepository(db)
     session_repo.create_session(
@@ -231,6 +516,12 @@ def refresh_session(
     new_raw_refresh, new_jti, new_expire = JWTProvider.create_refresh_token(user_id=user_id)
 
     try:
+        active_session = session_repo.get_active_session_by_jti(old_jti)
+        if not active_session:
+            raise ValueError("Session is expired or revoked")
+        if active_session.token_hash != JWTProvider.compute_token_hash(refresh_token):
+            session_repo.revoke_all_user_sessions(user_id)
+            raise ValueError("Refresh token hash mismatch. All user sessions have been terminated for security.")
         session_repo.rotate_session(
             old_jti=old_jti,
             new_raw_refresh_token=new_raw_refresh,
@@ -259,7 +550,9 @@ def refresh_session(
     emp = db.scalar(select(Employee).where(Employee.user_id == user_id))
     employee_id = emp.id if emp else None
 
-    access_token = JWTProvider.create_access_token(user_id=user_id, role=role_name, employee_id=employee_id)
+    access_token = JWTProvider.create_access_token(
+        user_id=user_id, role=role_name, employee_id=employee_id, session_jti=new_jti
+    )
     set_auth_cookies(response, access_token=access_token, raw_refresh_token=new_raw_refresh)
 
     return {"message": "Session refreshed successfully"}
@@ -314,7 +607,9 @@ def change_password(
     emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
     employee_id = emp.id if emp else None
 
-    access_token = JWTProvider.create_access_token(user_id=current_user.id, role=role_name, employee_id=employee_id)
+    access_token = JWTProvider.create_access_token(
+        user_id=current_user.id, role=role_name, employee_id=employee_id, session_jti=jti
+    )
     set_auth_cookies(response, access_token=access_token, raw_refresh_token=raw_refresh)
 
     AuditService.log_event(
@@ -382,6 +677,7 @@ def revoke_individual_session(
 @router.post("/logout-all")
 def logout_all_sessions(
     response: Response,
+    _: None = Depends(verify_csrf),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -393,7 +689,7 @@ def logout_all_sessions(
     AuditService.log_event(
         db=db,
         action=AuditEvent.LOGOUT_ALL,
-        entity_type="USER",
+        entity_name="USER",
         user_id=current_user.id,
         entity_id=current_user.id,
     )
@@ -403,17 +699,28 @@ def logout_all_sessions(
 @router.post("/logout")
 def logout_user(
     response: Response,
+    _: None = Depends(verify_csrf),
+    access_token: Annotated[str | None, Cookie()] = None,
     refresh_token: Annotated[str | None, Cookie()] = None,
     db: Session = Depends(get_db),
 ):
-    """Revokes active refresh session and clears auth cookies."""
+    """Revokes active refresh/access session and clears auth cookies."""
+    session_repo = SessionRepository(db)
     if refresh_token:
         try:
             payload = JWTProvider.decode_token(refresh_token)
             jti = payload.get("jti")
             if jti:
-                session_repo = SessionRepository(db)
                 session_repo.revoke_session(jti)
+        except Exception:
+            pass
+
+    if access_token:
+        try:
+            payload = JWTProvider.decode_token(access_token)
+            session_jti = payload.get("session_jti")
+            if session_jti:
+                session_repo.revoke_session(session_jti)
         except Exception:
             pass
 

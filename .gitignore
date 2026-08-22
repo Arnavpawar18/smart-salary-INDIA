@@ -54,3 +54,21 @@ dist-ssr/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Runtime / temporary files
+scratch_tmp/
+backend/tmp/
+
+# Runtime / temporary files
+scratch_tmp/
+backend/tmp/
+
+# Local PostgreSQL installation
+pg16/
+
+# Large downloaded tax utilities
+docs/tax_pdf/**/*.exe
+docs/tax_pdf/**/*.msi
+docs/tax_pdf/**/*.zip
+
+docs/tax_pdf/

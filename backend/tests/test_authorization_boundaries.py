@@ -109,9 +109,10 @@ def test_idor_cross_user_calculation_denial(test_user_pair):
     calc_b_id = test_user_pair["calc_b_id"]
 
     token_a = JWTProvider.create_access_token(user_id=user_a_id, role="EMPLOYEE", employee_id=emp_a_id)
+    client.cookies.set("access_token", token_a)
 
     # User A requests User B's calculation
-    res = client.get(f"/api/v1/calculations/{calc_b_id}", cookies={"access_token": token_a})
+    res = client.get(f"/api/v1/calculations/{calc_b_id}")
     assert res.status_code == 404
     assert "not found or unauthorized" in res.json()["detail"].lower()
 
@@ -120,10 +121,11 @@ def test_unauthenticated_access_denial(test_user_pair):
     """
     Unauthenticated request to /dashboard or /calculations/history must return 401.
     """
-    res_dash = client.get("/dashboard")
+    client_guest = TestClient(app)
+    res_dash = client_guest.get("/dashboard")
     assert res_dash.status_code == 401
 
-    res_hist = client.get("/api/v1/calculations/history")
+    res_hist = client_guest.get("/api/v1/calculations/history")
     assert res_hist.status_code == 401
 
 
@@ -134,8 +136,9 @@ def test_authenticated_dashboard_renders_own_data(test_user_pair):
     user_a_id = test_user_pair["user_a_id"]
     emp_a_id = test_user_pair["emp_a_id"]
     token_a = JWTProvider.create_access_token(user_id=user_a_id, role="EMPLOYEE", employee_id=emp_a_id)
+    client.cookies.set("access_token", token_a)
 
-    res = client.get("/dashboard", cookies={"access_token": token_a})
+    res = client.get("/dashboard")
     assert res.status_code == 200
     assert "Good day, Alpha" in res.text
     assert "Multi-Year Financial Trend" in res.text
@@ -149,6 +152,7 @@ def test_session_security_and_password_change(test_user_pair):
     user_a_email = test_user_pair["user_a_email"]
     emp_a_id = test_user_pair["emp_a_id"]
     token_a = JWTProvider.create_access_token(user_id=user_a_id, role="EMPLOYEE", employee_id=emp_a_id)
+    client.cookies.set("access_token", token_a)
 
     # 1. Change password successfully
     res_chg = client.post(
@@ -158,11 +162,11 @@ def test_session_security_and_password_change(test_user_pair):
             "new_password": "NewStrongPass2026!",
             "confirm_password": "NewStrongPass2026!",
         },
-        cookies={"access_token": token_a},
     )
     assert res_chg.status_code == 200
 
     # 2. Login with old password must fail
+    client.cookies.clear()
     res_old = client.post(
         "/api/v1/auth/login",
         json={"email": user_a_email, "password": "PassA123!"},

@@ -63,13 +63,26 @@ class MarginalReliefCalculator:
         threshold = matching_rule.from_income
         excess_income = taxable_income - threshold
 
-        # Tax payable on threshold income
-        # Surcharge marginal relief caps (tax + surcharge) to (tax on threshold + excess income)
-        # For simplicity, calculate maximum excess cap
-        total_tax_and_surcharge = tax_on_income + surcharge_amount
-        max_allowed = tax_on_income + excess_income
+        # Statutory CBDT Marginal Relief Formula:
+        # All income above top slab (>24L / >10L) is taxed at 30% marginal slab rate.
+        # Therefore, Tax on threshold T = tax_on_income - (excess_income * 0.30)
+        tax_on_threshold = max(Decimal("0.00"), tax_on_income - quantize_currency(excess_income * Decimal("0.30")))
 
-        if total_tax_and_surcharge > max_allowed:
-            return quantize_currency(total_tax_and_surcharge - max_allowed)
+        # Find applicable surcharge rate on threshold T (previous tier rate)
+        if threshold >= Decimal("50000000.00"):
+            prev_surcharge_rate = Decimal("0.25")
+        elif threshold >= Decimal("20000000.00"):
+            prev_surcharge_rate = Decimal("0.15")
+        elif threshold >= Decimal("10000000.00"):
+            prev_surcharge_rate = Decimal("0.10")
+        else:
+            prev_surcharge_rate = Decimal("0.00")
+
+        surcharge_on_threshold = quantize_currency(tax_on_threshold * prev_surcharge_rate)
+        max_allowed_total = tax_on_threshold + surcharge_on_threshold + excess_income
+        total_tax_and_surcharge = tax_on_income + surcharge_amount
+
+        if total_tax_and_surcharge > max_allowed_total:
+            return quantize_currency(total_tax_and_surcharge - max_allowed_total)
 
         return Decimal("0.00")

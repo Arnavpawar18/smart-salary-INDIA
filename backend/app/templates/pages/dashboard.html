@@ -4,171 +4,206 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold text-slate-900">Good day, {{ employee.first_name }}</h1>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">Active Employee</span>
-            </div>
-            <p class="text-slate-500 text-sm mt-1">
-                Employee Code: <span class="font-mono font-medium text-slate-700">{{ employee.employee_code }}</span> • Primary State: <span class="font-semibold text-slate-700">{{ employee.state.name if employee.state else 'Karnataka' }}</span>
-            </p>
-        </div>
+<!-- Dashboard Header -->
+<div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:1rem;box-shadow:var(--shadow-card)" class="p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
         <div class="flex items-center gap-3">
-            <a href="/calculator" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                + New Calculation
-            </a>
-            <a href="/profile/security" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold border border-slate-300 rounded-lg shadow-sm transition">
-                Security Center
-            </a>
+            <h1 class="text-2xl font-bold" style="color:var(--text-primary)">Good day, {{ employee.first_name }}</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold" style="background:var(--brand-emerald-subtle);color:var(--brand-emerald);border:1px solid rgba(16,185,129,0.3)">Active Employee</span>
         </div>
+        <p class="text-sm mt-1" style="color:var(--text-muted)">
+            Employee Code: <span class="font-mono font-medium" style="color:var(--text-secondary)">{{ employee.employee_code }}</span>
+            &nbsp;•&nbsp;
+            Primary State: <span class="font-semibold" style="color:var(--text-secondary)">{{ employee.state.name if employee.state else 'Karnataka' }}</span>
+        </p>
     </div>
+    <div class="flex items-center gap-3">
+        <a href="/calculator" style="background:var(--brand-primary);color:#fff" class="px-4 py-2 text-sm font-semibold rounded-lg shadow-sm transition hover:opacity-90">
+            + New Calculation
+        </a>
+        <a href="/profile/security" style="background:var(--bg-surface);border:1px solid var(--border-strong);color:var(--text-secondary)" class="px-4 py-2 text-sm font-semibold rounded-lg shadow-sm transition hover:opacity-80">
+            Security Center
+        </a>
+    </div>
+</div>
+
+<!-- Statutory Health Strip -->
+<div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:0.75rem;box-shadow:var(--shadow-sm)" class="px-5 py-3 mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+    <span class="text-xs font-semibold" style="color:var(--text-muted)">Statutory Status</span>
+    {% for label in [('Income Tax', 'IT'), ('Employee PF', 'EPF'), ('ESI', 'ESI'), ('Prof. Tax', 'PT')] %}
+    <span class="inline-flex items-center gap-1.5 text-xs font-semibold" style="color:var(--brand-emerald)">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        {{ label[0] }}
+    </span>
+    {% endfor %}
+    <span class="ml-auto text-[10px]" style="color:var(--text-muted)">AY 2026-27 &bull; FY 2025-26</span>
+</div>
 
     <!-- Summary Cards -->
     {% if summary.current_run %}
-    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Gross CTC</p>
-            <p class="text-lg font-bold text-slate-900 mt-2">{{ summary.fy_trend[0].annual_gross_formatted if summary.fy_trend else '₹0' }}</p>
-            <p class="text-xs text-slate-500 mt-1">FY {{ summary.current_run.financial_year }}</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        {% set cards = [
+            ('Gross CTC', summary.fy_trend[0].annual_gross_formatted if summary.fy_trend else '₹0', 'FY ' ~ summary.current_run.financial_year, 'text-primary'),
+            ('Estimated Tax', summary.current_run.total_tax_liability|inr, summary.current_run.regime ~ ' Regime', 'danger'),
+            ('Employee PF', summary.fy_trend[0].employee_pf_formatted if summary.fy_trend else '₹0', '12% Deducted', 'text-primary'),
+            ('Prof. Tax', summary.fy_trend[0].pt_formatted if summary.fy_trend else '₹0', 'State PT', 'text-primary'),
+        ] %}
+        {% for label, value, sub, color in cards %}
+        <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:0.75rem;box-shadow:var(--shadow-card)" class="p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">{{ label }}</p>
+            <p class="text-lg font-bold mt-2 font-mono tabular-nums {{ 'text-rose-500' if color == 'danger' else '' }}" style="{{ 'color:var(--brand-danger)' if color == 'danger' else 'color:var(--text-primary)' }}">{{ value }}</p>
+            <p class="text-xs mt-1" style="color:var(--text-muted)">{{ sub }}</p>
         </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Estimated Tax</p>
-            <p class="text-lg font-bold text-rose-600 mt-2">{{ summary.current_run.total_tax_liability|inr }}</p>
-            <p class="text-xs text-slate-500 mt-1">{{ summary.current_run.regime }} Regime</p>
+        {% endfor %}
+        <div style="background:var(--brand-emerald-subtle);border:1px solid rgba(16,185,129,0.3);border-radius:0.75rem;box-shadow:var(--shadow-card)" class="p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider" style="color:var(--brand-emerald)">Net Take-Home</p>
+            <p class="text-lg font-bold mt-2 font-mono tabular-nums" style="color:var(--brand-emerald)">{{ summary.current_run.net_take_home_annual|inr }}</p>
+            <p class="text-xs mt-1" style="color:var(--brand-emerald)">Annual Take-Home</p>
         </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Employee PF</p>
-            <p class="text-lg font-bold text-slate-900 mt-2">{{ summary.fy_trend[0].employee_pf_formatted if summary.fy_trend else '₹0' }}</p>
-            <p class="text-xs text-slate-500 mt-1">12% Deducted</p>
+        <div style="background:var(--brand-primary-light);border:1px solid rgba(79,70,229,0.2);border-radius:0.75rem;box-shadow:var(--shadow-card)" class="p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider" style="color:var(--brand-primary)">Effective Rate</p>
+            <p class="text-lg font-bold mt-2 font-mono tabular-nums" style="color:var(--brand-primary)">{{ summary.fy_trend[0].effective_tax_rate if summary.fy_trend else 0 }}%</p>
+            <p class="text-xs mt-1" style="color:var(--brand-primary)">Of Gross Income</p>
         </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Prof. Tax</p>
-            <p class="text-lg font-bold text-slate-900 mt-2">{{ summary.fy_trend[0].pt_formatted if summary.fy_trend else '₹0' }}</p>
-            <p class="text-xs text-slate-500 mt-1">State PT</p>
+    </div>
+    {% else %}
+    <!-- Empty state: no calculations yet -->
+    <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:1rem;box-shadow:var(--shadow-card)" class="p-10 mb-6 text-center">
+        <div class="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center" style="background:var(--brand-primary-light)">
+            <svg class="w-7 h-7" style="color:var(--brand-primary)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
         </div>
-        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm">
-            <p class="text-xs font-semibold uppercase text-emerald-800 tracking-wider">Net Take-Home</p>
-            <p class="text-lg font-bold text-emerald-900 mt-2">{{ summary.current_run.net_take_home_annual|inr }}</p>
-            <p class="text-xs text-emerald-700 mt-1">Annual Take-Home</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <p class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Effective Tax Rate</p>
-            <p class="text-lg font-bold text-indigo-600 mt-2">{{ summary.fy_trend[0].effective_tax_rate if summary.fy_trend else 0 }}%</p>
-            <p class="text-xs text-slate-500 mt-1">Of Gross Income</p>
-        </div>
+        <h2 class="text-base font-bold mb-1" style="color:var(--text-primary)">No salary calculation yet</h2>
+        <p class="text-sm mb-4" style="color:var(--text-muted)">Run your first calculation to see income tax, PF, and statutory deduction breakdown.</p>
+        <a href="/calculator" class="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition hover:opacity-90" style="background:var(--brand-primary)">
+            Start Your First Calculation
+        </a>
     </div>
     {% endif %}
 
     <!-- FY Trend & What Changed -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- FY Multi-Year Trend Table -->
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+        <div class="lg:col-span-2" style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:1rem;box-shadow:var(--shadow-card)" >
+            <div class="p-6">
+            <h2 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--text-primary)">
+                <svg class="w-4 h-4" style="color:var(--brand-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                 Multi-Year Financial Trend
             </h2>
             {% if summary.fy_trend %}
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead>
-                        <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase font-semibold">
-                            <th class="pb-3">Financial Year</th>
+                        <tr class="text-xs uppercase font-semibold" style="border-bottom:1px solid var(--border-subtle);color:var(--text-muted)">
+                            <th class="pb-3">FY</th>
                             <th class="pb-3">Regime</th>
                             <th class="pb-3 text-right">Gross CTC</th>
-                            <th class="pb-3 text-right">Taxable</th>
                             <th class="pb-3 text-right">Income Tax</th>
                             <th class="pb-3 text-right">Take-Home</th>
                             <th class="pb-3 text-right">Eff. Rate</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody>
                         {% for row in summary.fy_trend %}
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="py-3 font-semibold text-slate-900">{{ row.financial_year }}</td>
-                            <td class="py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-indigo-100 text-indigo-800' if row.regime == 'NEW' else 'bg-amber-100 text-amber-800' }}">{{ row.regime }}</span></td>
-                            <td class="py-3 text-right font-mono">{{ row.annual_gross_formatted }}</td>
-                            <td class="py-3 text-right font-mono">{{ row.taxable_income_formatted }}</td>
-                            <td class="py-3 text-right font-mono text-rose-600 font-semibold">{{ row.tax_formatted }}</td>
-                            <td class="py-3 text-right font-mono text-emerald-600 font-bold">{{ row.take_home_formatted }}</td>
-                            <td class="py-3 text-right font-mono">{{ row.effective_tax_rate }}%</td>
+                        <tr style="border-bottom:1px solid var(--border-subtle)" class="hover:opacity-90 transition">
+                            <td class="py-3 font-semibold" style="color:var(--text-primary)">{{ row.financial_year }}</td>
+                            <td class="py-3">
+                                <span class="px-2 py-0.5 rounded text-xs font-semibold"
+                                  style="{{ 'background:var(--brand-primary-light);color:var(--brand-primary)' if row.regime == 'NEW' else 'background:var(--brand-saffron-subtle);color:var(--brand-saffron)' }}">
+                                  {{ row.regime }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-right font-mono tabular-nums" style="color:var(--text-secondary)">{{ row.annual_gross_formatted }}</td>
+                            <td class="py-3 text-right font-mono tabular-nums font-semibold" style="color:var(--brand-danger)">{{ row.tax_formatted }}</td>
+                            <td class="py-3 text-right font-mono tabular-nums font-bold" style="color:var(--brand-emerald)">{{ row.take_home_formatted }}</td>
+                            <td class="py-3 text-right font-mono tabular-nums" style="color:var(--text-secondary)">{{ row.effective_tax_rate }}%</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <p class="text-slate-500 text-sm py-4">No historical financial snapshots available yet.</p>
+            <div class="py-8 text-center">
+                <p class="text-sm" style="color:var(--text-muted)">No historical snapshots yet.</p>
+                <p class="text-xs mt-1" style="color:var(--text-muted)">Save calculations across financial years to unlock trend analysis.</p>
+            </div>
             {% endif %}
+            </div>
         </div>
 
         <!-- What Changed Panel -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                What Changed (Year-over-Year)
+        <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:1rem;box-shadow:var(--shadow-card)">
+            <div class="p-6">
+            <h2 class="text-base font-bold mb-4 flex items-center gap-2" style="color:var(--text-primary)">
+                <svg class="w-4 h-4" style="color:var(--brand-emerald)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                Year-over-Year
             </h2>
             {% if summary.what_changed %}
             <div class="space-y-3">
-                <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                    <span class="text-slate-600">Gross Delta</span>
-                    <span class="font-mono font-semibold {{ 'text-emerald-600' if summary.what_changed.gross_delta > 0 else 'text-slate-700' }}">{{ summary.what_changed.gross_delta|inr }}</span>
+                {% for label, val, is_good in [
+                    ('Gross Delta', summary.what_changed.gross_delta|inr, summary.what_changed.gross_delta > 0),
+                    ('Tax Delta', summary.what_changed.tax_delta|inr, summary.what_changed.tax_delta <= 0),
+                    ('Take-Home Delta', summary.what_changed.take_home_delta|inr, True),
+                ] %}
+                <div class="flex justify-between items-center py-2 text-sm" style="border-bottom:1px solid var(--border-subtle)">
+                    <span style="color:var(--text-secondary)">{{ label }}</span>
+                    <span class="font-mono font-semibold" style="color:{{ 'var(--brand-emerald)' if is_good else 'var(--brand-danger)' }}">{{ val }}</span>
                 </div>
-                <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                    <span class="text-slate-600">Tax Delta</span>
-                    <span class="font-mono font-semibold {{ 'text-rose-600' if summary.what_changed.tax_delta > 0 else 'text-emerald-600' }}">{{ summary.what_changed.tax_delta|inr }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                    <span class="text-slate-600">Take-Home Delta</span>
-                    <span class="font-mono font-bold text-emerald-600">{{ summary.what_changed.take_home_delta|inr }}</span>
-                </div>
-                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl mt-4">
-                    <p class="text-xs text-indigo-800 font-medium">Marginal Retention</p>
-                    <p class="text-base font-bold text-indigo-900 mt-1">{{ summary.what_changed.marginal_retention_rate }}%</p>
-                    <p class="text-xs text-indigo-700 mt-0.5">{{ summary.what_changed.explanation }}</p>
+                {% endfor %}
+                <div class="p-3 rounded-xl mt-4" style="background:var(--brand-primary-light);border:1px solid rgba(79,70,229,0.2)">
+                    <p class="text-xs font-medium" style="color:var(--brand-primary)">Marginal Retention</p>
+                    <p class="text-base font-bold mt-1" style="color:var(--brand-primary)">{{ summary.what_changed.marginal_retention_rate }}%</p>
+                    <p class="text-xs mt-0.5" style="color:var(--brand-primary)">{{ summary.what_changed.explanation }}</p>
                 </div>
             </div>
             {% else %}
-            <p class="text-slate-500 text-sm py-4">Save calculations across at least two financial years to unlock automated year-over-year delta analysis.</p>
+            <div class="py-6 text-center">
+                <p class="text-sm" style="color:var(--text-muted)">Save calculations across at least two financial years to unlock year-over-year delta analysis.</p>
+            </div>
             {% endif %}
+            </div>
         </div>
     </div>
 
     <!-- Recent Calculations Table -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:1rem;box-shadow:var(--shadow-card)" class="p-6">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-slate-900">Recent Calculation Records</h2>
-            <span class="text-xs text-slate-500">Authoritative Immutable Snapshots</span>
+            <h2 class="text-base font-bold" style="color:var(--text-primary)">Recent Calculation Records</h2>
+            <span class="text-xs" style="color:var(--text-muted)">Authoritative Immutable Snapshots</span>
         </div>
         {% if summary.recent_calculations %}
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead>
-                    <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase font-semibold">
-                        <th class="pb-3">Calculation ID</th>
+                    <tr class="text-xs uppercase font-semibold" style="border-bottom:1px solid var(--border-subtle);color:var(--text-muted)">
+                        <th class="pb-3">ID</th>
                         <th class="pb-3">Date</th>
                         <th class="pb-3">FY</th>
                         <th class="pb-3">Regime</th>
-                        <th class="pb-3 text-right">Taxable Income</th>
+                        <th class="pb-3 text-right">Taxable</th>
                         <th class="pb-3 text-right">Total Tax</th>
                         <th class="pb-3 text-right">Net Take-Home</th>
                         <th class="pb-3 text-center">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody>
                     {% for run in summary.recent_calculations %}
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="py-3 font-mono font-medium text-slate-700">#{{ run.id }}</td>
-                        <td class="py-3 text-slate-500 text-xs">{{ run.created_at.strftime('%d %b %Y, %H:%M') if run.created_at else '—' }}</td>
-                        <td class="py-3 font-semibold text-slate-900">{{ run.financial_year }}</td>
-                        <td class="py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-indigo-100 text-indigo-800' if run.regime == 'NEW' else 'bg-amber-100 text-amber-800' }}">{{ run.regime }}</span></td>
-                        <td class="py-3 text-right font-mono">{{ run.total_taxable_income|inr }}</td>
-                        <td class="py-3 text-right font-mono text-rose-600 font-semibold">{{ run.total_tax_liability|inr }}</td>
-                        <td class="py-3 text-right font-mono text-emerald-600 font-bold">{{ run.net_take_home_annual|inr }}</td>
+                    <tr style="border-bottom:1px solid var(--border-subtle)" class="hover:opacity-90 transition">
+                        <td class="py-3 font-mono font-medium" style="color:var(--text-secondary)">#{{ run.id }}</td>
+                        <td class="py-3 text-xs" style="color:var(--text-muted)">{{ run.created_at.strftime('%d %b %Y, %H:%M') if run.created_at else '—' }}</td>
+                        <td class="py-3 font-semibold" style="color:var(--text-primary)">{{ run.financial_year }}</td>
+                        <td class="py-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold"
+                              style="{{ 'background:var(--brand-primary-light);color:var(--brand-primary)' if run.regime == 'NEW' else 'background:var(--brand-saffron-subtle);color:var(--brand-saffron)' }}">
+                              {{ run.regime }}
+                            </span>
+                        </td>
+                        <td class="py-3 text-right font-mono tabular-nums" style="color:var(--text-secondary)">{{ run.total_taxable_income|inr }}</td>
+                        <td class="py-3 text-right font-mono tabular-nums font-semibold" style="color:var(--brand-danger)">{{ run.total_tax_liability|inr }}</td>
+                        <td class="py-3 text-right font-mono tabular-nums font-bold" style="color:var(--brand-emerald)">{{ run.net_take_home_annual|inr }}</td>
                         <td class="py-3 text-center">
-                            <span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-emerald-100 text-emerald-800 border border-emerald-300' if run.status == 'CURRENT' else 'bg-slate-100 text-slate-600 border border-slate-300' }}">
-                                {{ run.status }}
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold"
+                              style="{{ 'background:var(--brand-emerald-subtle);color:var(--brand-emerald);border:1px solid rgba(16,185,129,0.3)' if run.status == "CURRENT" else 'background:var(--bg-subtle);color:var(--text-muted);border:1px solid var(--border-subtle)' }}">
+                              {{ run.status }}
                             </span>
                         </td>
                     </tr>
@@ -178,8 +213,12 @@
         </div>
         {% else %}
         <div class="text-center py-12">
-            <p class="text-slate-500 text-sm">You haven't saved any calculations yet.</p>
-            <a href="/calculator" class="inline-block mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-2xl flex items-center justify-center" style="background:var(--brand-primary-light)">
+                <svg class="w-6 h-6" style="color:var(--brand-primary)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            </div>
+            <p class="text-sm font-semibold" style="color:var(--text-primary)">No calculations yet</p>
+            <p class="text-xs mt-1 mb-4" style="color:var(--text-muted)">Start a salary calculation to see your statutory deduction breakdown here.</p>
+            <a href="/calculator" class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm transition hover:opacity-90" style="background:var(--brand-primary)">
                 Start Calculation
             </a>
         </div>

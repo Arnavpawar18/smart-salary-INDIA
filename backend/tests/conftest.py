@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import sqlalchemy as sa
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 # Ensure backend root is on sys.path
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -13,6 +13,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from app.models.base import Base
+from app.seeds.seed_reference_data import seed_reference_data
 
 TEST_DATABASE_URL = os.getenv(
     "DATABASE_URL_TEST",
@@ -24,10 +25,20 @@ assert "test" in TEST_DATABASE_URL.lower(), "TEST SAFETY VIOLATION: Test databas
 
 @pytest.fixture(scope="session")
 def engine():
-    test_engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True)
+    try:
+        test_engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True, connect_args={"connect_timeout": 2})
+        with test_engine.connect() as conn:
+            conn.execute(sa.text("SELECT 1"))
+    except Exception:
+        test_engine = create_engine("sqlite:///:memory:", echo=False)
+
     Base.metadata.create_all(bind=test_engine)
+
+    with Session(bind=test_engine) as seed_session:
+        seed_reference_data(seed_session)
+
     yield test_engine
-    # Drop all with cascade or ignore in test db
+
     try:
         with test_engine.connect() as conn:
             conn.execute(sa.text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
@@ -49,3 +60,10 @@ def db_session(engine):
     session.close()
     transaction.rollback()
     connection.close()
+
+
+@pytest.fixture(autouse=True)
+def reset_in_memory_rate_limiters():
+    from app.core.rate_limiter import InMemoryRateLimiter
+
+    InMemoryRateLimiter.clear()

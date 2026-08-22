@@ -3,15 +3,14 @@ SmartSalary India — Calculation Contracts & Persisted Applicability Decision
 Freezes CalculationInput v1, CalculationSnapshot v1, and ApplicabilityDecision v1.
 Enforces dual-bundle hashing: rule_bundle_hash and evidence_bundle_hash.
 """
+
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
-from app.engine.common.enums import CalculationStatus, TaxRegime
-from app.engine.common.hashing import canonical_json_dumps, compute_sha256_hash
+from app.engine.common.hashing import compute_sha256_hash
 
 
 class DecisionOutcome(StrEnum):
@@ -107,7 +106,7 @@ class CalculationSnapshotV1:
         correction_reason: str | None = None,
     ) -> "CalculationSnapshotV1":
         snap_id = uuid4()
-        now_str = datetime.now(timezone.utc).isoformat()
+        now_str = datetime.now(UTC).isoformat()
         schema_v = "v1.0.0"
 
         # Canonical hash computation across the 5 pillars:

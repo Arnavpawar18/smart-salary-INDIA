@@ -230,19 +230,23 @@ class CalculationService:
         )
 
     def get_calculation_by_id(self, calculation_id: int):
+        import json
+
         calc_data = self.calc_repo.get_calculation_by_id(calculation_id)
         if not calc_data:
             return None
         snap = calc_data["result_snapshot"]
+        if isinstance(snap, str):
+            snap = json.loads(snap)
         inp = SalaryInput(
-            financial_year=snap["financial_year"],
-            annual_gross=Decimal(snap["annual_gross_salary"]),
+            financial_year=snap.get("financial_year", "2025-26"),
+            annual_gross=Decimal(str(snap.get("annual_gross_salary", "1200000.00"))),
         )
-        regime = TaxRegime(snap["regime"])
+        regime = TaxRegime(snap.get("regime", "NEW"))
         res = self.calculate_salary(
             salary_input=inp,
             regime=regime,
-            state_code=snap["state_code"],
+            state_code=snap.get("state_code", "KA"),
             persist=False,
         )
         return {"result": res}

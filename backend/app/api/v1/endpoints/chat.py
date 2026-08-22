@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.auth_middleware import CSRFProtection, get_current_user
+from app.core.auth_middleware import get_current_user
 from app.core.database import get_db
 from app.core.rate_limiter import InMemoryRateLimiter
 from app.models.auth import User
@@ -19,6 +19,7 @@ class ChatInquiryRequest(BaseModel):
     query: str = Field(min_length=2, max_length=1000)
     session_id: int | None = None
     financial_year: str = "2025-26"
+    snapshot_id: int | None = None
 
 
 class ChatMessageSchema(BaseModel):
@@ -45,12 +46,10 @@ def inquire_ai_assistant(
     """
     Evidence-Grounded AI Inquiry Endpoint:
     - Sliding-window rate limited (Max 20 requests per min).
-    - Validates CSRF.
     - Grounded in official statutory citations and authorized user snapshots.
     """
     client_ip = InMemoryRateLimiter.get_client_ip(request)
     InMemoryRateLimiter.check_rate_limit(f"ai_inquire_{client_ip}", max_requests=20, window_seconds=60)
-    CSRFProtection.validate_request(request)
 
     ai_service = AIService(db)
     try:
@@ -59,6 +58,7 @@ def inquire_ai_assistant(
             query=req.query,
             session_id=req.session_id,
             financial_year=req.financial_year,
+            snapshot_id=req.snapshot_id,
         )
         db.commit()
 

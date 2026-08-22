@@ -35,6 +35,7 @@ def test_payroll_run_calculation_and_three_view_model():
         db.flush()
 
         from app.models.employee import State
+
         ka_state = db.scalar(select(State).where(State.code == "KA"))
 
         # 2. Create Employees

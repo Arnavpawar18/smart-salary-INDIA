@@ -3,6 +3,7 @@ SmartSalary India — Stage M2.2 Occupation & Profile Tests
 Enforces the sovereign invariant:
 Occupation selects dynamic questions and income types — NEVER the statutory tax regime.
 """
+
 from app.core.compliance.occupation_catalog_service import OccupationCatalogService
 from app.models.occupation_enums import ResidentialStatus, TaxpayerType
 

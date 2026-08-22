@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     calculations,
     chat,
     context,
+    employee_portal,
     enterprise,
     health,
     metadata,
@@ -25,3 +26,5 @@ api_router.include_router(calculations.router, prefix="/calculations", tags=["Fi
 api_router.include_router(rules.router, prefix="/rules", tags=["Statutory Rules"])
 api_router.include_router(scenarios.router, prefix="/scenarios", tags=["Scenario Intelligence"])
 api_router.include_router(enterprise.router, tags=["Enterprise Admin & Payroll"])
+api_router.include_router(employee_portal.router, tags=["Employee Self-Service Portal"])
+

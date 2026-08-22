@@ -1,37 +1,37 @@
-<!-- Dynamic Status Cards -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-  <div class="glass-panel rounded-2xl p-5 border border-slate-800">
-    <span class="text-xs font-medium text-slate-400 uppercase tracking-wider block">FastAPI Server</span>
-    <div class="mt-2 flex items-baseline gap-2">
-      <span class="w-2.5 h-2.5 rounded-full {% if health.status == 'healthy' %}bg-emerald-400 animate-pulse{% else %}bg-amber-400{% endif %}"></span>
-      <span class="text-lg font-bold text-white capitalize">{{ health.status }}</span>
+<!-- Dynamic Status Cards (2026 Fintech High-Trust Dashboard) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="glass-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">FastAPI Server</span>
+    <div class="mt-2 flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full {% if health.status == 'healthy' %}bg-emerald-500 animate-pulse{% else %}bg-amber-500{% endif %}"></span>
+      <span class="text-lg font-bold font-heading text-slate-900 dark:text-white capitalize">{{ health.status }}</span>
     </div>
-    <span class="text-xs text-slate-500 mt-1 block">REST &amp; Server-Rendered</span>
+    <span class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">Deterministic Python 3.13</span>
   </div>
 
-  <div class="glass-panel rounded-2xl p-5 border border-slate-800">
-    <span class="text-xs font-medium text-slate-400 uppercase tracking-wider block">PostgreSQL</span>
-    <div class="mt-2 flex items-baseline gap-2">
-      <span class="w-2.5 h-2.5 rounded-full {% if health.database == 'connected' %}bg-emerald-400{% else %}bg-rose-500{% endif %}"></span>
-      <span class="text-lg font-bold text-white capitalize">{{ health.database }}</span>
+  <div class="glass-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">PostgreSQL Database</span>
+    <div class="mt-2 flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full {% if health.database == 'connected' %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></span>
+      <span class="text-lg font-bold font-heading text-slate-900 dark:text-white capitalize">{{ health.database }}</span>
     </div>
-    <span class="text-xs text-slate-500 mt-1 block">PostgreSQL 16+ via psycopg</span>
+    <span class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">PostgreSQL 16+ via psycopg</span>
   </div>
 
-  <div class="glass-panel rounded-2xl p-5 border border-slate-800">
-    <span class="text-xs font-medium text-slate-400 uppercase tracking-wider block">Domain Schema</span>
+  <div class="glass-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Domain Schema</span>
     <div class="mt-2 flex items-baseline gap-2">
-      <span class="text-lg font-mono font-bold text-cyan-400">{{ schema.total_domain_tables }} / 40</span>
-      <span class="text-xs text-slate-400">Tables</span>
+      <span class="text-lg font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ schema.total_domain_tables }} / 40</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Domain Tables</span>
     </div>
-    <span class="text-xs text-slate-500 mt-1 block">Alembic: {{ schema.migration_revision }}</span>
+    <span class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">Alembic: {{ schema.migration_revision }}</span>
   </div>
 
-  <div class="glass-panel rounded-2xl p-5 border border-slate-800">
-    <span class="text-xs font-medium text-slate-400 uppercase tracking-wider block">Server Time (UTC)</span>
-    <div class="mt-2 text-sm font-mono text-indigo-300 truncate">
+  <div class="glass-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Server Time (UTC)</span>
+    <div class="mt-2 text-sm font-mono font-bold text-slate-800 dark:text-slate-200 truncate">
       {{ health.timestamp.strftime('%H:%M:%S UTC') }}
     </div>
-    <span class="text-xs text-slate-500 mt-1 block">{{ health.timestamp.strftime('%d-%b-%Y') }}</span>
+    <span class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">{{ health.timestamp.strftime('%d-%b-%Y') }}</span>
   </div>
 </div>

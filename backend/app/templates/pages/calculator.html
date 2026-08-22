@@ -1,146 +1,207 @@
 {% extends "base.html" %}
 
-{% block title %}Salary & Tax Intelligence Platform — SmartSalary{% endblock %}
+{% block title %}Salary &amp; Tax Intelligence Calculator — SmartSalary India{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-8">
+<div class="max-w-6xl mx-auto space-y-8 animate-fade-in">
     <!-- Header -->
-    <div class="text-center space-y-2">
-        <h1 class="text-3xl font-extrabold text-white tracking-tight">Salary, Tax & Take-Home Intelligence</h1>
-        <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-            Deterministic statutory calculation platform for Indian Income Tax (Old & New Regimes), EPFO Provident Fund, and State Professional Tax.
+    <div class="text-left space-y-1.5 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+            <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
+                Salary, Tax &amp; Take-Home Intelligence
+            </h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                AY 2026-27 Active
+            </span>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm max-w-3xl leading-relaxed">
+            Deterministic statutory calculation engine for Indian Income Tax (Section 115BAC &amp; Old Regime), EPFO Provident Fund, and State Professional Tax schedules.
         </p>
     </div>
 
-    <!-- Main Grid: Progressive Disclosure Form & Results Container -->
+    <!-- Main Calculation Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <!-- Left: Progressive Disclosure Input Form (5 cols) -->
-        <div class="lg:col-span-5 bg-white text-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 space-y-5">
-            <!-- Mode Toggle Tabs (Quick Mode vs Detailed Mode) -->
-            <div class="flex bg-slate-100 p-1 rounded-xl" role="tablist">
-                <button type="button" onclick="switchMode('quick')" id="tab-quick" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-white text-indigo-900 shadow-sm">
-                    Quick Mode
-                </button>
-                <button type="button" onclick="switchMode('detailed')" id="tab-detailed" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900">
-                    Detailed Mode
-                </button>
+        <!-- Left: Guided Input Form (5 Cols) -->
+        <div class="lg:col-span-5 glass-card p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-6">
+            <!-- Form Header & Mode Toggle -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-xs font-bold font-heading text-slate-900 dark:text-white uppercase tracking-wider">Salary Parameters</span>
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs" role="tablist">
+                    <button type="button" onclick="switchMode('quick')" id="tab-quick" class="px-3 py-1 font-semibold rounded-md transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs">
+                        Quick
+                    </button>
+                    <button type="button" onclick="switchMode('detailed')" id="tab-detailed" class="px-3 py-1 font-semibold rounded-md transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900">
+                        Detailed
+                    </button>
+                </div>
             </div>
 
-            <form hx-post="/calculator/calculate" hx-target="#calculation-result-container" hx-indicator="#calc-spinner" class="space-y-4">
+            <form id="salary-calc-form" hx-post="/calculator/calculate" hx-target="#calculation-result-container" hx-indicator="#calc-pipeline" class="space-y-5" onsubmit="handleCalculateSubmit(event)">
                 <input type="hidden" name="is_quick_mode" id="is_quick_mode" value="true">
 
-                <!-- Financial Year (Dynamic Asia/Kolkata default) -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Financial Year</label>
-                    <select name="financial_year" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
-                        <option value="2025-26" selected>FY 2025-26 (AY 2026-27) — Current</option>
-                        <option value="2026-27">FY 2026-27 (AY 2027-28)</option>
-                        <option value="2024-25">FY 2024-25 (AY 2025-26)</option>
-                    </select>
+                <!-- Step 1: Financial Year, State & Profession -->
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Financial Year</label>
+                            <select name="financial_year" id="financial_year" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="2025-26" selected>FY 2025-26 (AY 2026-27)</option>
+                                <option value="2026-27">FY 2026-27 (AY 2027-28)</option>
+                                <option value="2024-25">FY 2024-25 (AY 2025-26)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">State / UT Jurisdiction</label>
+                            <select name="state_code" id="state_code" onchange="handleStateChange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                {% for s in states %}
+                                <option value="{{ s.state_code }}" {% if s.state_code == 'KA' %}selected{% endif %}>
+                                    {{ s.state_name }} ({{ s.state_code }}) {% if s.pt_status.value == 'ACTIVE_APPLICABLE' %}&bull; PT{% else %}&bull; No PT{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Occupation Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Profession / Occupation</label>
+                        <select name="occupation" id="occupation" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 text-xs font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="SOFTWARE_IT" selected>Software Engineer / IT Professional</option>
+                            <option value="ENGINEERING">Engineering &amp; Technical Services</option>
+                            <option value="MEDICINE_HEALTHCARE">Medicine &amp; Healthcare</option>
+                            <option value="FINANCE_BANKING">Finance &amp; Banking</option>
+                            <option value="TEACHING_EDUCATION">Teaching &amp; Academia</option>
+                            <option value="LEGAL">Legal Practitioner / Consultant</option>
+                            <option value="MANAGEMENT_CONSULTING">Management &amp; Business Consulting</option>
+                            <option value="GOVERNMENT_PUBLIC">Government &amp; Public Sector</option>
+                            <option value="MANUFACTURING">Manufacturing &amp; Operations</option>
+                            <option value="SALES_MARKETING">Sales &amp; Marketing</option>
+                            <option value="FREELANCER">Independent Professional / Freelancer</option>
+                            <option value="OTHER">Other Professional Profile</option>
+                        </select>
+                        <span class="block text-[10px] text-slate-400 mt-1">Standard Central Income Tax applies across all professions.</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tax Regime</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <input type="radio" name="regime" value="NEW" checked class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                <div class="ml-2">
+                                    <span class="block text-xs font-bold text-slate-900 dark:text-white">New Regime</span>
+                                    <span class="block text-[10px] text-slate-500">Sec 115BAC Default</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <input type="radio" name="regime" value="OLD" class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                <div class="ml-2">
+                                    <span class="block text-xs font-bold text-slate-900 dark:text-white">Old Regime</span>
+                                    <span class="block text-[10px] text-slate-500">80C/80D Eligible</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Primary Gross Salary Input -->
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider" id="salary-label">Monthly Gross Salary (₹)</label>
-                        <span class="text-[11px] text-indigo-600 font-bold cursor-pointer hover:underline" onclick="toggleSalaryPeriod()" id="period-toggle-btn">Switch to Annual</span>
+                <!-- Step 2: Salary Amount -->
+                <div class="space-y-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300" id="salary-label">Monthly Gross Salary (₹)</label>
+                        <button type="button" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline" onclick="toggleSalaryPeriod()" id="period-toggle-btn">
+                            Switch to Annual
+                        </button>
                     </div>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold">₹</span>
-                        <input type="number" name="monthly_gross_salary" id="salary-input" value="100000" min="0" step="500" required
-                               class="w-full pl-8 bg-slate-50 border border-slate-300 text-slate-900 font-mono font-semibold rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                               placeholder="e.g. 100000">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">₹</span>
+                        <input type="number" name="monthly_gross_salary" id="salary-input" value="100000" min="0" step="any" required
+                               class="w-full pl-8 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-semibold rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                               placeholder="e.g. 99999, 100000, 5000000">
                     </div>
+                    <span class="block text-[10px] text-slate-400">Enter your actual salary. Any valid numeric amount is accepted without artificial limits.</span>
                 </div>
 
-                <!-- State (Professional Tax) -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Work State (Professional Tax)</label>
-                    <select name="state_code" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
-                        <option value="KA" selected>Karnataka (KA) — Standard ₹200/mo</option>
-                        <option value="MH">Maharashtra (MH) — Feb adjustment ₹300</option>
-                        <option value="TS">Telangana (TS)</option>
-                        <option value="DL">Delhi (DL) — Exempt (₹0)</option>
-                    </select>
-                </div>
-
-                <!-- Tax Regime -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tax Regime</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                            <input type="radio" name="regime" value="NEW" checked class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                            <div class="ml-2.5">
-                                <span class="block text-xs font-bold text-slate-900">New Regime</span>
-                                <span class="block text-[11px] text-slate-500">Sec 115BAC Default</span>
-                            </div>
-                        </label>
-                        <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                            <input type="radio" name="regime" value="OLD" class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
-                            <div class="ml-2.5">
-                                <span class="block text-xs font-bold text-slate-900">Old Regime</span>
-                                <span class="block text-[11px] text-slate-500">80C/80D Deductions</span>
-                            </div>
-                        </label>
+                <!-- Step 3: Detailed Components (Expandable Dynamic Mode) -->
+                <div id="detailed-fields" class="hidden space-y-3.5 border-t border-slate-100 dark:border-slate-800 pt-3 animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Detailed Deductions &amp; Allowances</span>
+                        <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">Dynamic Details</span>
                     </div>
-                </div>
-
-                <!-- Detailed Mode Expandable Section (Hidden in Quick Mode) -->
-                <div id="detailed-fields" class="hidden space-y-4 border-t border-slate-200 pt-4 animate-fade-in">
-                    <div class="text-xs font-bold uppercase tracking-wider text-slate-700">Salary Component Breakdown</div>
                     
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div>
-                            <label class="block text-slate-600 mb-1">Monthly Basic (₹)</label>
-                            <input type="number" name="basic_salary" placeholder="Optional" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded p-2 text-xs font-mono">
+                            <label class="block text-slate-600 dark:text-slate-400 mb-1">Monthly Basic (₹)</label>
+                            <input type="number" name="basic_salary" placeholder="Auto 50%" min="0" step="any" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2 text-xs font-mono">
                         </div>
                         <div>
-                            <label class="block text-slate-600 mb-1">Monthly HRA (₹)</label>
-                            <input type="number" name="hra" placeholder="Optional" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded p-2 text-xs font-mono">
+                            <label class="block text-slate-600 dark:text-slate-400 mb-1">Monthly HRA (₹)</label>
+                            <input type="number" name="hra" placeholder="Optional" min="0" step="any" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2 text-xs font-mono">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div>
-                            <label class="block text-slate-600 mb-1">Section 80C (Old Regime)</label>
-                            <input type="number" name="section_80c" placeholder="Max ₹1.5L" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded p-2 text-xs font-mono">
+                            <label class="block text-slate-600 dark:text-slate-400 mb-1">Section 80C (Old Regime)</label>
+                            <input type="number" name="section_80c" placeholder="Max ₹1.5L" min="0" step="any" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2 text-xs font-mono">
                         </div>
                         <div>
-                            <label class="block text-slate-600 mb-1">Section 80D Health (Old)</label>
-                            <input type="number" name="section_80d" placeholder="Max ₹25k" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded p-2 text-xs font-mono">
+                            <label class="block text-slate-600 dark:text-slate-400 mb-1">Section 80D Health</label>
+                            <input type="number" name="section_80d" placeholder="Max ₹25k" min="0" step="any" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2 text-xs font-mono">
                         </div>
                     </div>
 
-                    <div class="pt-2">
-                        <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                    <div class="pt-1">
+                        <label class="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
                             <input type="checkbox" name="is_pf_applicable" checked value="true" class="rounded text-indigo-600">
                             <span>EPFO Provident Fund Applicable (12% EPF)</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Submit Button -->
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex justify-center items-center">
-                    <span>Calculate Salary &amp; Tax</span>
-                    <svg id="calc-spinner" class="htmx-indicator animate-spin ml-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <!-- Submit Button with Anti-Double-Submit Protection -->
+                <button type="submit" id="calculate-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex justify-center items-center gap-2 cursor-pointer">
+                    <span id="btn-text">Calculate Statutory Take-Home</span>
+                    <svg id="btn-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </button>
             </form>
         </div>
 
-        <!-- Right: Results Container (7 cols) -->
+        <!-- Right: Results & Verification Pipeline Container (7 Cols) -->
         <div id="calculation-result-container" class="lg:col-span-7 space-y-6">
-            <!-- Initial Prompt State (replaced on HTMX submit) -->
-            <div class="bg-white p-8 rounded-2xl border border-dashed border-slate-300 text-center space-y-4">
-                <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            <!-- Animated Calculation Pipeline Indicator (Visible during HTMX Request) -->
+            <div id="calc-pipeline" class="htmx-indicator glass-card p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 text-xs animate-fade-in">
+                <div class="flex items-center gap-3">
+                    <span class="w-3 h-3 rounded-full bg-indigo-600 animate-ping"></span>
+                    <span class="font-bold text-slate-900 dark:text-white font-heading text-sm">Evaluating Statutory Engine...</span>
                 </div>
-                <div class="space-y-1">
-                    <h3 class="text-base font-bold text-slate-800">Ready to Compute Salary &amp; Tax</h3>
-                    <p class="text-xs text-slate-500 max-w-md mx-auto">
-                        Submit parameters to generate an instant minimal take-home answer, followed by lazy-loaded mathematical traces, monthly schedules, and what-if raise simulators.
+                <div class="space-y-2 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <span>✓</span> <span>Validating salary input parameters</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <span>✓</span> <span>Resolving active tax year &amp; state jurisdiction rules</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 animate-pulse">
+                        <span>➔</span> <span>Evaluating Section 115BAC 7 slabs &amp; Section 87A rebate</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-400">
+                        <span>○</span> <span>Generating dual-bundle SHA-256 snapshot</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Initial Prompt State (Replaced immediately upon calculation) -->
+            <div class="glass-card p-8 sm:p-12 text-center space-y-4 bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800">
+                <div class="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="space-y-1.5">
+                    <h3 class="text-base font-bold font-heading text-slate-900 dark:text-white">Ready for Deterministic Calculation</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                        Enter your salary parameters and click calculate to generate an instant minimal take-home breakdown, interactive Rupee Journey, and statutory legal citations.
                     </p>
                 </div>
             </div>
@@ -158,13 +219,13 @@ function switchMode(mode) {
     const isQuickInput = document.getElementById('is_quick_mode');
 
     if (mode === 'quick') {
-        quickTab.className = 'flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-white text-indigo-900 shadow-sm';
-        detailedTab.className = 'flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900';
+        quickTab.className = 'px-3 py-1 font-semibold rounded-md transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs';
+        detailedTab.className = 'px-3 py-1 font-semibold rounded-md transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900';
         detailedFields.classList.add('hidden');
         isQuickInput.value = 'true';
     } else {
-        detailedTab.className = 'flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-white text-indigo-900 shadow-sm';
-        quickTab.className = 'flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900';
+        detailedTab.className = 'px-3 py-1 font-semibold rounded-md transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs';
+        quickTab.className = 'px-3 py-1 font-semibold rounded-md transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900';
         detailedFields.classList.remove('hidden');
         isQuickInput.value = 'false';
     }
@@ -188,6 +249,28 @@ function toggleSalaryPeriod() {
         btn.innerText = 'Switch to Annual';
         isMonthly = true;
     }
+}
+
+function handleCalculateSubmit(e) {
+    const btn = document.getElementById('calculate-btn');
+    const btnText = document.getElementById('btn-text');
+    btn.disabled = true;
+    btnText.innerText = 'Computing Take-Home...';
+}
+
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    const btn = document.getElementById('calculate-btn');
+    const btnText = document.getElementById('btn-text');
+    if (btn) {
+        btn.disabled = false;
+        btnText.innerText = 'Calculate Statutory Take-Home';
+    }
+});
+
+function handleStateChange() {
+    // Invalidate stale previous calculation container if state switches
+    const resContainer = document.getElementById('calculation-result-container');
+    // State change hook
 }
 </script>
 {% endblock %}

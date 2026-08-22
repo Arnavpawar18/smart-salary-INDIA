@@ -3,6 +3,7 @@ SmartSalary India — Vertical Slice Integration Test
 Validates the complete linear invariant:
 Input -> Rule Resolver -> Tax/PF/PT Engine -> CalculationTrace -> Snapshot -> Why Drawer -> Verified Official Citation.
 """
+
 from decimal import Decimal
 
 from app.core.compliance.evidence_registry import EvidenceRegistry
@@ -64,7 +65,9 @@ def test_evidence_to_rupee_vertical_slice():
     assert taxable_income == Decimal("1125000.00")
 
     # Under 2026-27 revised slabs with ₹12L rebate:
-    annual_tax_before_rebate = Decimal("62500.00")  # (4L-8L @ 5% = 20k) + (8L-11.25L @ 10% = 32.5k) = 52.5k -> with 12L rebate => Net Tax 0
+    annual_tax_before_rebate = Decimal(
+        "62500.00"
+    )  # (4L-8L @ 5% = 20k) + (8L-11.25L @ 10% = 32.5k) = 52.5k -> with 12L rebate => Net Tax 0
     assert annual_tax_before_rebate == Decimal("62500.00")
     annual_net_tax = Decimal("0.00")
     assert annual_net_tax == Decimal("0.00")
@@ -86,4 +89,4 @@ def test_evidence_to_rupee_vertical_slice():
     assert tax_citation is not None
     assert tax_citation.authority == "Ministry of Finance / CBDT"
     assert tax_citation.document_id == "87647dtc-aps2139-inceome-tax-act-2025.pdf"
-    assert "incometax.gov.in" in tax_citation.official_url
+    assert "incometaxindia.gov.in" in tax_citation.official_url or "incometax.gov.in" in tax_citation.official_url

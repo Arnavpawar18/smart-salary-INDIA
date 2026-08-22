@@ -36,7 +36,11 @@ def multi_tenant_fixture():
         db.add(org_a)
         db.flush()
 
-        user_a = User(email=f"hr_a_{uuid.uuid4().hex[:6]}@alpha.com", hashed_password=PasswordHasher.hash_password("PassA123!"), full_name="Alpha HR")
+        user_a = User(
+            email=f"hr_a_{uuid.uuid4().hex[:6]}@alpha.com",
+            hashed_password=PasswordHasher.hash_password("PassA123!"),
+            full_name="Alpha HR",
+        )
         db.add(user_a)
         db.flush()
         if role_hr:
@@ -45,7 +49,9 @@ def multi_tenant_fixture():
         mem_a = OrganizationMembership(user_id=user_a.id, organization_id=org_a.id, role_id=role_hr.id, status="ACTIVE")
         db.add(mem_a)
 
-        dept_a = Department(organization_id=org_a.id, name=f"Engineering A {uuid.uuid4().hex[:4]}", code=f"ENG-A-{uuid.uuid4().hex[:4]}")
+        dept_a = Department(
+            organization_id=org_a.id, name=f"Engineering A {uuid.uuid4().hex[:4]}", code=f"ENG-A-{uuid.uuid4().hex[:4]}"
+        )
         db.add(dept_a)
         db.flush()
 
@@ -72,16 +78,24 @@ def multi_tenant_fixture():
         db.add(org_b)
         db.flush()
 
-        user_b = User(email=f"emp_b_{uuid.uuid4().hex[:6]}@beta.com", hashed_password=PasswordHasher.hash_password("PassB123!"), full_name="Beta Employee")
+        user_b = User(
+            email=f"emp_b_{uuid.uuid4().hex[:6]}@beta.com",
+            hashed_password=PasswordHasher.hash_password("PassB123!"),
+            full_name="Beta Employee",
+        )
         db.add(user_b)
         db.flush()
         if role_emp:
             db.execute(user_roles.insert().values(user_id=user_b.id, role_id=role_emp.id))
 
-        mem_b = OrganizationMembership(user_id=user_b.id, organization_id=org_b.id, role_id=role_emp.id if role_emp else 1, status="ACTIVE")
+        mem_b = OrganizationMembership(
+            user_id=user_b.id, organization_id=org_b.id, role_id=role_emp.id if role_emp else 1, status="ACTIVE"
+        )
         db.add(mem_b)
 
-        dept_b = Department(organization_id=org_b.id, name=f"Operations B {uuid.uuid4().hex[:4]}", code=f"OPS-B-{uuid.uuid4().hex[:4]}")
+        dept_b = Department(
+            organization_id=org_b.id, name=f"Operations B {uuid.uuid4().hex[:4]}", code=f"OPS-B-{uuid.uuid4().hex[:4]}"
+        )
         db.add(dept_b)
         db.flush()
 

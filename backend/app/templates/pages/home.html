@@ -1,63 +1,254 @@
 {% extends "base.html" %}
 
-{% block title %}SmartSalary India — Platform Overview{% endblock %}
+{% block title %}SmartSalary India — Evidence-Grounded Statutory Financial Intelligence{% endblock %}
 
 {% block content %}
-<div class="space-y-10">
-  <!-- Hero Section -->
-  <div class="glass-panel rounded-3xl p-8 sm:p-12 glow-brand border border-slate-800 relative overflow-hidden">
-    <div class="max-w-3xl space-y-4">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-        <span>🚀</span> Python-First Full-Stack Architecture
-      </div>
-      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-        Salary, Tax, PF &amp; Professional Tax Intelligence for India
-      </h1>
-      <p class="text-base sm:text-lg text-slate-400 leading-relaxed">
-        A pure, deterministic financial calculation platform engineered for Indian statutory compliance across Old and New Tax Regimes, EPFO guidelines, and State Professional Tax schedules.
-      </p>
-      <div class="pt-4 flex flex-wrap gap-4">
-        <a href="/system-status" class="px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-cyan-600/20 inline-flex items-center gap-2">
-          Explore 40-Table Architecture &rarr;
-        </a>
-        <a href="/calculator" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition-colors border border-slate-700">
-          Salary Calculator Shell
-        </a>
-      </div>
-    </div>
-  </div>
+<div class="space-y-16 sm:space-y-24 pb-12">
+  <!-- 1. Hero Section with Premium Dark Surface & Ambient Glow -->
+  <section class="relative pt-4 sm:pt-10">
+    <!-- Atmospheric Ambient Glows -->
+    <div class="absolute -top-24 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div class="absolute top-1/2 right-10 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
 
-  <!-- Core Architectural Pillars -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-3">
-      <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-lg">
-        01
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+      <!-- Left: Value Proposition -->
+      <div class="lg:col-span-7 space-y-6 text-left">
+        <!-- Hero Badge / Status Pill -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-900/90 text-indigo-300 border border-indigo-500/30 shadow-sm backdrop-blur-md">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Python-First Statutory Engine &bull; FY 2025-26 &amp; AY 2026-27</span>
+        </div>
+        
+        <!-- Hero Heading with High-Contrast Gradient Accent -->
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-heading text-white tracking-tight leading-[1.1]">
+          Know exactly where <br class="hidden sm:block">
+          <span class="bg-gradient-to-r from-indigo-400 via-indigo-300 to-white bg-clip-text text-transparent">
+            every rupee goes.
+          </span>
+        </h1>
+        
+        <!-- Hero Description -->
+        <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed font-normal">
+          SmartSalary India turns salary, tax and statutory deductions into a transparent, evidence-grounded calculation you can understand, audit, and mathematically verify.
+        </p>
+
+        <!-- Primary Action CTAs -->
+        <div class="pt-2 flex flex-wrap items-center gap-4">
+          <a href="/calculator" class="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 transition-all hover:shadow-indigo-600/40 hover:-translate-y-0.5 inline-flex items-center gap-2">
+            <span>Calculate My Take-Home</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </a>
+          <a href="/system-status" class="px-6 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 font-semibold text-sm border border-slate-800 shadow-sm transition-all hover:-translate-y-0.5 inline-flex items-center gap-2">
+            <span>Explore Regulatory Evidence</span>
+          </a>
+        </div>
+
+        <!-- Trust Features Highlights -->
+        <div class="pt-4 grid grid-cols-3 gap-4 border-t border-slate-800 text-xs">
+          <div class="space-y-0.5">
+            <span class="block font-bold text-white text-sm">100% Deterministic</span>
+            <span class="text-slate-400">Zero AI math hallucinations</span>
+          </div>
+          <div class="space-y-0.5 border-l border-slate-800 pl-4">
+            <span class="block font-bold text-white text-sm">CBDT &amp; EPFO</span>
+            <span class="text-slate-400">Grounded in verified gazettes</span>
+          </div>
+          <div class="space-y-0.5 border-l border-slate-800 pl-4">
+            <span class="block font-bold text-white text-sm">SHA-256 Snapshots</span>
+            <span class="text-slate-400">Immutable audit proofs</span>
+          </div>
+        </div>
       </div>
-      <h2 class="text-lg font-bold text-slate-100">Pure Calculation Engine</h2>
-      <p class="text-sm text-slate-400 leading-relaxed">
-        Future calculation engine is pure, deterministic, zero-I/O, database-independent, and fully unit-testable.
+
+      <!-- Right: Official Statutory Authorities Hub -->
+      <div class="lg:col-span-5 relative">
+        <div class="p-6 sm:p-7 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl shadow-black/40 backdrop-blur-xl space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 block">Verified Compliance Hub</span>
+              <span class="text-sm font-bold text-white">Official Statutory Sources</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              ✓ Active Schedulers
+            </span>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 hover:border-indigo-500/40 transition-colors flex items-start justify-between gap-3 group">
+              <div>
+                <span class="font-bold text-white block group-hover:text-indigo-300 transition-colors">Income Tax Department / CBDT</span>
+                <span class="text-slate-400 text-[11px]">Finance Act 2025 &bull; Section 115BAC New Regime &amp; Sec 87A</span>
+              </div>
+              <a href="https://incometaxindia.gov.in" target="_blank" rel="noopener noreferrer" class="text-indigo-400 font-bold hover:underline shrink-0">Official &rarr;</a>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 hover:border-indigo-500/40 transition-colors flex items-start justify-between gap-3 group">
+              <div>
+                <span class="font-bold text-white block group-hover:text-indigo-300 transition-colors">Employees' Provident Fund Organisation (EPFO)</span>
+                <span class="text-slate-400 text-[11px]">EPF Scheme 1952 &bull; 12% Wage Ceiling &amp; EPS Split</span>
+              </div>
+              <a href="https://epfindia.gov.in" target="_blank" rel="noopener noreferrer" class="text-indigo-400 font-bold hover:underline shrink-0">Official &rarr;</a>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 hover:border-indigo-500/40 transition-colors flex items-start justify-between gap-3 group">
+              <div>
+                <span class="font-bold text-white block group-hover:text-indigo-300 transition-colors">Employees' State Insurance Corporation (ESIC)</span>
+                <span class="text-slate-400 text-[11px]">ESI Act 1948 &bull; ₹21,000 Wage Ceiling Threshold</span>
+              </div>
+              <a href="https://esic.gov.in" target="_blank" rel="noopener noreferrer" class="text-indigo-400 font-bold hover:underline shrink-0">Official &rarr;</a>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 hover:border-indigo-500/40 transition-colors flex items-start justify-between gap-3 group">
+              <div>
+                <span class="font-bold text-white block group-hover:text-indigo-300 transition-colors">State Professional Tax Authorities</span>
+                <span class="text-slate-400 text-[11px]">28 States + 8 UTs Jurisdictional Schedules (KA, MH, TS, WB, etc.)</span>
+              </div>
+              <a href="/system-status" class="text-indigo-400 font-bold hover:underline shrink-0">View Slabs &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Trust Architecture Strip -->
+  <section class="py-6 px-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm backdrop-blur-xl">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+      <div class="space-y-1">
+        <span class="text-indigo-400 font-bold text-lg font-money">AY 2026-27</span>
+        <span class="text-xs text-slate-400 block font-medium">Income Tax Slabs Ready</span>
+      </div>
+      <div class="space-y-1">
+        <span class="text-emerald-400 font-bold text-lg font-money">28 States + 8 UTs</span>
+        <span class="text-xs text-slate-400 block font-medium">State PT Coverage</span>
+      </div>
+      <div class="space-y-1">
+        <span class="text-white font-bold text-lg font-money">100% Deterministic</span>
+        <span class="text-xs text-slate-400 block font-medium">Zero AI Calculation Errors</span>
+      </div>
+      <div class="space-y-1">
+        <span class="text-amber-400 font-bold text-lg font-money">SHA-256 Provenance</span>
+        <span class="text-xs text-slate-400 block font-medium">Immutable Snapshot Vault</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- 3. Asymmetric Bento Feature Grid -->
+  <section class="space-y-8">
+    <div class="text-center max-w-2xl mx-auto space-y-2">
+      <h2 class="text-2xl sm:text-3xl font-bold font-heading text-white tracking-tight">
+        Engineered for Absolute Transparency
+      </h2>
+      <p class="text-sm text-slate-400">
+        Every rupee deducted or contributed connects directly to an active government statute, legal rule version, and immutable snapshot.
       </p>
     </div>
 
-    <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-3">
-      <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg">
-        02
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Bento Card 1: Rupee Journey Flow (Span 2) -->
+      <div class="md:col-span-2 rounded-2xl p-6 sm:p-8 bg-slate-900/90 border border-slate-800 space-y-4 overflow-hidden shadow-sm backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+          <div class="w-10 h-10 rounded-xl bg-indigo-950/80 text-indigo-400 border border-indigo-800/60 flex items-center justify-center font-bold">
+            01
+          </div>
+          <span class="text-xs font-semibold text-emerald-400 bg-emerald-950/50 px-2.5 py-1 rounded-md border border-emerald-500/20">
+            Interactive Visual Flow
+          </span>
+        </div>
+        <h3 class="text-xl font-bold text-white">Rupee Journey &bull; The Exact Financial Trail</h3>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Follow your earnings step-by-step from Total Employer Cost (CTC) to Net In-Hand Take-Home. Click any deduction node to inspect the underlying formula, statutory limit, and gazette publication.
+        </p>
+        <div class="rounded-xl overflow-hidden border border-slate-800 my-2">
+          <img src="/static/images/rupee_journey.jpg" alt="Rupee Journey Deduction Trail" class="w-full h-44 object-cover object-center hover:scale-102 transition-transform duration-300">
+        </div>
+        <div class="pt-2 flex flex-wrap items-center gap-2">
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">Gross Salary</span>
+          <span class="text-slate-500">&rarr;</span>
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">EPFO PF (12%)</span>
+          <span class="text-slate-500">&rarr;</span>
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">State PT</span>
+          <span class="text-slate-500">&rarr;</span>
+          <span class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">TDS / Cess</span>
+          <span class="text-slate-500">&rarr;</span>
+          <span class="px-3 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 font-bold text-xs">Take-Home</span>
+        </div>
       </div>
-      <h2 class="text-lg font-bold text-slate-100">Authoritative Schema</h2>
-      <p class="text-sm text-slate-400 leading-relaxed">
-        Exact 40 domain tables modeling Auth, Employees, Salaries, Calculation Snapshots, Tax, PF, PT, Payslips, and Knowledge.
-      </p>
-    </div>
 
-    <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-3">
-      <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-lg">
-        03
+      <!-- Bento Card 2: Government Evidence Vault -->
+      <div class="rounded-2xl p-6 sm:p-8 bg-slate-900/90 border border-slate-800 space-y-4 overflow-hidden shadow-sm backdrop-blur-xl">
+        <div class="w-10 h-10 rounded-xl bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 flex items-center justify-center font-bold">
+          02
+        </div>
+        <h3 class="text-xl font-bold text-white">Evidence Grounding</h3>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Direct cryptographic lineage back to official CBDT, EPFO, ESIC, and State Gazette publications in our immutable PDF Vault.
+        </p>
+        <div class="rounded-xl overflow-hidden border border-slate-800 my-2">
+          <img src="/static/images/evidence_vault.jpg" alt="Government Evidence Vault" class="w-full h-36 object-cover object-center">
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-800/80 border border-slate-700 font-mono text-[11px] text-slate-300 truncate">
+          SHA: 87647dtc-aps2139-income-tax-2025.pdf
+        </div>
       </div>
-      <h2 class="text-lg font-bold text-slate-100">Immutable Audit Snapshots</h2>
-      <p class="text-sm text-slate-400 leading-relaxed">
-        JSONB calculation snapshots with canonical SHA-256 hashes and versioned statutory references ensure 100% auditability.
-      </p>
+
+      <!-- Bento Card 3: Deterministic vs AI Rule Engine -->
+      <div class="rounded-2xl p-6 sm:p-8 bg-slate-900/90 border border-slate-800 space-y-4 overflow-hidden shadow-sm backdrop-blur-xl">
+        <div class="w-10 h-10 rounded-xl bg-amber-950/80 text-amber-400 border border-amber-800/60 flex items-center justify-center font-bold">
+          03
+        </div>
+        <h3 class="text-xl font-bold text-white">Code Calculates &bull; AI Explains</h3>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Zero AI arithmetic. Pure Python engines evaluate tax slabs while AI provides evidence-grounded contextual explanations.
+        </p>
+        <div class="rounded-xl overflow-hidden border border-slate-800 my-2">
+          <img src="/static/images/rag_architecture.jpg" alt="AI RAG Architecture" class="w-full h-36 object-cover object-center">
+        </div>
+      </div>
+
+      <!-- Bento Card 4: Enterprise Multi-Tenant Payroll (Span 2) -->
+      <div class="md:col-span-2 rounded-2xl p-6 sm:p-8 bg-slate-900/90 border border-slate-800 space-y-4 overflow-hidden shadow-sm backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+          <div class="w-10 h-10 rounded-xl bg-blue-950/80 text-blue-400 border border-blue-800/60 flex items-center justify-center font-bold">
+            04
+          </div>
+          <span class="text-xs font-semibold text-indigo-300 bg-indigo-950/50 px-2.5 py-1 rounded-md border border-indigo-500/20">
+            Multi-Tenant Enterprise
+          </span>
+        </div>
+        <h3 class="text-xl font-bold text-white">Batch Payroll &amp; Three-Way Reconciliation</h3>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Process thousands of employees across 28 States and 8 Union Territories with state-level isolation, locked payroll lifecycles, and verification QR codes on every payslip.
+        </p>
+        <div class="pt-2 flex items-center gap-4">
+          <a href="/enterprise" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300">
+            View Company Portal &rarr;
+          </a>
+          <a href="/payslips" class="text-xs font-semibold text-slate-400 hover:text-slate-300">
+            View Sample Payslips &rarr;
+          </a>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- 4. Final CTA Banner -->
+  <section class="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 border border-indigo-700/50 text-white text-center space-y-6 shadow-xl shadow-black/40">
+    <h2 class="text-3xl sm:text-4xl font-extrabold font-heading tracking-tight max-w-2xl mx-auto">
+      Ready to see your exact salary breakdown?
+    </h2>
+    <p class="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+      Calculate take-home pay, compare Old vs New Tax Regimes, and inspect every statutory deduction with mathematical proof.
+    </p>
+    <div class="pt-2">
+      <a href="/calculator" class="px-8 py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md shadow-indigo-600/30 transition-all hover:scale-105 inline-block">
+        Launch Salary Calculator
+      </a>
+    </div>
+  </section>
 </div>
 {% endblock %}
+

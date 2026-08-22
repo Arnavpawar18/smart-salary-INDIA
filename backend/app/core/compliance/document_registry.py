@@ -2,6 +2,7 @@
 SmartSalary India — Document Registry
 Central service for cataloging, indexing, hashing, and resolving documents from docs/tax_pdf.
 """
+
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path

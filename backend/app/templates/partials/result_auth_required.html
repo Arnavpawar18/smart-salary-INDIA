@@ -1,0 +1,41 @@
+<!-- Level 1 Authentication Required Card (Preserves Entered Salary State) -->
+<div class="glass-card p-8 sm:p-10 text-center space-y-6 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/60 shadow-xl animate-fade-in">
+    <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+    </div>
+
+    <div class="space-y-2 max-w-md mx-auto">
+        <h3 class="text-xl font-bold font-heading text-slate-900 dark:text-white">
+            Authentication Required
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Create an account or sign in to calculate, save, audit, and explain your salary with deterministic precision.
+        </p>
+    </div>
+
+    <!-- User Value Highlight -->
+    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-left max-w-md mx-auto space-y-2">
+        <div class="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Your input is preserved:</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400 font-mono">
+            <div>FY: <strong class="text-slate-800 dark:text-slate-200">{{ form_data.get('financial_year', '2025-26') }}</strong></div>
+            <div>State: <strong class="text-slate-800 dark:text-slate-200">{{ form_data.get('state_code', 'KA') }}</strong></div>
+            <div>Regime: <strong class="text-slate-800 dark:text-slate-200">{{ form_data.get('regime', 'NEW') }}</strong></div>
+            <div>Mode: <strong class="text-slate-800 dark:text-slate-200">{% if form_data.get('monthly_gross_salary') %}Monthly ₹{{ form_data.get('monthly_gross_salary') }}{% else %}Annual ₹{{ form_data.get('annual_gross_salary') }}{% endif %}</strong></div>
+        </div>
+    </div>
+
+    <!-- Action CTAs -->
+    <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="/login" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition-all text-center">
+            Sign In to Account
+        </a>
+        <a href="/register" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-all text-center">
+            Create Free Account
+        </a>
+    </div>
+</div>

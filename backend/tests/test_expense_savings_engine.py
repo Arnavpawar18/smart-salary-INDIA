@@ -2,8 +2,8 @@
 Tests for Expense & Savings Financial Health Engine (M2.4)
 Validates Cash Surplus, Savings Rate, Essential vs Discretionary splits, and Statutory Bridges.
 """
+
 from decimal import Decimal
-import pytest
 
 from app.engine.analytics.expense_savings_engine import (
     ExpenseFrequency,

@@ -3,6 +3,7 @@ SmartSalary India — Dynamic Question Graph & Prerequisite Dependency Engine
 Enforces declarative branching, mandatory field capture, and validation rules.
 Throws InsufficientApplicabilityFactsError when prerequisites are unsatisfied.
 """
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any

@@ -4,7 +4,7 @@ from app.models.base import Base
 
 # Authoritative domain categorization for domain tables
 DOMAIN_GROUPS: dict[str, list[str]] = {
-    "auth": ["users", "roles", "permissions", "user_roles", "role_permissions", "user_sessions"],
+    "auth": ["users", "roles", "permissions", "user_roles", "role_permissions", "user_sessions", "verification_tokens"],
     "organization": ["organizations", "organization_memberships"],
     "payroll": ["payroll_periods", "payroll_runs", "payroll_run_items"],
     "compliance": ["tax_declarations", "tax_declaration_items", "statutory_compliance_events"],
@@ -27,7 +27,7 @@ DOMAIN_GROUPS: dict[str, list[str]] = {
     "payslip": ["payslip_documents", "payslip_extractions", "payslip_validations"],
     "knowledge": ["knowledge_documents", "knowledge_chunks", "knowledge_sources"],
     "chat": ["chat_sessions", "chat_messages"],
-    "audit": ["audit_logs"],
+    "audit": ["audit_logs", "audit_chain_heads", "audit_checkpoints"],
 }
 
 
