@@ -97,7 +97,7 @@ async function handleChangePassword(e) {
     }
 
     try {
-        const res = await fetch('/auth/change-password', {
+        const res = await fetch('/api/v1/auth/change-password', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({current_password: curr, new_password: newPwd, confirm_password: conf})
@@ -113,7 +113,7 @@ async function handleChangePassword(e) {
 
 async function handleRevokeSession(sessionId) {
     try {
-        const res = await fetch(`/auth/sessions/${sessionId}`, {method: 'DELETE'});
+        const res = await fetch(`/api/v1/auth/sessions/${sessionId}`, {method: 'DELETE'});
         if (!res.ok) throw new Error('Failed to revoke session');
         location.reload();
     } catch(err) {
@@ -124,7 +124,7 @@ async function handleRevokeSession(sessionId) {
 async function handleLogoutAll() {
     if (!confirm("Are you sure you want to revoke all active sessions?")) return;
     try {
-        const res = await fetch('/auth/logout-all', {method: 'POST'});
+        const res = await fetch('/api/v1/auth/logout-all', {method: 'POST'});
         if (!res.ok) throw new Error('Failed to revoke all sessions');
         location.href = '/login';
     } catch(err) {

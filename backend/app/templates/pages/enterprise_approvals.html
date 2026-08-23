@@ -138,7 +138,7 @@ function submitDecision(action) {
     return;
   }
   
-  fetch(`/enterprise/approvals/${currentSelectedId}/action`, {
+  fetch(`/api/v1/enterprise/approvals/${currentSelectedId}/action`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: action, remarks: `Processed via Admin Portal as ${action}` })

@@ -210,7 +210,7 @@
         </div>
 
         <!-- Apply Button -->
-        <form method="POST" action="/employee-portal/declarations" onsubmit="handleDeclarationSubmit(event)">
+        <form method="POST" action="/api/v1/employee-portal/declarations" onsubmit="handleDeclarationSubmit(event)">
           <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
             <span>âœ“</span> Apply to Declaration
           </button>
@@ -226,7 +226,7 @@
 <script>
 function handleDeclarationSubmit(e) {
   e.preventDefault();
-  fetch('/employee-portal/declarations', {
+  fetch('/api/v1/employee-portal/declarations', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({

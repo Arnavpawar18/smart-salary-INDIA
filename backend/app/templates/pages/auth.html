@@ -351,7 +351,7 @@
     const password = document.getElementById('login-password').value;
 
     try {
-      const res = await fetch('/auth/login', {
+      const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
@@ -388,7 +388,7 @@
     const phone = document.getElementById('reg-phone').value || null;
 
     try {
-      const res = await fetch('/auth/register', {
+      const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ full_name, email, password, phone, sector, state_code })
@@ -421,7 +421,7 @@
     const email = document.getElementById('forgot-email').value;
 
     try {
-      const res = await fetch('/auth/forgot-password', {
+      const res = await fetch('/api/v1/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -463,7 +463,7 @@
 
     try {
       if (state.purpose === 'EMAIL_VERIFICATION') {
-        const res = await fetch('/auth/verify-email-otp', {
+        const res = await fetch('/api/v1/auth/verify-email-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ verification_id: state.verificationId, otp })
@@ -474,7 +474,7 @@
         showAlert(data.message || 'Email verified successfully! You can now sign in.', 'success');
         setTimeout(() => switchMode('login'), 1500);
       } else {
-        const res = await fetch('/auth/verify-password-reset-otp', {
+        const res = await fetch('/api/v1/auth/verify-password-reset-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ verification_id: state.verificationId, otp })
@@ -501,7 +501,7 @@
     btn.innerText = 'Sending...';
 
     try {
-      const res = await fetch('/auth/resend-otp', {
+      const res = await fetch('/api/v1/auth/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verification_id: state.verificationId })
@@ -530,7 +530,7 @@
     const confirm_password = document.getElementById('reset-confirm-pwd').value;
 
     try {
-      const res = await fetch('/auth/reset-password', {
+      const res = await fetch('/api/v1/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

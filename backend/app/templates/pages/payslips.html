@@ -95,7 +95,7 @@ function submitPayslipUpload() {
   const formData = new FormData();
   formData.append('file', fileInput.files[0]);
   
-  fetch('/payslips/upload', {
+  fetch('/api/v1/payslips/upload', {
     method: 'POST',
     body: formData
   })

@@ -261,7 +261,7 @@ async function submitAiMessage() {
 
   try {
     const csrfToken = getCsrfToken();
-    const res = await fetch('/chat/inquire', {
+    const res = await fetch('/api/v1/chat/inquire', {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
