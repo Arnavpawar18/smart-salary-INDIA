@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Security Center — SmartSalary India{% endblock %}
+{% block title %}Security Center â€” SmartSalary India{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -59,7 +59,7 @@
                         <div>
                             <p class="text-sm font-semibold text-slate-900">{{ session.user_agent or 'Standard Browser' }}</p>
                             <p class="text-xs text-slate-500 mt-0.5">
-                                IP: <span class="font-mono text-slate-700">{{ session.ip_address or '127.0.0.1' }}</span> • Last used: <span class="text-slate-700">{{ session.last_used_at.strftime('%d %b %H:%M') if session.last_used_at else 'Active' }}</span>
+                                IP: <span class="font-mono text-slate-700">{{ session.ip_address or '127.0.0.1' }}</span> â€¢ Last used: <span class="text-slate-700">{{ session.last_used_at.strftime('%d %b %H:%M') if session.last_used_at else 'Active' }}</span>
                             </p>
                         </div>
                     </div>
@@ -97,7 +97,7 @@ async function handleChangePassword(e) {
     }
 
     try {
-        const res = await fetch('/api/v1/auth/change-password', {
+        const res = await fetch('/auth/change-password', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({current_password: curr, new_password: newPwd, confirm_password: conf})
@@ -113,7 +113,7 @@ async function handleChangePassword(e) {
 
 async function handleRevokeSession(sessionId) {
     try {
-        const res = await fetch(`/api/v1/auth/sessions/${sessionId}`, {method: 'DELETE'});
+        const res = await fetch(`/auth/sessions/${sessionId}`, {method: 'DELETE'});
         if (!res.ok) throw new Error('Failed to revoke session');
         location.reload();
     } catch(err) {
@@ -124,7 +124,7 @@ async function handleRevokeSession(sessionId) {
 async function handleLogoutAll() {
     if (!confirm("Are you sure you want to revoke all active sessions?")) return;
     try {
-        const res = await fetch('/api/v1/auth/logout-all', {method: 'POST'});
+        const res = await fetch('/auth/logout-all', {method: 'POST'});
         if (!res.ok) throw new Error('Failed to revoke all sessions');
         location.href = '/login';
     } catch(err) {
@@ -133,3 +133,4 @@ async function handleLogoutAll() {
 }
 </script>
 {% endblock %}
+

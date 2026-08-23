@@ -1,10 +1,10 @@
-<header class="glass-nav sticky top-0 z-40 transition-colors duration-200">
+﻿<header class="glass-nav sticky top-0 z-40 transition-colors duration-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
     <!-- Brand Logo -->
     <div class="flex items-center space-x-6">
       <a href="/" class="flex items-center space-x-3 group">
         <div class="w-9 h-9 rounded-xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-          <span class="text-lg font-bold text-white tracking-tight">₹</span>
+          <span class="text-lg font-bold text-white tracking-tight">â‚¹</span>
         </div>
         <div>
           <div class="flex items-center gap-2">
@@ -12,7 +12,7 @@
               SmartSalary<span class="text-indigo-600 dark:text-indigo-400">.IN</span>
             </span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              ✓ AY 2026-27
+              âœ“ AY 2026-27
             </span>
           </div>
           <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">Statutory Financial Intelligence</span>
@@ -164,7 +164,7 @@
 </header>
 
 <script>
-// ── Profile Menu ──────────────────────────────────────────────
+// â”€â”€ Profile Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function toggleProfileMenu() {
   const menu = document.getElementById('profile-menu');
   const btn = document.getElementById('profile-menu-btn');
@@ -203,7 +203,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ── Logout ──────────────────────────────────────────────────
+// â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function performLogout() {
   const btn = document.getElementById('btn-logout');
   if (btn) { btn.disabled = true; btn.textContent = 'Signing out...'; }
@@ -215,7 +215,7 @@ async function performLogout() {
   }, '');
 
   try {
-    await fetch('/api/v1/auth/logout', {
+    await fetch('/auth/logout', {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
@@ -229,3 +229,4 @@ async function performLogout() {
   window.location.href = '/';
 }
 </script>
+

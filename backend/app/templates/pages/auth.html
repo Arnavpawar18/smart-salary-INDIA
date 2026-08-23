@@ -1,13 +1,13 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}SmartSalary India — Authentication & Verification Portal{% endblock %}
+{% block title %}SmartSalary India â€” Authentication & Verification Portal{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto my-6 sm:my-12">
   <!-- Brand Header -->
   <div class="text-center mb-8">
     <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 dark:bg-indigo-500 shadow-lg shadow-indigo-500/25 mb-3">
-      <span class="text-2xl font-bold text-white">₹</span>
+      <span class="text-2xl font-bold text-white">â‚¹</span>
     </div>
     <h1 class="text-2xl font-bold font-heading text-slate-900 dark:text-white tracking-tight" id="auth-title">
       Sign in to SmartSalary
@@ -55,7 +55,7 @@
             Forgot password?
           </button>
         </div>
-        <input type="password" id="login-password" required placeholder="••••••••"
+        <input type="password" id="login-password" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -87,7 +87,7 @@
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" for="reg-password">
           Password (min 8 characters)
         </label>
-        <input type="password" id="reg-password" minlength="8" required placeholder="••••••••"
+        <input type="password" id="reg-password" minlength="8" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -204,7 +204,7 @@
 
       <div class="text-center pt-2">
         <button type="button" onclick="switchMode('login')" class="text-xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
-          ← Back to Sign In
+          â† Back to Sign In
         </button>
       </div>
     </form>
@@ -215,7 +215,7 @@
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" for="reset-new-pwd">
           New Password (min 8 characters)
         </label>
-        <input type="password" id="reset-new-pwd" minlength="8" required placeholder="••••••••"
+        <input type="password" id="reset-new-pwd" minlength="8" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -223,7 +223,7 @@
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" for="reset-confirm-pwd">
           Confirm New Password
         </label>
-        <input type="password" id="reset-confirm-pwd" minlength="8" required placeholder="••••••••"
+        <input type="password" id="reset-confirm-pwd" minlength="8" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -237,8 +237,8 @@
 
   <!-- Trust Badges -->
   <div class="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500 space-y-1">
-    <p>🔒 TLS 1.3 Encrypted • Argon2id Key Derivation • HMAC-SHA256 Multi-Factor Gates</p>
-    <p>© 2026 SmartSalary India. Strictly compliant with Indian Statutory Regimes.</p>
+    <p>ðŸ”’ TLS 1.3 Encrypted â€¢ Argon2id Key Derivation â€¢ HMAC-SHA256 Multi-Factor Gates</p>
+    <p>Â© 2026 SmartSalary India. Strictly compliant with Indian Statutory Regimes.</p>
   </div>
 </div>
 
@@ -351,7 +351,7 @@
     const password = document.getElementById('login-password').value;
 
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await fetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
@@ -388,7 +388,7 @@
     const phone = document.getElementById('reg-phone').value || null;
 
     try {
-      const res = await fetch('/api/v1/auth/register', {
+      const res = await fetch('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ full_name, email, password, phone, sector, state_code })
@@ -421,7 +421,7 @@
     const email = document.getElementById('forgot-email').value;
 
     try {
-      const res = await fetch('/api/v1/auth/forgot-password', {
+      const res = await fetch('/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -463,7 +463,7 @@
 
     try {
       if (state.purpose === 'EMAIL_VERIFICATION') {
-        const res = await fetch('/api/v1/auth/verify-email-otp', {
+        const res = await fetch('/auth/verify-email-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ verification_id: state.verificationId, otp })
@@ -474,7 +474,7 @@
         showAlert(data.message || 'Email verified successfully! You can now sign in.', 'success');
         setTimeout(() => switchMode('login'), 1500);
       } else {
-        const res = await fetch('/api/v1/auth/verify-password-reset-otp', {
+        const res = await fetch('/auth/verify-password-reset-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ verification_id: state.verificationId, otp })
@@ -501,7 +501,7 @@
     btn.innerText = 'Sending...';
 
     try {
-      const res = await fetch('/api/v1/auth/resend-otp', {
+      const res = await fetch('/auth/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verification_id: state.verificationId })
@@ -530,7 +530,7 @@
     const confirm_password = document.getElementById('reset-confirm-pwd').value;
 
     try {
-      const res = await fetch('/api/v1/auth/reset-password', {
+      const res = await fetch('/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -659,3 +659,4 @@
   }
 </script>
 {% endblock %}
+

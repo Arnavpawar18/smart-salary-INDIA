@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% import "partials/enterprise_components.html" as ui %}
 
-{% block title %}Tax Optimizer — Employee Self-Service — SmartSalary India{% endblock %}
+{% block title %}Tax Optimizer â€” Employee Self-Service â€” SmartSalary India{% endblock %}
 
 {% block content %}
 <div class="space-y-6 max-w-7xl mx-auto pb-12">
@@ -25,10 +25,10 @@
 
     <div class="flex items-center gap-3">
       <a href="/help" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-colors flex items-center gap-1.5">
-        <span>❓</span> Help Center
+        <span>â“</span> Help Center
       </a>
       <a href="/calculator" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/20 flex items-center gap-1.5">
-        <span>⚡</span> Live Simulator
+        <span>âš¡</span> Live Simulator
       </a>
     </div>
   </div>
@@ -70,7 +70,7 @@
       <div class="rounded-2xl p-6 bg-slate-900/90 border border-slate-800 backdrop-blur-xl relative overflow-hidden">
         <div class="flex justify-between items-start mb-4">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <span>💼</span> Current CTC Profile
+            <span>ðŸ’¼</span> Current CTC Profile
           </h2>
           <a href="/calculator" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300">Edit Profile &rarr;</a>
         </div>
@@ -79,7 +79,7 @@
           <div>
             <span class="text-[11px] text-slate-400 block font-medium">Gross Annual Income</span>
             <span class="text-2xl font-extrabold text-white font-mono tabular-nums mt-0.5 block">
-              ₹24,00,000
+              â‚¹24,00,000
             </span>
           </div>
           <div>
@@ -112,13 +112,13 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-sm font-bold text-white">Section 80C</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">Max ₹1.5L</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">Max â‚¹1.5L</span>
               </div>
               <p class="text-xs text-slate-400 mt-0.5">EPF, PPF, ELSS Mutual Funds, Life Insurance Premium</p>
             </div>
             <div class="text-right">
-              <span class="text-base font-bold font-mono text-white block">₹1,20,000</span>
-              <span class="text-[10px] text-slate-400">₹30,000 remaining</span>
+              <span class="text-base font-bold font-mono text-white block">â‚¹1,20,000</span>
+              <span class="text-[10px] text-slate-400">â‚¹30,000 remaining</span>
             </div>
           </div>
           <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -132,12 +132,12 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-sm font-bold text-white">Section 80D</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">Max ₹25k</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">Max â‚¹25k</span>
               </div>
               <p class="text-xs text-slate-400 mt-0.5">Mediclaim / Health Insurance for Self &amp; Family</p>
             </div>
             <div class="text-right">
-              <span class="text-base font-bold font-mono text-emerald-400 block">₹25,000</span>
+              <span class="text-base font-bold font-mono text-emerald-400 block">â‚¹25,000</span>
               <span class="text-[10px] text-emerald-400 font-semibold">Fully Claimed</span>
             </div>
           </div>
@@ -152,12 +152,12 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-sm font-bold text-white">Section 80CCD(1B) NPS</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 font-mono">Extra ₹50k</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 font-mono">Extra â‚¹50k</span>
               </div>
               <p class="text-xs text-slate-400 mt-0.5">National Pension System voluntary contribution</p>
             </div>
             <div class="text-right">
-              <span class="text-base font-bold font-mono text-slate-400 block">₹0</span>
+              <span class="text-base font-bold font-mono text-slate-400 block">â‚¹0</span>
               <span class="text-[10px] text-amber-400 font-semibold">Unclaimed</span>
             </div>
           </div>
@@ -184,7 +184,7 @@
         <div>
           <span class="text-[11px] text-slate-400 font-medium block">Estimated Tax Liability</span>
           <div class="text-3xl sm:text-4xl font-extrabold text-white font-mono tabular-nums tracking-tight mt-1">
-            ₹ {{ tax_data.new_regime_tax|inr }}
+            â‚¹ {{ tax_data.new_regime_tax|inr }}
           </div>
         </div>
 
@@ -193,26 +193,26 @@
           <div>
             <span class="text-[10px] uppercase font-bold text-emerald-400 block">Potential Tax Savings</span>
             <span class="text-lg font-extrabold font-mono text-white tabular-nums">
-              ₹ {{ tax_data.tax_savings_optimal|inr }}
+              â‚¹ {{ tax_data.tax_savings_optimal|inr }}
             </span>
           </div>
-          <span class="text-2xl">🌱</span>
+          <span class="text-2xl">ðŸŒ±</span>
         </div>
 
         <!-- AI Insight Box -->
         <div class="p-4 rounded-xl bg-indigo-950/40 border border-indigo-800/60 space-y-2">
           <div class="flex items-center gap-1.5 text-indigo-300 font-bold text-xs">
-            <span>✨</span> AI Insight
+            <span>âœ¨</span> AI Insight
           </div>
           <p class="text-xs text-slate-300 leading-relaxed">
-            Increasing your <strong class="text-white">NPS contribution by ₹50,000</strong> right now will reduce your taxable bracket, saving you an additional <strong class="text-emerald-400">₹15,600 in tax</strong>.
+            Increasing your <strong class="text-white">NPS contribution by â‚¹50,000</strong> right now will reduce your taxable bracket, saving you an additional <strong class="text-emerald-400">â‚¹15,600 in tax</strong>.
           </p>
         </div>
 
         <!-- Apply Button -->
-        <form method="POST" action="/api/v1/employee-portal/declarations" onsubmit="handleDeclarationSubmit(event)">
+        <form method="POST" action="/employee-portal/declarations" onsubmit="handleDeclarationSubmit(event)">
           <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
-            <span>✓</span> Apply to Declaration
+            <span>âœ“</span> Apply to Declaration
           </button>
         </form>
       </div>
@@ -226,7 +226,7 @@
 <script>
 function handleDeclarationSubmit(e) {
   e.preventDefault();
-  fetch('/api/v1/employee-portal/declarations', {
+  fetch('/employee-portal/declarations', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
@@ -244,4 +244,5 @@ function handleDeclarationSubmit(e) {
 }
 </script>
 {% endblock %}
+
 

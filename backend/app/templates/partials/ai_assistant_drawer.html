@@ -1,4 +1,4 @@
-<!-- Floating AI Assistant Trigger Button -->
+﻿<!-- Floating AI Assistant Trigger Button -->
 <div class="fixed bottom-6 right-6 z-40">
   <button id="ai-assistant-toggle-btn" onclick="toggleAiDrawer()" type="button" aria-label="Open AI Assistant" class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/30 flex items-center justify-center text-xl transition-all duration-200 hover:scale-105 active:scale-95 group cursor-pointer">
     <svg class="w-6 h-6 text-white group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -21,10 +21,10 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <!-- Auth status indicator — updated by JS -->
+      <!-- Auth status indicator â€” updated by JS -->
       <span id="ai-auth-status" class="hidden items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-lg"></span>
       <button onclick="toggleAiDrawer()" type="button" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-        ✕
+        âœ•
       </button>
     </div>
   </div>
@@ -35,7 +35,7 @@
     <div id="ai-welcome-block"></div>
   </div>
 
-  <!-- Input Bar — hidden when unauthenticated -->
+  <!-- Input Bar â€” hidden when unauthenticated -->
   <div id="ai-input-bar" class="hidden p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60">
     <form id="ai-chat-form" class="flex gap-2">
       <textarea
@@ -50,14 +50,14 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
       </button>
     </form>
-    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 text-center">Enter to send &nbsp;·&nbsp; Shift+Enter for newline</p>
+    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 text-center">Enter to send &nbsp;Â·&nbsp; Shift+Enter for newline</p>
   </div>
 </div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────
+// â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Server-derived: current_user is rendered by Jinja2 at page load.
-// This is the authoritative source — not localStorage.
+// This is the authoritative source â€” not localStorage.
 const AI_AUTH_STATE = {{ 'true' if current_user else 'false' }};
 
 // Quick-suggestion sets based on context
@@ -68,7 +68,7 @@ const QUICK_QUERIES_UNAUTH = [
   'How is professional tax calculated?',
 ];
 const QUICK_QUERIES_AUTH = [
-  'Why is my EPF contribution ₹1,800?',
+  'Why is my EPF contribution â‚¹1,800?',
   'How does Section 87A rebate apply to my calculation?',
   'Why is my professional tax this amount?',
   'Explain my take-home salary.',
@@ -76,7 +76,7 @@ const QUICK_QUERIES_AUTH = [
 
 let currentSessionId = null;
 
-// ── Helpers ───────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getCsrfToken() {
   return document.cookie.split('; ').reduce((acc, c) => {
     const [k, v] = c.split('=');
@@ -86,7 +86,7 @@ function getCsrfToken() {
 
 /**
  * SAFE rendering: AI output is untrusted content.
- * We render plain text only. Bold/newline supported via DOM — no innerHTML from AI.
+ * We render plain text only. Bold/newline supported via DOM â€” no innerHTML from AI.
  */
 function renderAiText(el, text) {
   el.textContent = '';
@@ -116,7 +116,7 @@ function escapeHtml(str) {
   return d.innerHTML;
 }
 
-// ── Drawer ────────────────────────────────────────────────────
+// â”€â”€ Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function toggleAiDrawer() {
   const drawer = document.getElementById('ai-assistant-drawer');
   if (!drawer) return;
@@ -144,7 +144,7 @@ function initAiDrawer() {
     if (welcomeEl) {
       welcomeEl.innerHTML = `
         <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2 text-slate-600 dark:text-slate-300">
-          <p class="font-bold text-slate-900 dark:text-white text-xs">Evidence-Grounded Assistant 👋</p>
+          <p class="font-bold text-slate-900 dark:text-white text-xs">Evidence-Grounded Assistant ðŸ‘‹</p>
           <p class="text-xs leading-relaxed">
             I explain the mathematical and statutory reasoning behind your calculation. Ask about tax slabs, Section 87A rebate, EPF wage ceiling, or state professional tax.
           </p>
@@ -193,7 +193,7 @@ function initAiDrawer() {
   }
 }
 
-// ── Send ──────────────────────────────────────────────────────
+// â”€â”€ Send â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function sendQuickQuery(query) {
   const input = document.getElementById('ai-chat-input');
   if (input) {
@@ -240,7 +240,7 @@ async function submitAiMessage() {
   const messagesDiv = document.getElementById('ai-chat-messages');
   if (!messagesDiv) return;
 
-  // Append user message — using textContent for safety
+  // Append user message â€” using textContent for safety
   const userMsg = document.createElement('div');
   userMsg.className = 'p-3 rounded-xl bg-indigo-600 text-white text-xs ml-6 leading-relaxed shadow-xs';
   userMsg.textContent = query;
@@ -261,7 +261,7 @@ async function submitAiMessage() {
 
   try {
     const csrfToken = getCsrfToken();
-    const res = await fetch('/api/v1/chat/inquire', {
+    const res = await fetch('/chat/inquire', {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
@@ -274,12 +274,12 @@ async function submitAiMessage() {
     botMsg.innerHTML = '';
 
     if (res.status === 401) {
-      // Session expired — distinct from "not logged in"
+      // Session expired â€” distinct from "not logged in"
       const expiredEl = document.createElement('div');
       expiredEl.className = 'space-y-2 text-center';
       const msg = document.createElement('p');
       msg.className = 'font-semibold text-amber-700 dark:text-amber-400 text-xs';
-      msg.textContent = '⚠ Your session has expired.';
+      msg.textContent = 'âš  Your session has expired.';
       const sub = document.createElement('p');
       sub.className = 'text-slate-500 dark:text-slate-400 text-xs';
       sub.textContent = 'Please sign in again to continue using the AI assistant.';
@@ -296,7 +296,7 @@ async function submitAiMessage() {
     }
 
     if (!res.ok) {
-      // Generic backend error — show retry
+      // Generic backend error â€” show retry
       const errEl = document.createElement('div');
       errEl.className = 'space-y-2';
       const errMsg = document.createElement('p');
@@ -321,19 +321,19 @@ async function submitAiMessage() {
     const data = await res.json();
     currentSessionId = data.session_id;
 
-    // Safe rendering — AI text goes through renderAiText (textContent only)
+    // Safe rendering â€” AI text goes through renderAiText (textContent only)
     const textEl = document.createElement('div');
     renderAiText(textEl, data.response || 'Response generated from verified statutory rules.');
     botMsg.appendChild(textEl);
 
-    // Citations — safe DOM construction, no innerHTML from untrusted data
+    // Citations â€” safe DOM construction, no innerHTML from untrusted data
     if (data.citations && data.citations.length > 0) {
       const citDiv = document.createElement('div');
       citDiv.className = 'pt-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5 mt-2';
       data.citations.forEach(c => {
         const chip = document.createElement('span');
         chip.className = 'px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-indigo-600 dark:text-indigo-400';
-        chip.textContent = '📄 ' + (c.source_title || c.authority || 'Government Evidence');
+        chip.textContent = 'ðŸ“„ ' + (c.source_title || c.authority || 'Government Evidence');
         citDiv.appendChild(chip);
       });
       botMsg.appendChild(citDiv);
@@ -354,3 +354,4 @@ async function submitAiMessage() {
   }
 }
 </script>
+
