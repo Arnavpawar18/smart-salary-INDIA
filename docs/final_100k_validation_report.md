@@ -5,7 +5,7 @@
 **Passed Scenarios**: 120,000 (100.0%)  
 **Failed Scenarios**: 0 (0.0%)  
 **Blocked Scenarios (Fail-Closed)**: 6,920  
-**Duration**: 2.10 seconds  
+**Duration**: 2.09 seconds  
 **Verdict**: **PRODUCTION VALIDATION PASSED**
 
 ---
@@ -31,11 +31,11 @@
 
 ## 2. Latency & Performance Scorecard
 
-- **P50 Latency**: 0.0043 ms
-- **P95 Latency**: 0.0446 ms
-- **P99 Latency**: 0.0589 ms
-- **Max Latency**: 1.3197 ms
-- **Throughput**: 57070.99 scenarios / second
+- **P50 Latency**: 0.0042 ms
+- **P95 Latency**: 0.0442 ms
+- **P99 Latency**: 0.0626 ms
+- **Max Latency**: 1.7655 ms
+- **Throughput**: 57336.73 scenarios / second
 
 ---
 

@@ -7,11 +7,6 @@ name = "smartsalary-backend"
 version = "0.1.0"
 description = "SmartSalary — Salary, Tax, PF and Professional Tax Intelligence Platform for India"
 requires-python = ">=3.13,<3.14"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["app*"]
-exclude = ["alembic*", "tests*"]
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
@@ -22,6 +17,11 @@ dependencies = [
     "psycopg[binary]>=3.2.3",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
+    "pyjwt>=2.9.0",
+    "pwdlib[argon2]>=0.2.0",
+    "argon2-cffi>=23.1.0",
+    "pypdf>=5.0.0",
+    "email-validator>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +32,14 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.13.0",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["alembic*", "tests*"]
+
+[tool.setuptools.package-data]
+"app" = ["templates/**/*", "static/**/*"]
 
 [tool.ruff]
 line-length = 120

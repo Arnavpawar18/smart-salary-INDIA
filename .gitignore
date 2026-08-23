@@ -1,53 +1,38 @@
-# Environments & Dependencies
+# Python environments
 .venv/
-env/
 venv/
+env/
 ENV/
+
+# Node / frontend
 node_modules/
+
+# Local PostgreSQL
 pg16/
 pgdata/
 
-# Secrets & Environment Variables
+# Secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 *.pem
 *.key
 
-# Python
+# Python cache / build
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
+*.pyo
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+dist-ssr/
 *.egg-info/
-.installed.cfg
-*.egg
 .pytest_cache/
 .coverage
 htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Frontend / Vite
-dist/
-dist-ssr/
-*.local
-.eslintcache
-
-# IDE & OS
+# IDE / OS
 .vscode/
 .idea/
 *.swp
@@ -55,20 +40,23 @@ dist-ssr/
 .DS_Store
 Thumbs.db
 
-# Runtime / temporary files
+# Runtime / temporary
 scratch_tmp/
+scratch_tmp*/
 backend/tmp/
 
-# Runtime / temporary files
-scratch_tmp/
-backend/tmp/
+# Vercel
+.vercel/
 
-# Local PostgreSQL installation
-pg16/
+# Local frontend config
+*.local
+.eslintcache
 
-# Large downloaded tax utilities
+# Large downloaded utilities
 docs/tax_pdf/**/*.exe
 docs/tax_pdf/**/*.msi
 docs/tax_pdf/**/*.zip
-
+# Local tax/RAG source corpus - not part of Vercel deployment
 docs/tax_pdf/
+.vercel
+.env*

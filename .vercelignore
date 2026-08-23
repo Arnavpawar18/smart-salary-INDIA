@@ -1,0 +1,61 @@
+# Python environment
+.venv/
+venv/
+env/
+ENV/
+
+# Node
+node_modules/
+
+# PostgreSQL local installation/data
+pg16/
+pgdata/
+
+# Python caches
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Test/runtime temporary directories
+scratch_tmp/
+scratch_tmp*/
+backend/tmp/
+
+# Local Vercel files
+.vercel/
+
+# Git
+.git/
+.github/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Tax source corpus - NOT deployed with application
+docs/tax_pdf/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Build artifacts
+build/
+dist/
+dist-ssr/
+*.egg-info/
+
+# Logs
+*.log
+
+# Large validation artifacts not required at runtime
+docs/final_100k_validation_results.jsonl
