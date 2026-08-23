@@ -1,12 +1,26 @@
+import email.utils
 import logging
 import smtplib
+import threading
+import time
+import uuid
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from enum import StrEnum
 from typing import Any
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+class DeliveryState(StrEnum):
+    OTP_GENERATED = "OTP_GENERATED"
+    EMAIL_QUEUED = "EMAIL_QUEUED"
+    SMTP_CONNECTED = "SMTP_CONNECTED"
+    SMTP_AUTHENTICATED = "SMTP_AUTHENTICATED"
+    SMTP_ACCEPTED = "SMTP_ACCEPTED"
+    SEND_FAILED = "SEND_FAILED"
 
 
 class TestEmailInbox:
@@ -16,7 +30,14 @@ class TestEmailInbox:
     _capture_mode: bool = False
 
     @classmethod
+    def _is_capture_allowed(cls) -> bool:
+        return settings.ENVIRONMENT in {"test", "development"}
+
+    @classmethod
     def enable_capture(cls) -> None:
+        if not cls._is_capture_allowed():
+            logger.warning("TestEmailInbox.enable_capture() ignored in production.")
+            return
         cls._capture_mode = True
         cls.inbox.clear()
 
@@ -27,7 +48,7 @@ class TestEmailInbox:
 
     @classmethod
     def is_capture_mode(cls) -> bool:
-        return cls._capture_mode
+        return cls._capture_mode and cls._is_capture_allowed()
 
     @classmethod
     def get_last_otp(cls) -> str | None:
@@ -37,7 +58,7 @@ class TestEmailInbox:
         return cls.inbox[-1].get("otp")
 
     @classmethod
-    def record(cls, to_email: str, subject: str, body_text: str, body_html: str, raw_otp: str) -> None:
+    def record(cls, to_email: str, subject: str, body_text: str, body_html: str, raw_otp: str | None) -> None:
         cls.inbox.append(
             {
                 "to_email": to_email,
@@ -45,6 +66,7 @@ class TestEmailInbox:
                 "body_text": body_text,
                 "body_html": body_html,
                 "otp": raw_otp,
+                "timestamp": time.time(),
             }
         )
 
@@ -60,22 +82,81 @@ class TestEmailInbox:
 class EmailService:
     """
     Authoritative email delivery service for SmartSalary India.
-    Handles transactional OTP emails for registration and password resets.
+    Handles transactional OTP emails for registration and password resets with
+    explicit delivery state tracking, connection pooling/timeouts, and retry loops.
     """
 
+    last_delivery_state: DeliveryState = DeliveryState.OTP_GENERATED
+    last_send_metrics: dict[str, Any] = {}
+    _last_error: Exception | None = None
+
     @classmethod
-    def _send_smtp(cls, to_email: str, subject: str, body_text: str, body_html: str) -> bool:
-        """Dispatches an email via configured SMTP server with TLS encryption."""
+    def check_connectivity(cls) -> bool:
+        """Probes SMTP handshake on startup without raising unhandled exceptions."""
+        if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+            return True
+        try:
+            cls._open_connection()
+            return True
+        except Exception as exc:
+            cls._last_error = exc
+            logger.warning(
+                "SMTP connectivity probe failed at %s:%s — %s",
+                settings.SMTP_HOST,
+                settings.SMTP_PORT,
+                exc,
+            )
+            return False
+
+    @classmethod
+    def _open_connection(cls) -> smtplib.SMTP | smtplib.SMTP_SSL:
+        if settings.SMTP_USE_SSL:
+            server = smtplib.SMTP_SSL(
+                settings.SMTP_HOST,
+                settings.SMTP_PORT,
+                timeout=settings.SMTP_CONNECT_TIMEOUT_SECONDS,
+            )
+        else:
+            server = smtplib.SMTP(
+                settings.SMTP_HOST,
+                settings.SMTP_PORT,
+                timeout=settings.SMTP_CONNECT_TIMEOUT_SECONDS,
+            )
+
+        server.ehlo()
+        if settings.SMTP_USE_TLS and not settings.SMTP_USE_SSL:
+            server.starttls()
+            server.ehlo()
+
+        if settings.SMTP_USER and settings.SMTP_PASSWORD:
+            password = settings.SMTP_PASSWORD.replace(" ", "")
+            server.login(settings.SMTP_USER, password)
+
+        return server
+
+    @classmethod
+    def _send_smtp(cls, to_email: str, subject: str, body_text: str, body_html: str, raw_otp: str | None = None) -> bool:
+        """Dispatches an email via configured SMTP server with TLS/SSL and transient retries."""
+        cls.last_delivery_state = DeliveryState.EMAIL_QUEUED
+
+        # Development / Test capture interception
+        if TestEmailInbox.is_capture_mode():
+            TestEmailInbox.record(to_email, subject, body_text, body_html, raw_otp)
+            cls.last_delivery_state = DeliveryState.SMTP_ACCEPTED
+            cls.last_send_metrics = {"ok": True, "duration_ms": 0, "state": DeliveryState.SMTP_ACCEPTED}
+            return True
+
         if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
             if settings.ENVIRONMENT != "production":
-                logger.info(
-                    "📧 [DEV EMAIL] To: %s | Subject: %s\n%s",
-                    to_email,
-                    subject,
-                    body_text,
-                )
+                if settings.DEV_EXPOSE_OTP:
+                    logger.info("📧 [DEV EMAIL] To: %s | Subject: %s | OTP: %s", to_email, subject, raw_otp)
+                else:
+                    logger.info("📧 [DEV EMAIL] To: %s | Subject: %s (OTP suppressed in logs)", to_email, subject)
+                cls.last_delivery_state = DeliveryState.SMTP_ACCEPTED
+                cls.last_send_metrics = {"ok": True, "duration_ms": 0, "state": DeliveryState.SMTP_ACCEPTED}
                 return True
-            logger.warning("SMTP credentials not fully configured; email to %s suppressed.", to_email)
+            logger.warning("SMTP credentials not configured; email to %s suppressed.", to_email)
+            cls.last_delivery_state = DeliveryState.SEND_FAILED
             return False
 
         from_email = settings.SMTP_FROM_EMAIL or settings.SMTP_USER
@@ -85,34 +166,75 @@ class EmailService:
         msg["Subject"] = subject
         msg["From"] = from_header
         msg["To"] = to_email
+        msg["Message-ID"] = f"<{uuid.uuid4().hex}@smartsalary.in>"
+        msg["Date"] = email.utils.formatdate(localtime=True)
+        msg["Reply-To"] = from_email
 
         part1 = MIMEText(body_text, "plain", "utf-8")
         part2 = MIMEText(body_html, "html", "utf-8")
         msg.attach(part1)
         msg.attach(part2)
 
-        import time
         start_time = time.perf_counter()
-        try:
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=5) as server:
-                if settings.SMTP_USE_TLS:
-                    server.starttls()
-                # Clean app password by removing any whitespace
-                password = settings.SMTP_PASSWORD.replace(" ", "")
-                server.login(settings.SMTP_USER, password)
+        attempts = 0
+
+        while True:
+            attempts += 1
+            server = None
+            try:
+                cls.last_delivery_state = DeliveryState.SMTP_CONNECTED
+                server = cls._open_connection()
+                cls.last_delivery_state = DeliveryState.SMTP_AUTHENTICATED
                 server.sendmail(from_email, [to_email], msg.as_string())
-            duration_ms = (time.perf_counter() - start_time) * 1000
-            logger.info("Successfully dispatched email [%s] to %s (latency: %.2fms)", subject, to_email, duration_ms)
-            return True
-        except Exception as e:
-            duration_ms = (time.perf_counter() - start_time) * 1000
-            logger.error("Failed to send email to %s via SMTP after %.2fms: %s", to_email, duration_ms, e)
-            return False
+                cls.last_delivery_state = DeliveryState.SMTP_ACCEPTED
+
+                duration_ms = (time.perf_counter() - start_time) * 1000
+                cls.last_send_metrics = {"ok": True, "duration_ms": duration_ms, "state": DeliveryState.SMTP_ACCEPTED}
+                logger.info("Successfully dispatched email [%s] to %s (latency: %.2fms)", subject, to_email, duration_ms)
+                return True
+            except smtplib.SMTPAuthenticationError as auth_err:
+                cls._last_error = auth_err
+                cls.last_delivery_state = DeliveryState.SEND_FAILED
+                duration_ms = (time.perf_counter() - start_time) * 1000
+                cls.last_send_metrics = {"ok": False, "duration_ms": duration_ms, "error": str(auth_err)}
+                logger.error(
+                    "SMTP authentication failed for %s. Check SMTP_USER/SMTP_PASSWORD "
+                    "(Gmail requires a 16-char App Password).",
+                    settings.SMTP_USER,
+                )
+                return False
+            except (TimeoutError, ConnectionRefusedError, smtplib.SMTPServerDisconnected, smtplib.SMTPConnectError, OSError) as transient_err:
+                cls._last_error = transient_err
+                if attempts > settings.SMTP_MAX_RETRIES:
+                    cls.last_delivery_state = DeliveryState.SEND_FAILED
+                    duration_ms = (time.perf_counter() - start_time) * 1000
+                    cls.last_send_metrics = {"ok": False, "duration_ms": duration_ms, "error": str(transient_err)}
+                    logger.error(
+                        "Failed to send email to %s after %d attempts (%.2fms): %s",
+                        to_email,
+                        attempts,
+                        duration_ms,
+                        transient_err,
+                    )
+                    return False
+                time.sleep(settings.SMTP_RETRY_BACKOFF_SECONDS)
+            except Exception as exc:
+                cls._last_error = exc
+                cls.last_delivery_state = DeliveryState.SEND_FAILED
+                duration_ms = (time.perf_counter() - start_time) * 1000
+                cls.last_send_metrics = {"ok": False, "duration_ms": duration_ms, "error": str(exc)}
+                logger.error("Unexpected SMTP failure sending email to %s: %s", to_email, exc)
+                return False
+            finally:
+                if server:
+                    try:
+                        server.quit()
+                    except Exception:
+                        pass
 
     @classmethod
     def send_email_background(cls, to_email: str, subject: str, body_text: str, body_html: str) -> None:
-        """Lightweight background email worker thread to prevent blocking HTTP requests."""
-        import threading
+        """Lightweight background email worker thread."""
         thread = threading.Thread(
             target=cls._send_smtp,
             args=(to_email, subject, body_text, body_html),
@@ -124,7 +246,6 @@ class EmailService:
     @classmethod
     def send_email_verification_otp_background(cls, to_email: str, otp: str) -> None:
         """Non-blocking background dispatch of email verification OTP."""
-        import threading
         thread = threading.Thread(
             target=cls.send_email_verification_otp,
             args=(to_email, otp),
@@ -136,7 +257,6 @@ class EmailService:
     @classmethod
     def send_password_reset_otp_background(cls, to_email: str, otp: str) -> None:
         """Non-blocking background dispatch of password reset OTP."""
-        import threading
         thread = threading.Thread(
             target=cls.send_password_reset_otp,
             args=(to_email, otp),
@@ -186,11 +306,7 @@ class EmailService:
 </body>
 </html>"""
 
-        if TestEmailInbox.is_capture_mode():
-            TestEmailInbox.record(to_email, subject, body_text, body_html, otp)
-            return True
-
-        return cls._send_smtp(to_email, subject, body_text, body_html)
+        return cls._send_smtp(to_email, subject, body_text, body_html, raw_otp=otp)
 
     @classmethod
     def send_password_reset_otp(cls, to_email: str, otp: str) -> bool:
@@ -234,8 +350,4 @@ class EmailService:
 </body>
 </html>"""
 
-        if TestEmailInbox.is_capture_mode():
-            TestEmailInbox.record(to_email, subject, body_text, body_html, otp)
-            return True
-
-        return cls._send_smtp(to_email, subject, body_text, body_html)
+        return cls._send_smtp(to_email, subject, body_text, body_html, raw_otp=otp)

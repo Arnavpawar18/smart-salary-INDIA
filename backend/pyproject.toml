@@ -53,3 +53,4 @@ ignore = ["E501", "N806", "E402"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "--basetemp=.pytest_temp"

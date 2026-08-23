@@ -212,12 +212,12 @@ async def partial_calculator_calculate(
             request=request,
             name="partials/result_auth_required.html",
             context={
-                "form_data": dict(form_data),
-                "is_quick_mode": is_quick_mode,
+                "form_data": form_data,
+                "current_user": None,
             },
         )
 
-    # Associate with user's Employee profile
+    # Associate with user's Employee profile if authenticated
     emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
     emp_id = emp.id if emp else None
 
@@ -231,11 +231,12 @@ async def partial_calculator_calculate(
     )
 
     # Get persisted calculation ID
-    calc_run = db.scalar(
-        select(CalculationRun)
-        .where(CalculationRun.employee_id == emp_id)
-        .order_by(CalculationRun.id.desc())
-    ) if emp_id else None
+    calc_run = (
+        db.scalar(
+            select(CalculationRun)
+            .order_by(CalculationRun.id.desc())
+        )
+    )
     calc_id = calc_run.id if calc_run else 1
 
     quality = QualityClassifier.classify(
@@ -306,7 +307,7 @@ async def partial_calculator_what_if(
 
     return templates.TemplateResponse(
         request=request,
-        name="partials/simulator_panel.html",
+        name="partials/what_if_result.html",
         context={"sim_data": sim_data},
     )
 
@@ -325,8 +326,45 @@ def page_calculator_export(
         name="pages/print_summary.html",
         context={
             "result": ctx.output_snapshot,
+            "calculation_id": calculation_id,
             "calculation_context": ctx.to_dict(),
         },
+    )
+
+
+@app.get("/calculator/export/{calculation_id}/json", response_class=JSONResponse)
+def api_calculator_export_json(
+    calculation_id: int,
+    current_user=Depends(get_optional_user),
+    db: Session = Depends(get_db),
+):
+    """Authoritative CalculationContext JSON export."""
+    ctx = resolve_owned_calculation(db, calculation_id, user=current_user, allow_anonymous=True)
+    clean_data = ctx.to_dict()
+    return JSONResponse(content=clean_data, headers={
+        "Content-Disposition": f"attachment; filename=SmartSalary_Calculation_{calculation_id}.json"
+    })
+
+
+@app.get("/calculator/export/{calculation_id}/pdf")
+def api_calculator_export_pdf(
+    calculation_id: int,
+    current_user=Depends(get_optional_user),
+    db: Session = Depends(get_db),
+):
+    """Authoritative PDF salary & tax statement generator."""
+    from fastapi.responses import Response
+
+    from app.services.pdf_generator_service import generate_calculation_pdf
+
+    ctx = resolve_owned_calculation(db, calculation_id, user=current_user, allow_anonymous=True)
+    pdf_bytes = generate_calculation_pdf(ctx)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=SmartSalary_Statement_{calculation_id}.pdf"
+        }
     )
 
 

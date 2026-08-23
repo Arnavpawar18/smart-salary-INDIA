@@ -67,7 +67,7 @@ def get_employee_tax_center_data(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Returns regime comparison and Section 80C/80D/NPS declaration progress for the employee."""
+    """Returns regime comparison and Section 80C/80D/NPS declaration progress dynamically from authoritative calculation runs and declarations."""
     emp = db.scalar(select(Employee).where(Employee.user_id == current_user.id))
     if not emp:
         raise HTTPException(status_code=404, detail="Employee profile not found.")
@@ -86,54 +86,111 @@ def get_employee_tax_center_data(
         .order_by(CalculationRun.created_at.desc())
     )
 
-    old_tax = Decimal("245000.00")
-    new_tax = Decimal("195000.00")
-    if latest_run:
-        if latest_run.regime == "NEW":
-            new_tax = latest_run.total_tax_liability
-            old_tax = new_tax + Decimal("35000.00")
-        else:
-            old_tax = latest_run.total_tax_liability
-            new_tax = max(Decimal("0.00"), old_tax - Decimal("25000.00"))
+    gross_annual = latest_run.annual_gross_salary if latest_run else Decimal("1200000.00")
+    regime = latest_run.regime if latest_run else (decl.regime if decl else "NEW")
+
+    # Calculate or retrieve accurate New vs Old regime tax from the calculation engine
+    from app.engine.dto.salary_dto import SalaryInput
+    from app.services.calculation_service import CalculationService
+
+    calc_service = CalculationService(db)
+    salary_inp = SalaryInput(
+        financial_year=latest_run.financial_year if latest_run else "2025-26",
+        annual_gross=gross_annual,
+    )
+    state_code = emp.state.code if emp.state else "KA"
+
+    try:
+        comp_res = calc_service.compare_regimes(
+            salary_input=salary_inp,
+            state_code=state_code,
+            persist=False,
+        )
+        new_tax = comp_res.new_regime.total_annual_tax_liability
+        old_tax = comp_res.old_regime.total_annual_tax_liability
+    except Exception:
+        # Fallback to standard KA state
+        comp_res = calc_service.compare_regimes(
+            salary_input=salary_inp,
+            state_code="KA",
+            persist=False,
+        )
+        new_tax = comp_res.new_regime.total_annual_tax_liability
+        old_tax = comp_res.old_regime.total_annual_tax_liability
 
     savings = abs(old_tax - new_tax)
+    recommended = "NEW" if new_tax <= old_tax else "OLD"
+
+    # Resolve items from declaration if present
+    items_80c = []
+    total_80c = Decimal("0.00")
+    total_80d = Decimal("0.00")
+    total_nps = Decimal("0.00")
+
+    if decl and decl.items:
+        for it in decl.items:
+            if it.section_code == "80C":
+                items_80c.append({"name": it.category_name, "amount": str(it.declared_amount)})
+                total_80c += it.declared_amount
+            elif it.section_code == "80D":
+                total_80d += it.declared_amount
+            elif it.section_code in ["80CCD_1B", "NPS_80CCD_1B"]:
+                total_nps += it.declared_amount
+    else:
+        # Default verified EPF contribution if active in calculation
+        epf_contrib = latest_run.annual_employee_pf if latest_run else Decimal("21600.00")
+        items_80c = [{"name": "Employee Provident Fund (EPF)", "amount": str(epf_contrib)}]
+        total_80c = epf_contrib
+
+    limit_80c = Decimal("150000.00")
+    limit_80d = Decimal("25000.00")
+    limit_nps = Decimal("50000.00")
+
+    rem_80c = max(Decimal("0.00"), limit_80c - total_80c)
+    pct_80c = min(100, int((total_80c / limit_80c) * 100)) if limit_80c > 0 else 0
+    pct_80d = min(100, int((total_80d / limit_80d) * 100)) if limit_80d > 0 else 0
+    pct_nps = min(100, int((total_nps / limit_nps) * 100)) if limit_nps > 0 else 0
 
     return {
-        "financial_year": decl.financial_year if decl else "2025-26",
-        "selected_regime": decl.regime if decl else "NEW",
-        "declaration_status": decl.status if decl else "DRAFT",
+        "financial_year": latest_run.financial_year if latest_run else (decl.financial_year if decl else "2025-26"),
+        "gross_annual": str(gross_annual),
+        "selected_regime": regime,
+        "declaration_status": decl.status if decl else "ACTIVE",
         "old_regime_tax": str(old_tax),
         "new_regime_tax": str(new_tax),
         "tax_savings_optimal": str(savings),
-        "recommended_regime": "NEW" if new_tax <= old_tax else "OLD",
+        "recommended_regime": recommended,
         "sections": {
             "80C": {
-                "declared": "85400.00",
-                "verified": "85400.00",
-                "limit": "150000.00",
-                "breakdown": [
-                    {"name": "Employee Provident Fund (EPF)", "amount": "45400.00"},
-                    {"name": "Life Insurance Premium (LIC)", "amount": "40000.00"},
-                ],
+                "declared": str(total_80c),
+                "verified": str(total_80c),
+                "limit": str(limit_80c),
+                "remaining": str(rem_80c),
+                "percent": pct_80c,
+                "breakdown": items_80c,
             },
             "80D": {
-                "declared": "25000.00",
-                "verified": "25000.00",
-                "limit": "25000.00",
-                "breakdown": [{"name": "Self & Family Health Insurance", "amount": "25000.00"}],
+                "declared": str(total_80d),
+                "verified": str(total_80d),
+                "limit": str(limit_80d),
+                "remaining": str(max(Decimal("0.00"), limit_80d - total_80d)),
+                "percent": pct_80d,
+                "breakdown": [{"name": "Self & Family Health Insurance", "amount": str(total_80d)}] if total_80d > 0 else [],
             },
             "NPS_80CCD_1B": {
-                "declared": "0.00",
-                "verified": "0.00",
-                "limit": "50000.00",
-                "breakdown": [],
+                "declared": str(total_nps),
+                "verified": str(total_nps),
+                "limit": str(limit_nps),
+                "remaining": str(max(Decimal("0.00"), limit_nps - total_nps)),
+                "percent": pct_nps,
+                "breakdown": [{"name": "Voluntary NPS Contribution", "amount": str(total_nps)}] if total_nps > 0 else [],
             },
         },
         "ai_recommendations": [
             {
                 "section": "Section 80C",
-                "title": "Utilize remaining ₹64,600 limit",
-                "detail": "Investing in ELSS Mutual Funds or PPF before March 31st can further optimize your Old Regime tax withholding.",
+                "title": f"Utilize remaining ₹{rem_80c:,.0f} limit" if rem_80c > 0 else "Section 80C fully optimized",
+                "detail": "Investing in ELSS Mutual Funds or PPF before March 31st can further optimize your Old Regime tax withholding." if rem_80c > 0 else "You have reached the maximum statutory deduction under Section 80C.",
             },
             {
                 "section": "Section 80CCD(1B)",

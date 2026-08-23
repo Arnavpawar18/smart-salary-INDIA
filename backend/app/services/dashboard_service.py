@@ -59,7 +59,7 @@ class DashboardService:
                 pf = snap_res.get("annual_employee_pf", "0.00")
                 pt = snap_res.get("annual_pt", "0.00")
 
-                eff_tax_rate = (tax / float(annual_gross) * 100) if float(annual_gross) > 0 else 0.0
+                eff_tax_rate = (float(tax) / float(annual_gross) * 100) if float(annual_gross) > 0 else 0.0
 
                 fy_trend.append(
                     {

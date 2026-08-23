@@ -1,0 +1,38 @@
+<div class="mt-4 p-4 rounded-xl bg-slate-900 border border-slate-700 space-y-4 animate-fade-in text-white">
+    <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Deterministic Raise Simulation</span>
+            <p class="text-[11px] text-slate-400">Baseline Annual Gross: ₹{{ "{:,.2f}".format(sim_data.base_gross) }} | Base Take-Home: ₹{{ "{:,.2f}".format(sim_data.base_take_home) }}</p>
+        </div>
+        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800">Verified Engine</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {% for sim in sim_data.simulations %}
+        <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 space-y-2 hover:border-indigo-500 transition-colors">
+            <div class="flex justify-between items-center">
+                <span class="px-2 py-0.5 rounded text-xs font-bold bg-indigo-600 text-white">{{ sim.percentage_increase }} Hike</span>
+                <span class="text-xs font-mono font-bold text-emerald-400">₹{{ "{:,.2f}".format(sim.simulated_gross) }}</span>
+            </div>
+            <div class="text-[11px] space-y-1 text-slate-300">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Gross Delta:</span>
+                    <span class="font-mono text-white">+₹{{ "{:,.2f}".format(sim.gross_delta) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Tax Delta:</span>
+                    <span class="font-mono text-rose-400">+₹{{ "{:,.2f}".format(sim.tax_delta) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Take-Home Delta:</span>
+                    <span class="font-mono font-bold text-emerald-400">+₹{{ "{:,.2f}".format(sim.take_home_delta) }}</span>
+                </div>
+                <div class="flex justify-between pt-1 border-t border-slate-700 text-[10px]">
+                    <span class="text-slate-400">Retention Ratio:</span>
+                    <span class="font-mono font-bold text-indigo-300">{{ sim.marginal_retention_rate }}% retained</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

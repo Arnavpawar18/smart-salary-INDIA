@@ -92,7 +92,12 @@ def test_unverified_user_cannot_login_and_gets_403(client, db_session):
         json={"email": "unverified@smartsalary.in", "password": "SecurePassword123!"},
     )
     assert login_res.status_code == 403
-    assert "Email not verified" in login_res.json()["detail"]
+    detail = login_res.json()["detail"]
+    if isinstance(detail, dict):
+        assert detail.get("code") == "EMAIL_NOT_VERIFIED"
+        assert "Email not verified" in detail.get("message", "")
+    else:
+        assert "Email not verified" in detail
 
 
 def test_valid_email_otp_activates_user_and_allows_login(client, db_session):

@@ -221,14 +221,18 @@
 
         <!-- Action Buttons -->
         <div class="pt-2 flex flex-wrap items-center gap-3">
+            <button onclick="copyCalculationSummary({{ result.annual_gross_salary }}, {{ result.estimated_annual_take_home }}, {{ result.total_annual_tax_liability }}, {{ result.annual_employee_pf }}, {{ result.annual_professional_tax }})" type="button" class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                <span>Copy Summary</span>
+            </button>
             <button onclick="toggleSimulator()" type="button" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
                 <span>Run What-If Simulation &rarr;</span>
             </button>
-            <button onclick="toggleAiDrawer()" type="button" class="px-4 py-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
+            <button onclick="toggleAiDrawer('{{ result.calculation_id or '' }}', '{{ result.snapshot_id or '' }}')" type="button" class="px-4 py-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <span>Ask AI to Explain</span>
             </button>
-            <a href="/print-summary" target="_blank" class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5">
+            <a href="/calculator/export/{{ result.calculation_id or '' }}" target="_blank" class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5">
                 <span>Print Official Summary</span>
             </a>
         </div>

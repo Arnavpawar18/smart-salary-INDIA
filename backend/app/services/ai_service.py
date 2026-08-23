@@ -9,9 +9,7 @@ from app.engine.rag.llm_provider import LLMMessage, LLMProvider, MockDevLLMProvi
 from app.engine.rag.retriever import FinancialRAGRetriever
 from app.engine.rag.source_display_service import RAGSourceDisplayService
 from app.models.auth import User
-from app.models.calculation import CalculationRun
 from app.models.chat import ChatMessage, ChatSession
-from app.models.employee import Employee
 from app.services.calculation_context_service import CalculationContext, resolve_owned_calculation
 
 
@@ -112,28 +110,12 @@ class AIService:
                 trace_metadata={"intent": "EVIDENCE_REQUEST", "state": "ANSWER", "is_source_display": True},
             )
 
-        # Classify Intent
-        is_calc_query = any(k in clean_q for k in ("tax", "salary", "take home", "deduction", "why", "how", "pf", "pt", "slab", "rebate", "87a", "in hand", "pay"))
-
-        # Resolve Active Calculation Context if snapshot_id provided or query is calculation-specific
+        # Resolve Active Calculation Context strictly:
+        # 1. If snapshot_id is provided, resolve that exact calculation and enforce ownership check.
+        # 2. If no snapshot_id is provided, do NOT silently substitute 'latest' calculation; treat as general statutory inquiry.
         calc_context: CalculationContext | None = None
         if snapshot_id:
-            try:
-                calc_context = resolve_owned_calculation(self.db, calculation_id=snapshot_id, user=user)
-            except Exception:
-                calc_context = None
-
-        if not calc_context and is_calc_query:
-            # Check user's latest calculation run
-            emp = self.db.scalar(select(Employee).where(Employee.user_id == user.id))
-            if emp:
-                latest_run = self.db.scalar(
-                    select(CalculationRun)
-                    .where(CalculationRun.employee_id == emp.id)
-                    .order_by(CalculationRun.id.desc())
-                )
-                if latest_run:
-                    calc_context = resolve_owned_calculation(self.db, calculation_id=latest_run.id, user=user)
+            calc_context = resolve_owned_calculation(self.db, calculation_id=snapshot_id, user=user)
 
         # 3-State Firewall Gate: If required evidence cannot be verified -> ABSTAIN
         if not evidence_pack.chunks and not calc_context:

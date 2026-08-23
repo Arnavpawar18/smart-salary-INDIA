@@ -48,6 +48,12 @@ async def redis_lifespan(app):
     client = await RedisClient.get_client()
     if client is not None:
         app.state.redis = client
+
+    # Startup SMTP connectivity check
+    if getattr(rate_limit_settings, "ENABLE_STARTUP_SMTP_CHECK", True):
+        from app.services.email_service import EmailService
+        EmailService.check_connectivity()
+
     try:
         yield
     finally:

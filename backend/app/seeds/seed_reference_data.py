@@ -675,7 +675,7 @@ def seed_reference_data(db: Session) -> None:
             )
         )
 
-    # Tamil Nadu (TN)
+    # Tamil Nadu (TN) - Half-yearly PT Schedule mapped to monthly equivalent
     pt_tn = db.scalar(select(ProfessionalTaxRuleVersion).where(ProfessionalTaxRuleVersion.version_code == "PTRV-TN-v1"))
     if not pt_tn:
         pt_tn = ProfessionalTaxRuleVersion(
@@ -686,7 +686,7 @@ def seed_reference_data(db: Session) -> None:
         )
         db.add(pt_tn)
         db.flush()
-        db.add(
+        db.add_all([
             ProfessionalTaxSlab(
                 pt_rule_version_id=pt_tn.id,
                 slab_order=1,
@@ -695,18 +695,75 @@ def seed_reference_data(db: Session) -> None:
                 monthly_tax_amount=Decimal("0.00"),
                 february_tax_amount=Decimal("0.00"),
                 gender_applicable="ALL",
-            )
-        )
-        db.add(
+            ),
             ProfessionalTaxSlab(
                 pt_rule_version_id=pt_tn.id,
                 slab_order=2,
                 from_monthly_salary=Decimal("21001.00"),
+                to_monthly_salary=Decimal("50000.00"),
+                monthly_tax_amount=Decimal("104.17"),
+                february_tax_amount=Decimal("104.13"),
+                gender_applicable="ALL",
+            ),
+            ProfessionalTaxSlab(
+                pt_rule_version_id=pt_tn.id,
+                slab_order=3,
+                from_monthly_salary=Decimal("50001.00"),
                 to_monthly_salary=None,
                 monthly_tax_amount=Decimal("208.33"),
                 february_tax_amount=Decimal("208.37"),
                 gender_applicable="ALL",
-            )
+            ),
+        ])
+    # -------------------------------------------------------------
+    # 7. Demo Baseline Employee & User
+    # -------------------------------------------------------------
+    from app.core.security import PasswordHasher
+    from app.models.auth import User
+    from app.models.calculation import CalculationRun
+    from app.models.employee import Employee
+
+    demo_user = db.scalar(select(User).where(User.email == "employee@smartsalary.in"))
+    if not demo_user:
+        demo_user = User(
+            email="employee@smartsalary.in",
+            hashed_password=PasswordHasher.hash_password("Password123!"),
+            full_name="Aanya Sharma",
+            is_active=True,
+            is_superuser=False,
         )
+        emp_role = db.scalar(select(Role).where(Role.name == "EMPLOYEE"))
+        if emp_role:
+            demo_user.roles.append(emp_role)
+        db.add(demo_user)
+        db.flush()
+
+    demo_emp = db.scalar(select(Employee).where(Employee.user_id == demo_user.id))
+    if not demo_emp:
+        demo_emp = Employee(
+            user_id=demo_user.id,
+            employee_code="EMP-8492",
+            first_name="Aanya",
+            last_name="Sharma",
+            email="employee@smartsalary.in",
+            date_of_joining=date(2023, 1, 1),
+            state_id=states_dict.get("KA"),
+        )
+        db.add(demo_emp)
+        db.flush()
+
+    demo_calc = db.scalar(select(CalculationRun).where(CalculationRun.employee_id == demo_emp.id))
+    if not demo_calc:
+        demo_calc = CalculationRun(
+            employee_id=demo_emp.id,
+            financial_year="2025-26",
+            regime="NEW",
+            status="COMPLETED",
+            total_taxable_income=Decimal("2325000.00"),
+            total_tax_liability=Decimal("397800.00"),
+            net_take_home_annual=Decimal("1958600.00"),
+            net_take_home_monthly=Decimal("163216.67"),
+        )
+        db.add(demo_calc)
 
     db.commit()

@@ -33,12 +33,14 @@ class OTPService:
     """
     Authoritative OTP Generation, Hashing, Rate-Limiting, and Verification Service.
 
-    Security Constraints:
-      - 6-digit cryptographically secure numeric OTP (`secrets.randbelow`).
+    Security & Invariant Guarantees:
+      - 6-digit cryptographically secure numeric OTP (`secrets.randbelow(1_000_000)`).
       - Server-side HMAC-SHA256 storage (`HMAC(OTP_HASH_SECRET, email:purpose:otp)`).
       - Zero plaintext storage in DB or logs.
       - 5-minute TTL, max 5 verification attempts before locking.
       - 60-second resend cooldown per email & purpose.
+      - Explicit invalidation (CANCELLED) of older active tokens upon new issuance.
+      - Row-level atomic concurrency lock (`with_for_update`) during verification.
     """
 
     @classmethod
@@ -53,6 +55,32 @@ class OTPService:
         message = f"{normalized_email}:{purpose}:{otp}".encode()
         secret = settings.OTP_HASH_SECRET.encode()
         return hmac.new(secret, message, hashlib.sha256).hexdigest()
+
+    @classmethod
+    def get_latest_active_token(
+        cls,
+        db: Session,
+        email: str,
+        purpose: str,
+    ) -> VerificationToken | None:
+        """Returns the most recent valid pending token, or None if expired/used/locked."""
+        normalized_email = email.strip().lower()
+        now = datetime.now(UTC)
+        tok = db.scalar(
+            select(VerificationToken)
+            .where(
+                VerificationToken.email == normalized_email,
+                VerificationToken.purpose == purpose,
+                VerificationToken.status == OTPStatus.PENDING,
+            )
+            .order_by(VerificationToken.created_at.desc())
+        )
+        if not tok:
+            return None
+        exp = tok.expires_at.replace(tzinfo=UTC) if tok.expires_at.tzinfo is None else tok.expires_at
+        if now > exp:
+            return None
+        return tok
 
     @classmethod
     def create_verification_token(
@@ -70,25 +98,21 @@ class OTPService:
 
         # Check Resend Cooldown and Hourly Rate Limit
         rate_key = f"otp_resend:{normalized_email}:{purpose}"
-        # Max 5 resend requests per hour
         InMemoryRateLimiter.check_rate_limit(rate_key, max_requests=5, window_seconds=3600)
 
         # Invalidate/Cancel any existing PENDING tokens for this (email, purpose)
-        existing_tokens = (
-            db.execute(
-                select(VerificationToken).where(
-                    VerificationToken.email == normalized_email,
-                    VerificationToken.purpose == purpose,
-                    VerificationToken.status == OTPStatus.PENDING,
-                )
-            )
-            .scalars()
-            .all()
+        stmt = select(VerificationToken).where(
+            VerificationToken.email == normalized_email,
+            VerificationToken.purpose == purpose,
+            VerificationToken.status == OTPStatus.PENDING,
         )
+        if db.bind and db.bind.dialect.name != "sqlite":
+            stmt = stmt.with_for_update()
+
+        existing_tokens = db.execute(stmt).scalars().all()
 
         now = datetime.now(UTC)
         for tok in existing_tokens:
-            # Check 60s cooldown from last_resend_at or created_at
             last_activity = tok.last_resend_at or tok.created_at
             if last_activity:
                 if last_activity.tzinfo is None:
@@ -104,7 +128,7 @@ class OTPService:
         if existing_tokens:
             db.flush()
 
-        # Generate fresh OTP and HMAC
+        # Generate fresh 6-digit OTP and HMAC
         raw_otp = cls.generate_otp()
         token_hash = cls.compute_hmac(normalized_email, purpose, raw_otp)
         expires_at = now + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
@@ -143,14 +167,15 @@ class OTPService:
         expected_purpose: str,
     ) -> tuple[bool, str, VerificationToken | None]:
         """
-        Verifies a user-submitted OTP against verification_id and purpose.
+        Verifies a user-submitted OTP against verification_id and purpose with atomic row lock.
 
         Returns:
             tuple[success: bool, error_or_success_message: str, token: VerificationToken | None]
         """
-        token = db.scalar(
-            select(VerificationToken).where(VerificationToken.verification_id == verification_id)
-        )
+        stmt = select(VerificationToken).where(VerificationToken.verification_id == verification_id)
+        if db.bind and db.bind.dialect.name != "sqlite":
+            stmt = stmt.with_for_update()
+        token = db.scalar(stmt)
 
         if not token:
             return False, "Invalid verification request or token not found.", None
@@ -159,7 +184,7 @@ class OTPService:
         if token.purpose != expected_purpose:
             return False, "Invalid verification purpose for this token.", token
 
-        # Check Status
+        # Check Status & Invariants
         if token.status == OTPStatus.VERIFIED:
             return False, "This verification code has already been used.", token
         if token.status == OTPStatus.LOCKED:
@@ -178,7 +203,7 @@ class OTPService:
             db.commit()
             return False, "Verification code has expired. Please request a new code.", token
 
-        # Check Attempt Count
+        # Check Attempt Count before increment
         if token.attempt_count >= settings.OTP_MAX_ATTEMPTS:
             token.status = OTPStatus.LOCKED
             db.commit()

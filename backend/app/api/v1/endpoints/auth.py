@@ -1,3 +1,4 @@
+import logging
 import uuid
 from datetime import date
 from typing import Annotated
@@ -6,6 +7,8 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from app.core.auth_middleware import (
     CSRFProtection,
@@ -290,32 +293,53 @@ def forgot_password(
     normalized_email = normalize_email(req.email)
     user = db.scalar(select(User).where(User.email == normalized_email))
 
-    verification_id_str = str(uuid.uuid4())
-    if user and user.is_active:
+    if not user:
+        return {
+            "status": "NOT_FOUND",
+            "message": "No account found with this email address. Please check your spelling or register a new account.",
+            "verification_id": None,
+        }
+
+    if not user.is_active:
+        # Create email verification token if account was never activated
         token, raw_otp = OTPService.create_verification_token(
             db=db,
             email=normalized_email,
-            purpose=OTPPurpose.PASSWORD_RESET,
+            purpose=OTPPurpose.EMAIL_VERIFICATION,
             user_id=user.id,
         )
-        if not EmailService.send_password_reset_otp(to_email=normalized_email, otp=raw_otp):
-            raise HTTPException(status_code=502, detail="Failed to send password reset email")
-        verification_id_str = str(token.verification_id)
+        EmailService.send_email_verification_otp(to_email=normalized_email, otp=raw_otp)
+        return {
+            "status": "INACTIVE",
+            "message": "Your account is pending email verification. A new activation code has been sent to your email.",
+            "verification_id": str(token.verification_id),
+            "purpose": "EMAIL_VERIFICATION",
+        }
 
-        AuditService.log_event(
-            db=db,
-            action=AuditEvent.PASSWORD_RESET_REQUESTED,
-            entity_name="USER",
-            user_id=user.id,
-            entity_id=user.id,
-            ip_address=client_ip,
-            user_agent=user_agent,
-        )
+    token, raw_otp = OTPService.create_verification_token(
+        db=db,
+        email=normalized_email,
+        purpose=OTPPurpose.PASSWORD_RESET,
+        user_id=user.id,
+    )
+    if not EmailService.send_password_reset_otp(to_email=normalized_email, otp=raw_otp):
+        raise HTTPException(status_code=502, detail="Failed to send password reset email. Please try again.")
+
+    AuditService.log_event(
+        db=db,
+        action=AuditEvent.PASSWORD_RESET_REQUESTED,
+        entity_name="USER",
+        user_id=user.id,
+        entity_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+    )
 
     return {
         "status": "SUCCESS",
-        "message": "If an active account exists for this email, a 6-digit verification code has been sent.",
-        "verification_id": verification_id_str,
+        "message": f"A 6-digit password reset code has been sent to {normalized_email}.",
+        "verification_id": str(token.verification_id),
+        "purpose": "PASSWORD_RESET",
     }
 
 
@@ -439,9 +463,29 @@ def login_user(
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
     if not user.is_active:
+        # Find latest active token or issue a fresh one
+        token = OTPService.get_latest_active_token(db=db, email=normalized_email, purpose=OTPPurpose.EMAIL_VERIFICATION)
+        if not token:
+            try:
+                token, raw_otp = OTPService.create_verification_token(
+                    db=db,
+                    email=normalized_email,
+                    purpose=OTPPurpose.EMAIL_VERIFICATION,
+                    user_id=user.id,
+                )
+                EmailService.send_email_verification_otp(to_email=normalized_email, otp=raw_otp)
+            except Exception as e:
+                logger.warning("Failed to auto-issue fresh OTP during inactive login for %s: %s", normalized_email, e)
+
+        v_id = str(token.verification_id) if token else str(uuid.uuid4())
         raise HTTPException(
             status_code=403,
-            detail="Email not verified. Please verify your email before logging in.",
+            detail={
+                "code": "EMAIL_NOT_VERIFIED",
+                "verification_id": v_id,
+                "email": normalized_email,
+                "message": "Email not verified. Please enter the verification code sent to your email.",
+            },
         )
 
     # Resolve primary role and employee_id

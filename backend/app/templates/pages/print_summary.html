@@ -77,11 +77,74 @@
         </div>
     </div>
 
-    <!-- Print Button (hidden in print) -->
-    <div class="mt-6 print:hidden flex justify-end">
-        <button onclick="window.print()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow">
-            Print Document
+    <!-- Action Buttons (hidden during print) -->
+    <div class="mt-6 print:hidden flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-200">
+        <button type="button" onclick="copyCalculationSummary()" id="btn-copy-summary" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <span id="copy-summary-text">Copy Summary</span>
+        </button>
+
+        <a href="/calculator/export/{{ calculation_id }}/json" download="SmartSalary_Calculation_{{ calculation_id }}.json" id="btn-export-json" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Export JSON</span>
+        </a>
+
+        <a href="/calculator/export/{{ calculation_id }}/pdf" download="SmartSalary_Statement_{{ calculation_id }}.pdf" id="btn-download-pdf" class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl border border-indigo-200 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Download PDF</span>
+        </a>
+
+        <button type="button" onclick="window.print()" id="btn-print-doc" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition-colors flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>Print Document</span>
         </button>
     </div>
 </div>
+
+<script>
+function copyCalculationSummary() {
+    const summaryText = `SmartSalary India — Official Computation Summary (#CAL-{{ "%04d"|format(calculation_id) }})\n` +
+        `Financial Year: {{ result.financial_year }} | Regime: {{ result.regime }} | State: {{ result.state_code }}\n` +
+        `--------------------------------------------------\n` +
+        `Annual Gross Salary:   {{ format_inr(result.annual_gross_salary) }}\n` +
+        `Standard Deduction:    -{{ format_inr(result.standard_deduction) }}\n` +
+        `Net Taxable Income:    {{ format_inr(result.taxable_income) }}\n` +
+        `Total Income Tax:      -{{ format_inr(result.total_annual_tax_liability) }}\n` +
+        `Employee EPF (12%):    -{{ format_inr(result.annual_employee_pf) }}\n` +
+        `Professional Tax:      -{{ format_inr(result.annual_professional_tax) }}\n` +
+        `--------------------------------------------------\n` +
+        `Estimated Annual Take-Home:  {{ format_inr(result.estimated_annual_take_home) }}\n` +
+        `Estimated Monthly Take-Home: {{ format_inr(result.estimated_monthly_take_home) }}\n` +
+        `Verification Hash: {{ result.result_hash }}\n`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(summaryText).then(() => {
+            const btnText = document.getElementById('copy-summary-text');
+            if (btnText) {
+                btnText.innerText = 'Copied to Clipboard!';
+                setTimeout(() => { btnText.innerText = 'Copy Summary'; }, 2000);
+            }
+        }).catch(() => fallbackCopy(summaryText));
+    } else {
+        fallbackCopy(summaryText);
+    }
+}
+
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        const btnText = document.getElementById('copy-summary-text');
+        if (btnText) {
+            btnText.innerText = 'Copied to Clipboard!';
+            setTimeout(() => { btnText.innerText = 'Copy Summary'; }, 2000);
+        }
+    } catch(e) {}
+    document.body.removeChild(ta);
+}
+</script>
 {% endblock %}

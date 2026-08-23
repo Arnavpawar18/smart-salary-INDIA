@@ -27,8 +27,9 @@ class Settings(BaseSettings):
     OTP_EXPIRE_MINUTES: int = 5
     OTP_MAX_ATTEMPTS: int = 5
     OTP_RESEND_COOLDOWN_SECONDS: int = 60
+    DEV_EXPOSE_OTP: bool = False
 
-    # SMTP Configuration. Credentials must be supplied via environment/.env.
+    # SMTP Configuration & Reliability
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
     SMTP_USER: str | None = None
@@ -36,6 +37,12 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str | None = None
     SMTP_FROM_NAME: str = "SmartSalary India"
     SMTP_USE_TLS: bool = True
+    SMTP_USE_SSL: bool = False
+    SMTP_TIMEOUT_SECONDS: int = 10
+    SMTP_CONNECT_TIMEOUT_SECONDS: int = 10
+    SMTP_MAX_RETRIES: int = 2
+    SMTP_RETRY_BACKOFF_SECONDS: float = 1.0
+    ENABLE_STARTUP_SMTP_CHECK: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env",

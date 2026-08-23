@@ -1,13 +1,13 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}SmartSalary India â€” Authentication & Verification Portal{% endblock %}
+{% block title %}SmartSalary India — Authentication & Verification Portal{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto my-6 sm:my-12">
   <!-- Brand Header -->
   <div class="text-center mb-8">
     <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 dark:bg-indigo-500 shadow-lg shadow-indigo-500/25 mb-3">
-      <span class="text-2xl font-bold text-white">â‚¹</span>
+      <span class="text-2xl font-bold text-white">₹</span>
     </div>
     <h1 class="text-2xl font-bold font-heading text-slate-900 dark:text-white tracking-tight" id="auth-title">
       Sign in to SmartSalary
@@ -55,7 +55,7 @@
             Forgot password?
           </button>
         </div>
-        <input type="password" id="login-password" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+        <input type="password" id="login-password" required placeholder="••••••••"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -87,7 +87,7 @@
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" for="reg-password">
           Password (min 8 characters)
         </label>
-        <input type="password" id="reg-password" minlength="8" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+        <input type="password" id="reg-password" minlength="8" required placeholder="••••••••"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -204,7 +204,7 @@
 
       <div class="text-center pt-2">
         <button type="button" onclick="switchMode('login')" class="text-xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
-          â† Back to Sign In
+          ← Back to Sign In
         </button>
       </div>
     </form>
@@ -215,7 +215,7 @@
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" for="reset-new-pwd">
           New Password (min 8 characters)
         </label>
-        <input type="password" id="reset-new-pwd" minlength="8" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+        <input type="password" id="reset-new-pwd" minlength="8" required placeholder="••••••••"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -223,7 +223,7 @@
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" for="reset-confirm-pwd">
           Confirm New Password
         </label>
-        <input type="password" id="reset-confirm-pwd" minlength="8" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+        <input type="password" id="reset-confirm-pwd" minlength="8" required placeholder="••••••••"
           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
       </div>
 
@@ -237,8 +237,8 @@
 
   <!-- Trust Badges -->
   <div class="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500 space-y-1">
-    <p>ðŸ”’ TLS 1.3 Encrypted â€¢ Argon2id Key Derivation â€¢ HMAC-SHA256 Multi-Factor Gates</p>
-    <p>Â© 2026 SmartSalary India. Strictly compliant with Indian Statutory Regimes.</p>
+    <p>🔒 TLS 1.3 Encrypted • Argon2id Key Derivation • HMAC-SHA256 Multi-Factor Gates</p>
+    <p>© 2026 SmartSalary India. Strictly compliant with Indian Statutory Regimes.</p>
   </div>
 </div>
 
@@ -359,7 +359,16 @@
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || 'Login failed');
+        if (res.status === 403 && data.detail && typeof data.detail === 'object' && data.detail.code === 'EMAIL_NOT_VERIFIED') {
+          state.verificationId = data.detail.verification_id;
+          state.purpose = 'EMAIL_VERIFICATION';
+          state.email = data.detail.email || email;
+          switchMode('otp');
+          showAlert(data.detail.message || 'Your email is not verified yet. A verification code has been dispatched.', 'info');
+          return;
+        }
+        const errMsg = typeof data.detail === 'string' ? data.detail : (data.detail && data.detail.message) || 'Login failed';
+        throw new Error(errMsg);
       }
       showAlert('Login successful! Redirecting...', 'success');
       setTimeout(() => {
@@ -418,7 +427,7 @@
     btn.disabled = true;
     btn.innerText = 'Sending code...';
 
-    const email = document.getElementById('forgot-email').value;
+    const email = document.getElementById('forgot-email').value.trim();
 
     try {
       const res = await fetch('/api/v1/auth/forgot-password', {
@@ -433,13 +442,12 @@
       
       if (data.verification_id) {
         state.verificationId = data.verification_id;
-        state.purpose = 'PASSWORD_RESET';
+        state.purpose = data.purpose || 'PASSWORD_RESET';
         state.email = email;
         switchMode('otp');
-        showAlert('Verification code dispatched. Check your email.', 'success');
-      } else {
-        // Anti-enumeration notice
         showAlert(data.message, 'success');
+      } else {
+        showAlert(data.message, 'error');
       }
     } catch (err) {
       showAlert(err.message, 'error');

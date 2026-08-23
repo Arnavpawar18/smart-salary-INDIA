@@ -60,3 +60,4 @@ docs/tax_pdf/**/*.zip
 docs/tax_pdf/
 .vercel
 .env*
+.pytest_temp/

@@ -1,6 +1,6 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}Security Center â€” SmartSalary India{% endblock %}
+{% block title %}Security Center — SmartSalary India{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -59,7 +59,7 @@
                         <div>
                             <p class="text-sm font-semibold text-slate-900">{{ session.user_agent or 'Standard Browser' }}</p>
                             <p class="text-xs text-slate-500 mt-0.5">
-                                IP: <span class="font-mono text-slate-700">{{ session.ip_address or '127.0.0.1' }}</span> â€¢ Last used: <span class="text-slate-700">{{ session.last_used_at.strftime('%d %b %H:%M') if session.last_used_at else 'Active' }}</span>
+                                IP: <span class="font-mono text-slate-700">{{ session.ip_address or '127.0.0.1' }}</span> • Last used: <span class="text-slate-700">{{ session.last_used_at.strftime('%d %b %H:%M') if session.last_used_at else 'Active' }}</span>
                             </p>
                         </div>
                     </div>
